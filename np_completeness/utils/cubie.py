@@ -1,11 +1,10 @@
 import numpy as np
-from utils.cube_utils import get_faces_of_cubie
-
 from manim.constants import *
 from manim.mobject.geometry.polygram import Polygon
 from manim.mobject.types.vectorized_mobject import VGroup
 from manim.utils.color import *
 from manim.utils.space_ops import z_to_vector
+from utils.cube_utils import get_faces_of_cubie
 
 STROKE_COLOR = "#002b36"  # Solarized Base03
 

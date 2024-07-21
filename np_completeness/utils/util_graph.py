@@ -1,9 +1,8 @@
 from queue import PriorityQueue
 
 import matplotlib.colors as mcolors
-from utils.util_general import *
-
 from manim import *
+from utils.util_general import *
 
 PRAGUE = 0
 ROME = 1

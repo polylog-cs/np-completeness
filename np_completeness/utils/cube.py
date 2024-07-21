@@ -1,13 +1,12 @@
 import itertools
 
 import numpy as np
-from utils.cube_utils import parse_move
-from utils.cubie import Cubie
-
 from manim import override_animate
 from manim.constants import DEGREES, PI
 from manim.mobject.types.vectorized_mobject import VGroup
 from manim.utils.color import *
+from utils.cube_utils import parse_move
+from utils.cubie import Cubie
 
 DEFAULT_CUBE_COLORS = ["#ffffff", "#b71234", "#009b48", "#ffd500", "#ff5800", "#0046ad"]
 
@@ -175,11 +174,10 @@ class RubiksCube(VGroup):
 
 
 import numpy as np
-from utils.cube import RubiksCube
-
 from manim.animation.animation import Animation
 from manim.constants import PI
 from manim.mobject.types.vectorized_mobject import VGroup
+from utils.cube import RubiksCube
 
 
 class CubeMove(Animation):

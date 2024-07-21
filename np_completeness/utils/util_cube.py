@@ -1,9 +1,8 @@
 import glob
 import random
 
-from utils.cube import *
-
 from manim import *
+from utils.cube import *
 
 
 class RubikScene(ThreeDScene):

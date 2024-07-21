@@ -1,3 +1,19 @@
+[tool.poetry]
+name = "np_completeness"
+version = "0.1.0"
+description = ""
+authors = ["The Polylog Team"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+manim = "^0.18.1"
+numpy = "^1.26"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.ruff]
 
 
