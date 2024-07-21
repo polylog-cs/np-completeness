@@ -1,9 +1,11 @@
 from pysat.formula import CNF
 from pysat.solvers import Glucose3
 
+
 # Helper function to get variable number
 def var(i, j, k):
     return 81 * (i - 1) + 9 * (j - 1) + k
+
 
 def encode_sudoku(puzzle):
     cnf = CNF()
@@ -38,7 +40,12 @@ def encode_sudoku(puzzle):
                     for j in range(1, 4):
                         for i2 in range(i + 1, 4):
                             for j2 in range(1, 4):
-                                cnf.append([-var(3*a+i, 3*b+j, k), -var(3*a+i2, 3*b+j2, k)])
+                                cnf.append(
+                                    [
+                                        -var(3 * a + i, 3 * b + j, k),
+                                        -var(3 * a + i2, 3 * b + j2, k),
+                                    ]
+                                )
 
     # Initial clues
     for i in range(9):
@@ -48,11 +55,12 @@ def encode_sudoku(puzzle):
 
     return cnf
 
+
 def solve_sudoku(puzzle):
     cnf = encode_sudoku(puzzle)
     solver = Glucose3()
     solver.append_formula(cnf.clauses)
-    
+
     if solver.solve():
         model = solver.get_model()
         solution = [[0 for _ in range(9)] for _ in range(9)]
@@ -60,10 +68,11 @@ def solve_sudoku(puzzle):
             for j in range(1, 10):
                 for k in range(1, 10):
                     if model[var(i, j, k) - 1] > 0:
-                        solution[i-1][j-1] = k
+                        solution[i - 1][j - 1] = k
         return solution
     else:
         return None
+
 
 def print_sudoku(puzzle):
     for i in range(9):
@@ -75,6 +84,7 @@ def print_sudoku(puzzle):
             print(puzzle[i][j], end=" ")
         print()
 
+
 # Example usage
 puzzle = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
@@ -85,7 +95,7 @@ puzzle = [
     [7, 0, 0, 0, 2, 0, 0, 0, 6],
     [0, 6, 0, 0, 0, 0, 2, 8, 0],
     [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    [0, 0, 0, 0, 8, 0, 0, 7, 9],
 ]
 
 # harder puzzle
@@ -98,7 +108,7 @@ puzzle = [
     [0, 0, 3, 2, 0, 0, 0, 8, 0],
     [6, 0, 0, 5, 0, 0, 0, 0, 9],
     [0, 0, 4, 0, 0, 0, 0, 3, 0],
-    [0, 0, 0, 0, 0, 9, 7, 0, 0]
+    [0, 0, 0, 0, 0, 9, 7, 0, 0],
 ]
 
 print("Input Sudoku:")
