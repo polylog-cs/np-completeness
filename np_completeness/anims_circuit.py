@@ -197,12 +197,6 @@ class Gate(VMobject):
                 self.rect.height * GATE_TEXT_RATIO
             )
 
-    def add_input(self, wire: Wire):
-        self.inputs.append(wire)
-
-    def set_output(self, wire: Wire):
-        self.output = wire
-
     def evaluate(self):
         raise NotImplementedError("Subclasses must implement this method")
 
@@ -429,7 +423,7 @@ def make_multiplication_circuit() -> Circuit:
                 cast(InternalPoint3D, and_gate.get_bottom()),
                 and_gate.get_bottom() + 0.3 * GATE_HEIGHT * DOWN,
             )
-            and_gate.set_output(out_wire)
+            and_gate.output = out_wire
             circuit.add_output_wire(out_wire)
 
     # create the 8 input wires
@@ -455,7 +449,7 @@ def make_multiplication_circuit() -> Circuit:
             )
             last_wires[j].add_output_wire(short_wire)
             short_wire.add_input_wire(last_wires[j])
-            circuit.gates[i * 4 + j].add_input(short_wire)
+            circuit.gates[i * 4 + j].inputs.append(short_wire)
             circuit.add_wire(short_wire)
 
             if i == 3:
@@ -533,7 +527,7 @@ def make_multiplication_circuit() -> Circuit:
             )
             wire.add_output_wire(down_wire)
             down_wire.add_input_wire(wire)
-            circuit.gates[4 * i + j].add_input(down_wire)
+            circuit.gates[4 * i + j].inputs.append(down_wire)
             circuit.add_wire(down_wire)
 
     return circuit
