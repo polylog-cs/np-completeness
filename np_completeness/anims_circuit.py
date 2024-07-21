@@ -39,7 +39,6 @@ class Wire(VMobject):
         super().__init__(**kwargs)
         self.start_point: InternalPoint3D = start
         self.end_point: InternalPoint3D = end
-        self.length: float = np.linalg.norm(end - start).astype(float)
 
         self.value: bool | None = None
         self._future_value: bool | None = None
@@ -65,6 +64,9 @@ class Wire(VMobject):
         self.active_part_back = Line(end - self.offset, end, color=WIRE_COLOR_NONE)
         self.add(self.active_part_back)
         self.add_updater(self.update_active_part_back)
+
+    def get_length(self) -> float:
+        return np.linalg.norm(self.end_point - self.start_point).astype(float)
 
     def add_input_wire(self, wire: Wire):
         self.input_wire = wire
@@ -92,7 +94,7 @@ class Wire(VMobject):
                 self.activate_progress.set_value(
                     min(
                         self.activate_progress.get_value()
-                        + dt * SIGNAL_SPEED / self.length,
+                        + dt * SIGNAL_SPEED / self.get_length(),
                         1,
                     )
                 )
@@ -130,13 +132,19 @@ class Wire(VMobject):
     def propagate_signal(self, dt: float):
         if self.value is not None:
             self.progress.set_value(
-                min(self.progress.get_value() + dt * SIGNAL_SPEED / self.length, 1)
+                min(
+                    self.progress.get_value() + dt * SIGNAL_SPEED / self.get_length(), 1
+                )
             )
 
     def propagate_signal_back(self, dt: float):
         if self.value is not None:
             self.progress_back.set_value(
-                min(self.progress_back.get_value() + dt * SIGNAL_SPEED / self.length, 1)
+                min(
+                    self.progress_back.get_value()
+                    + dt * SIGNAL_SPEED / self.get_length(),
+                    1,
+                )
             )
 
 
@@ -200,7 +208,7 @@ class Gate(VMobject):
     def evaluate(self):
         raise NotImplementedError("Subclasses must implement this method")
 
-    def activate(self, dt: float):
+    def update_forward(self, dt: float):
         if not self.activated and all(
             input_wire.progress.get_value() == 1 for input_wire in self.inputs
         ):
@@ -210,7 +218,7 @@ class Gate(VMobject):
             if self.output:
                 self.output.set_value(output_value)
 
-    def activate_back(self, dt: float):
+    def update_backward(self, dt: float):
         if (
             not self.activated
             and self.output
@@ -269,6 +277,9 @@ class Circuit(VGroup):
         self.output_wires.append(wire)
         self.add_wire(wire)
 
+    def get_all_wires(self) -> list[Wire]:
+        return self.input_wires + self.wires + self.output_wires
+
     def create(self, scene: Scene, duration: float):
         # creates the circuit similarly to run_forward function
 
@@ -313,7 +324,7 @@ class Circuit(VGroup):
             scene.add_updater(wire.propagate_signal)
 
         for gate in self.gates:
-            scene.add_updater(gate.activate)
+            scene.add_updater(gate.update_forward)
 
         scene.wait(duration)
 
@@ -337,7 +348,7 @@ class Circuit(VGroup):
             scene.add_updater(wire.propagate_signal_back)
 
         for gate in self.gates:
-            scene.add_updater(gate.activate_back)
+            scene.add_updater(gate.update_backward)
 
         scene.wait(duration)
 
@@ -370,8 +381,8 @@ class Circuit(VGroup):
             scene.remove_updater(wire.propagate_signal)
             scene.remove_updater(wire.propagate_signal_back)
         for gate in self.gates:
-            scene.remove_updater(gate.activate)
-            scene.remove_updater(gate.activate_back)
+            scene.remove_updater(gate.update_forward)
+            scene.remove_updater(gate.update_backward)
 
     def reset(self, scene: Scene):
         anims = []
@@ -400,8 +411,8 @@ class Circuit(VGroup):
 
         for gate in self.gates:
             gate.activated = False
-            scene.remove_updater(gate.activate)
-            scene.remove_updater(gate.activate_back)
+            scene.remove_updater(gate.update_forward)
+            scene.remove_updater(gate.update_backward)
 
 
 def make_multiplication_circuit() -> Circuit:
