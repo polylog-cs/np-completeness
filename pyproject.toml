@@ -13,6 +13,7 @@ python-sat = {extras = ["aiger", "approxmc", "pblib"], version = "^1.8.dev13"}
 
 [tool.poetry.group.dev.dependencies]
 pyright = "^1.1.372"
+pytest = "^8.3.1"
 
 [build-system]
 requires = ["poetry-core"]
