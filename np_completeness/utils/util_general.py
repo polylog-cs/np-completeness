@@ -78,8 +78,8 @@ BASE01 = "#586e75"
 
 # content tones
 
-BASE00 = "#657b83"
-BASE0 = "#839496"
+BASE00 = "#657b83"  # dark gray
+BASE0 = "#839496"  # light gray
 BASE1 = "#93a1a1"
 
 # background tones (light theme)

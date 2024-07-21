@@ -5,14 +5,33 @@ from typing import Any, cast
 from manim import *
 from manim.typing import InternalPoint3D
 
+# Imported for the side effect of changing the default colors
+from np_completeness.utils import util_general
+
 GATE_WIDTH = 1
 GATE_HEIGHT = 0.5
-SIGNAL_SPEED = 0.5  # units per second
-WIRE_COLOR = WHITE
+SIGNAL_SPEED = 2.5  # units per second
+
+WIRE_COLOR_NONE = util_general.BASE00
+WIRE_COLOR_TRUE = util_general.YELLOW
+WIRE_COLOR_FALSE = util_general.BASE02
+
 GATE_TEXT_RATIO = 0.4
 EPSILON = 1e-6
 GATE_HORIZONTAL_SPACING = 1.5
 GATE_VERTICAL_SPACING = 1
+
+
+def get_wire_color(value: bool | None) -> str:
+    match value:
+        case True:
+            return WIRE_COLOR_TRUE
+        case False:
+            return WIRE_COLOR_FALSE
+        case None:
+            return WIRE_COLOR_NONE
+        case _:
+            raise ValueError(f"Invalid {value=}")
 
 
 class Wire(VMobject):
@@ -28,7 +47,7 @@ class Wire(VMobject):
         self.input_wire = None
         self.output_wires = []
 
-        self.line = Line(start, end, color=WIRE_COLOR)
+        self.line = Line(start, end, color=WIRE_COLOR_NONE)
         self.add(self.line)
         self.offset = 1e-6 * (end - start)
 
@@ -38,12 +57,12 @@ class Wire(VMobject):
         self.add_updater(self.update_create)
 
         self.progress = ValueTracker(0)
-        self.active_part = Line(start, start + self.offset, color=WIRE_COLOR)
+        self.active_part = Line(start, start + self.offset, color=WIRE_COLOR_NONE)
         self.add(self.active_part)
         self.add_updater(self.update_active_part)
 
         self.progress_back = ValueTracker(0)
-        self.active_part_back = Line(end - self.offset, end, color=WIRE_COLOR)
+        self.active_part_back = Line(end - self.offset, end, color=WIRE_COLOR_NONE)
         self.add(self.active_part_back)
         self.add_updater(self.update_active_part_back)
 
@@ -55,7 +74,7 @@ class Wire(VMobject):
 
     def set_value(self, value: bool | None):
         self.value = value
-        color = RED if value else BLUE
+        color = get_wire_color(value)
         self.active_part.set_color(color)
         self.active_part_back.set_color(color)
         self.progress.set_value(0)
@@ -134,9 +153,15 @@ class Gate(VMobject):
         self.inputs = inputs if inputs is not None else []
         self.output = output
 
-        self.rect = Rectangle(height=GATE_HEIGHT, width=GATE_WIDTH, fill_opacity=0.5)
+        self.rect = Rectangle(
+            height=GATE_HEIGHT,
+            width=GATE_WIDTH,
+            fill_opacity=0.9,
+            color=util_general.BASE00,
+            fill_color=util_general.BASE1,
+        )
         self.text = (
-            Text(gate_type)
+            Text(gate_type, color=util_general.BASE00)
             .move_to(self.rect.get_center())
             .scale_to_fit_height(GATE_HEIGHT * GATE_TEXT_RATIO)
         )
@@ -166,7 +191,7 @@ class Gate(VMobject):
             else:
                 self.activate_progress.set_value(0)
 
-            alpha = self.activate_progress.get_value()
+            alpha = rate_functions.smooth(self.activate_progress.get_value())
             self.rect.scale_to_fit_height(GATE_HEIGHT * alpha + EPSILON)
             self.text.move_to(self.rect.get_center()).scale_to_fit_height(
                 self.rect.height * GATE_TEXT_RATIO
@@ -187,7 +212,7 @@ class Gate(VMobject):
         ):
             self.activated = True
             output_value = self.evaluate()
-            self.rect.set_fill(RED if output_value else BLUE)
+            self.rect.set_fill(get_wire_color(output_value))
             if self.output:
                 self.output.set_value(output_value)
 
@@ -199,7 +224,7 @@ class Gate(VMobject):
         ):
             self.activated = True
             output_value = self.output.value
-            self.rect.set_fill(RED if output_value else BLUE)
+            self.rect.set_fill(get_wire_color(output_value))
             for input_wire in self.inputs:
                 input_wire.set_value(input_wire._future_value)
 
@@ -357,10 +382,10 @@ class Circuit(VGroup):
     def reset(self, scene: Scene):
         anims = []
         for wire in self.wires:
-            anims.append(wire.active_part.animate.set_color(WIRE_COLOR))
-            anims.append(wire.active_part_back.animate.set_color(WIRE_COLOR))
+            anims.append(wire.active_part.animate.set_color(WIRE_COLOR_NONE))
+            anims.append(wire.active_part_back.animate.set_color(WIRE_COLOR_NONE))
         for gate in self.gates:
-            anims.append(gate.animate.set_fill(WIRE_COLOR))
+            anims.append(gate.animate.set_fill(WIRE_COLOR_NONE))
         scene.play(*anims)
 
         # first set the length to 0 and only then remove the updaters
@@ -392,6 +417,7 @@ def make_multiplication_circuit() -> Circuit:
     for i in range(4):
         for j in range(4):
             and_gate = AndGate()
+            and_gate.set_z_index(3)  # Make sure the gates are in front of the wires
             and_gate.move_to(
                 (i + j) * GATE_HORIZONTAL_SPACING * LEFT
                 + i * GATE_VERTICAL_SPACING * DOWN
@@ -518,17 +544,17 @@ class CircuitScene(Scene):
         circuit = make_multiplication_circuit()
         self.add(circuit)
 
-        circuit.create(self, 30)
+        circuit.create(self, 10)
 
         circuit.run_forward(
-            self, [True, False, True, True, False, True, False, True], 30
+            self, [True, False, True, True, False, True, False, True], 10
         )
 
         circuit.reset(self)
         self.wait()
 
         circuit.run_backward(
-            self, [False, False, False, True, True, True, False, True], 30
+            self, [False, False, False, True, True, True, False, True], 10
         )
 
         return
