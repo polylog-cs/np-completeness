@@ -1,6 +1,7 @@
 import random
 
 from manim import *
+from manim.typing import InternalPoint3D
 
 ############### DEFAULT OPTIONS
 
@@ -50,7 +51,7 @@ def random_typewriter_file():
     return f"audio/typewriter/t{random.randint(0, 9)}.wav"
 
 
-def step_sound_file(randomize=True):
+def step_sound_file(randomize: bool = True):
     if randomize:
         return random_tick_file()
     else:
@@ -60,7 +61,7 @@ def step_sound_file(randomize=True):
 ############### ANIMATIONS
 
 
-def arrive_from(obj, dir, buff=0.5):
+def arrive_from(obj: Mobject, dir: InternalPoint3D, buff: float = 0.5):
     pos = obj.get_center()
     obj.align_to(Point().to_edge(dir, buff=0), -dir).shift(buff * dir)
     return obj.animate.move_to(pos)

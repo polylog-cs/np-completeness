@@ -47,3 +47,5 @@ include = [
 
 # `from manim import *` is an unfortunate Manim convention.
 reportWildcardImportFromLibrary = false
+# Enforce type-annotating function parameters
+reportMissingParameterType = "error"

@@ -1,3 +1,5 @@
+from typing import Literal
+
 import numpy as np
 from manim import *
 
@@ -6,7 +8,7 @@ def clipart_arrow():
     return ImageMobject("img/arrow.png").scale_to_fit_height(0.7)
 
 
-def clipart_yes_no_maybe(which, height):
+def clipart_yes_no_maybe(which: Literal["yes", "no", "maybe"], height: float):
     pnts_yes = [
         np.array([174.042, 364.002, 0]),
         np.array([169.653, 359.498, 0]),
@@ -183,7 +185,7 @@ def clipart_yes_no_maybe(which, height):
         return Group(circle, clipart)
 
 
-def clipart_house(color=RED, height=1, z_index=100):
+def clipart_house(color: ManimColor = RED, height: float = 1, z_index: int = 100):
     pnts = [
         np.array([232.535, 333.808, 0.0]),
         np.array([277.698, 333.811, 0.0]),
@@ -216,7 +218,7 @@ def clipart_house(color=RED, height=1, z_index=100):
     return house
 
 
-def clipart_icon(color=BLUE, height=1, z_index=100):
+def clipart_icon(color: ManimColor = BLUE, height: float = 1, z_index: int = 100):
     pnts = [
         np.array([407.837, 313.233, 0.0]),
         np.array([340.843, 431.234, 0.0]),

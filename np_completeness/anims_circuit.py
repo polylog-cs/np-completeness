@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any, cast
+
 from manim import *
 from manim.typing import InternalPoint3D
 
@@ -12,13 +16,14 @@ GATE_VERTICAL_SPACING = 1
 
 
 class Wire(VMobject):
-    def __init__(self, start, end, **kwargs):
+    def __init__(self, start: InternalPoint3D, end: InternalPoint3D, **kwargs: Any):
         super().__init__(**kwargs)
         self.start_point: InternalPoint3D = start
         self.end_point: InternalPoint3D = end
-        self.length = np.linalg.norm(end - start)
-        self.value = None
-        self.future_value = None
+        self.length: float = np.linalg.norm(end - start).astype(float)
+
+        self.value: bool | None = None
+        self._future_value: bool | None = None
         self.is_forward = True
         self.input_wire = None
         self.output_wires = []
@@ -42,13 +47,13 @@ class Wire(VMobject):
         self.add(self.active_part_back)
         self.add_updater(self.update_active_part_back)
 
-    def add_input_wire(self, wire):
+    def add_input_wire(self, wire: Wire):
         self.input_wire = wire
 
-    def add_output_wire(self, wire):
+    def add_output_wire(self, wire: Wire):
         self.output_wires.append(wire)
 
-    def set_value(self, value):
+    def set_value(self, value: bool | None):
         self.value = value
         color = RED if value else BLUE
         self.active_part.set_color(color)
@@ -62,7 +67,7 @@ class Wire(VMobject):
             self.end_point - self.offset, self.end_point
         )
 
-    def update_create(self, mobject, dt):
+    def update_create(self, mobject: Mobject, dt: float):
         if self.activation_animation:
             if self.active:
                 self.activate_progress.set_value(
@@ -82,7 +87,7 @@ class Wire(VMobject):
                 for wire in self.output_wires:
                     wire.active = True
 
-    def update_active_part(self, mob, dt):
+    def update_active_part(self, mob: Mobject, dt: float):
         if self.is_forward:
             alpha = self.progress.get_value()
             if alpha > 0:
@@ -93,7 +98,7 @@ class Wire(VMobject):
                     if wire.value is None:
                         wire.set_value(self.value)
 
-    def update_active_part_back(self, mob, dt):
+    def update_active_part_back(self, mob: Mobject, dt: float):
         if not self.is_forward:
             alpha = self.progress_back.get_value()
             if alpha > 0:
@@ -103,13 +108,13 @@ class Wire(VMobject):
                 if self.input_wire is not None and self.input_wire.value is None:
                     self.input_wire.set_value(self.value)
 
-    def propagate_signal(self, dt):
+    def propagate_signal(self, dt: float):
         if self.value is not None:
             self.progress.set_value(
                 min(self.progress.get_value() + dt * SIGNAL_SPEED / self.length, 1)
             )
 
-    def propagate_signal_back(self, dt):
+    def propagate_signal_back(self, dt: float):
         if self.value is not None:
             self.progress_back.set_value(
                 min(self.progress_back.get_value() + dt * SIGNAL_SPEED / self.length, 1)
@@ -117,7 +122,13 @@ class Wire(VMobject):
 
 
 class Gate(VMobject):
-    def __init__(self, gate_type, inputs=None, output=None, **kwargs):
+    def __init__(
+        self,
+        gate_type: str,
+        inputs: list[Wire] | None = None,
+        output: Wire | None = None,
+        **kwargs: Any,
+    ):
         super().__init__(**kwargs)
         self.gate_type = gate_type
         self.inputs = inputs if inputs is not None else []
@@ -138,7 +149,7 @@ class Gate(VMobject):
         self.activate_progress = ValueTracker(0)
         self.add_updater(self.update_create)
 
-    def update_create(self, mobject, dt):
+    def update_create(self, mobject: Mobject, dt: float):
         if self.activation_animation:
             if not self.active and all(
                 input_wire.activate_progress.get_value() == 1
@@ -161,16 +172,16 @@ class Gate(VMobject):
                 self.rect.height * GATE_TEXT_RATIO
             )
 
-    def add_input(self, wire):
+    def add_input(self, wire: Wire):
         self.inputs.append(wire)
 
-    def set_output(self, wire):
+    def set_output(self, wire: Wire):
         self.output = wire
 
     def evaluate(self):
         raise NotImplementedError("Subclasses must implement this method")
 
-    def activate(self, dt):
+    def activate(self, dt: float):
         if not self.activated and all(
             input_wire.progress.get_value() == 1 for input_wire in self.inputs
         ):
@@ -180,7 +191,7 @@ class Gate(VMobject):
             if self.output:
                 self.output.set_value(output_value)
 
-    def activate_back(self, dt):
+    def activate_back(self, dt: float):
         if (
             not self.activated
             and self.output
@@ -190,7 +201,7 @@ class Gate(VMobject):
             output_value = self.output.value
             self.rect.set_fill(RED if output_value else BLUE)
             for input_wire in self.inputs:
-                input_wire.set_value(input_wire.future_value)
+                input_wire.set_value(input_wire._future_value)
 
     def left_input_position(self):
         return self.rect.get_top() + GATE_WIDTH / 6 * LEFT
@@ -200,7 +211,7 @@ class Gate(VMobject):
 
 
 class AndGate(Gate):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__("AND", **kwargs)
 
     def evaluate(self):
@@ -208,7 +219,7 @@ class AndGate(Gate):
 
 
 class OrGate(Gate):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__("OR", **kwargs)
 
     def evaluate(self):
@@ -216,26 +227,26 @@ class OrGate(Gate):
 
 
 class Circuit(VGroup):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         self.gates: list[Gate] = []
         self.wires: list[Wire] = []
         self.input_wires: list[Wire] = []
         self.output_wires: list[Wire] = []
 
-    def add_gate(self, gate):
+    def add_gate(self, gate: Gate):
         self.gates.append(gate)
         self.add(gate)
 
-    def add_wire(self, wire):
+    def add_wire(self, wire: Wire):
         self.wires.append(wire)
         self.add(wire)
 
-    def add_input_wire(self, wire):
+    def add_input_wire(self, wire: Wire):
         self.input_wires.append(wire)
         self.add_wire(wire)
 
-    def add_output_wire(self, wire):
+    def add_output_wire(self, wire: Wire):
         self.output_wires.append(wire)
         self.add_wire(wire)
 
@@ -264,7 +275,7 @@ class Circuit(VGroup):
         # for gate in self.gates:
         #     gate.activation_animation = True
 
-    def run_forward(self, scene: Scene, inputs: list[bool], duration=10):
+    def run_forward(self, scene: Scene, inputs: list[bool], duration: float = 10):
         self._remove_updaters(scene)
         if len(inputs) != len(self.input_wires):
             raise ValueError("Number of inputs must match number of input wires")
@@ -287,7 +298,7 @@ class Circuit(VGroup):
 
         scene.wait(duration)
 
-    def run_backward(self, scene: Scene, inputs: list[bool], duration=10):
+    def run_backward(self, scene: Scene, inputs: list[bool], duration: float = 10):
         self._remove_updaters(scene)
 
         for wire in self.wires:
@@ -301,7 +312,7 @@ class Circuit(VGroup):
         self._run_forward_internal(inputs)
 
         for wire in self.output_wires:
-            wire.set_value(wire.future_value)
+            wire.set_value(wire._future_value)
 
         for wire in self.wires:
             scene.add_updater(wire.propagate_signal_back)
@@ -311,13 +322,13 @@ class Circuit(VGroup):
 
         scene.wait(duration)
 
-    def _run_forward_internal(self, inputs):
+    def _run_forward_internal(self, inputs: list[bool]):
         for wire in self.wires:
-            wire.future_value = None  # variable is used only internally
+            wire._future_value = None
 
         # Set input values
         for wire, value in zip(self.input_wires, inputs):
-            wire.future_value = value
+            wire._future_value = value
 
         # Keep track of gates that have been evaluated
         evaluated_gates = set()
@@ -325,17 +336,17 @@ class Circuit(VGroup):
         while len(evaluated_gates) < len(self.gates):
             for gate in self.gates:
                 if gate not in evaluated_gates and all(
-                    input_wire.future_value is not None for input_wire in gate.inputs
+                    input_wire._future_value is not None for input_wire in gate.inputs
                 ):
                     output_value = gate.evaluate()
                     if gate.output:
-                        gate.output.future_value = output_value
+                        gate.output._future_value = output_value
                     evaluated_gates.add(gate)
             for wire in self.wires:
-                if wire.input_wire and wire.input_wire.future_value is not None:
-                    wire.future_value = wire.input_wire.future_value
+                if wire.input_wire and wire.input_wire._future_value is not None:
+                    wire._future_value = wire.input_wire._future_value
 
-    def _remove_updaters(self, scene):
+    def _remove_updaters(self, scene: Scene):
         for wire in self.wires:
             scene.remove_updater(wire.propagate_signal)
             scene.remove_updater(wire.propagate_signal_back)
@@ -343,7 +354,7 @@ class Circuit(VGroup):
             scene.remove_updater(gate.activate)
             scene.remove_updater(gate.activate_back)
 
-    def reset(self, scene):
+    def reset(self, scene: Scene):
         anims = []
         for wire in self.wires:
             anims.append(wire.active_part.animate.set_color(WIRE_COLOR))
@@ -375,7 +386,7 @@ class Circuit(VGroup):
 
 
 class MultiplicationCircuit(Circuit):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: dict[str, Any]):
         super().__init__(**kwargs)
 
         # first we create 4x4 and gates
@@ -390,7 +401,7 @@ class MultiplicationCircuit(Circuit):
                 )
                 self.add_gate(and_gate)
                 out_wire = Wire(
-                    and_gate.get_bottom(),
+                    cast(InternalPoint3D, and_gate.get_bottom()),
                     and_gate.get_bottom() + 0.3 * GATE_HEIGHT * DOWN,
                 )
                 and_gate.set_output(out_wire)
