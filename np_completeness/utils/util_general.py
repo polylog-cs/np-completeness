@@ -123,3 +123,30 @@ BACKGROUND_COLOR_DARK = BASE02
 BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
 
 config.max_files_cached = 1000
+
+#### Video-specific
+
+
+GATE_WIDTH = 1
+GATE_HEIGHT = 0.5
+SIGNAL_SPEED = 2.5  # units per second
+
+WIRE_COLOR_NONE = BASE00
+WIRE_COLOR_TRUE = YELLOW
+WIRE_COLOR_FALSE = BASE02
+
+GATE_TEXT_RATIO = 0.4
+GATE_HORIZONTAL_SPACING = 1.5
+GATE_VERTICAL_SPACING = 1
+
+
+def get_wire_color(value: bool | None) -> str:
+    match value:
+        case True:
+            return WIRE_COLOR_TRUE
+        case False:
+            return WIRE_COLOR_FALSE
+        case None:
+            return WIRE_COLOR_NONE
+        case _:
+            raise ValueError(f"Invalid {value=}")
