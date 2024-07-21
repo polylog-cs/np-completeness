@@ -15,3 +15,19 @@ repos:
         args: [--fix]
       # Run the formatter - it's like Black + isort.
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: check-poetry-lock
+        name: Check that poetry.lock is consistent with pyproject.toml
+        entry: bash -c 'poetry check --lock || (echo "poetry.lock is out of sync with pyproject.toml. Please run \`poetry lock\` and commit the file." && exit 1)'
+        stages: [commit]
+        language: system
+        # files: "(pyproject.toml|poetry.lock)"
+        pass_filenames: false
+      - id: pyright
+        name: Pyright type checker
+        language: system
+        types_or: [python, pyi]
+        entry: poetry run pyright
+        stages: [push]
+        pass_filenames: false
