@@ -1,8 +1,10 @@
 from queue import PriorityQueue
+from typing import cast
 
-import matplotlib.colors as mcolors
+import matplotlib.colors as mcolors  # type: ignore
 from manim import *
-from utils.util_general import *
+
+from .util_general import *
 
 PRAGUE = 0
 ROME = 1
@@ -116,8 +118,8 @@ class CustomGraph(Graph):
 
     def change_edge_length(self, edge, change, new_color):
         return AnimationGroup(
-            self.edges[edge].animate().set_color(new_color),
-            self.edge_weights_objs[edge].animate().increment_value(change),
+            cast(Animation, self.edges[edge].animate.set_color(new_color)),
+            self.edge_weights_objs[edge].animate.increment_value(change),
         )
 
     # for 2D scenes
@@ -125,7 +127,7 @@ class CustomGraph(Graph):
         for v in self.vertices:
             self.vertices[v].add_updater(
                 lambda mob, dt, v=v: mob.move_to(
-                    [mob.get_center()[0], mob.get_center()[1], 0]
+                    np.array([mob.get_center()[0], mob.get_center()[1], 0])
                 )
             )
 
@@ -143,11 +145,13 @@ class CustomGraph(Graph):
 
             self.vertices[v].add_updater(
                 lambda mob, dt, v=v: mob.move_to(
-                    [
-                        mob.get_center()[0],
-                        mob.get_center()[1],
-                        self.vertex_potentials[v].get_value() * rate,
-                    ]
+                    np.array(
+                        [
+                            mob.get_center()[0],
+                            mob.get_center()[1],
+                            self.vertex_potentials[v].get_value() * rate,
+                        ]
+                    )
                 )
             )
         for v in self.vertices:
@@ -206,7 +210,7 @@ class CustomGraph(Graph):
         pots = {}
         for v in self.vertices:
             pots[v] = np.linalg.norm(
-                self.vertices[v].get_center() - self.vertices[source].get_center()
+                self.vertices[v].get_center() - self.vertices[source].get_center()  # type: ignore
             )
         return pots
 
@@ -220,12 +224,19 @@ class CustomGraph(Graph):
             anims.append(self.vertex_potentials[v].animate.set_value(pot))
         return AnimationGroup(*anims)
 
-    def add_directed_edge(self, u, v, offset=0, weight=1, offset_weight=0):
+    def add_directed_edge(
+        self,
+        u: int,
+        v: int,
+        offset: float = 0,
+        weight: float = 1,
+        offset_weight=0.0,
+    ):
         def compute_positions(u, v, offset):
             dir = (
-                self.vertices[v].get_center() - self.vertices[u].get_center()
+                self.vertices[v].get_center() - self.vertices[u].get_center()  # type: ignore
             ) / np.linalg.norm(
-                self.vertices[v].get_center() - self.vertices[u].get_center()
+                self.vertices[v].get_center() - self.vertices[u].get_center()  # type: ignore
             )
             start = self.vertices[u].get_center() + offset
             end = self.vertices[v].get_center() + offset
@@ -260,7 +271,8 @@ class CustomGraph(Graph):
         )
         edge.put_start_and_end_on(start_pos, end_pos)
 
-        self.create_edge_length((u, v), weight, offset_weight)
+        # TODO(vv): The offset parameter might be wrong
+        self.create_edge_length((u, v), weight, offset_weight * RIGHT)
 
         return AnimationGroup(Create(edge))
 
@@ -339,7 +351,10 @@ class CustomGraph(Graph):
                 all_anims.append(
                     Succession(
                         Wait(dist * speed),
-                        self.vertices[node].animate.set_color(highlight_color),
+                        cast(
+                            Animation,
+                            self.vertices[node].animate.set_color(highlight_color),
+                        ),
                     )
                 )
 

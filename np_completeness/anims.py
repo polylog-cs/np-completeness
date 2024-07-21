@@ -1,5 +1,5 @@
 # manim -pql --fps 15 -r 290,180 anims.py Polylogo
-from utils.util_general import *
+from .utils.util_general import *
 
 
 class Polylogo(Scene):

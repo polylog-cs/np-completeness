@@ -1,10 +1,11 @@
 from manim import *
+from manim.typing import InternalPoint3D
 
 GATE_WIDTH = 1
 GATE_HEIGHT = 0.5
 SIGNAL_SPEED = 0.5  # units per second
 WIRE_COLOR = WHITE
-GATE_TEXT_RATIO = 0.6
+GATE_TEXT_RATIO = 0.4
 EPSILON = 1e-6
 GATE_HORIZONTAL_SPACING = 1.5
 GATE_VERTICAL_SPACING = 1
@@ -13,8 +14,8 @@ GATE_VERTICAL_SPACING = 1
 class Wire(VMobject):
     def __init__(self, start, end, **kwargs):
         super().__init__(**kwargs)
-        self.start_point = start
-        self.end_point = end
+        self.start_point: InternalPoint3D = start
+        self.end_point: InternalPoint3D = end
         self.length = np.linalg.norm(end - start)
         self.value = None
         self.future_value = None
@@ -217,10 +218,10 @@ class OrGate(Gate):
 class Circuit(VGroup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.gates = []
-        self.wires = []
-        self.input_wires = []
-        self.output_wires = []
+        self.gates: list[Gate] = []
+        self.wires: list[Wire] = []
+        self.input_wires: list[Wire] = []
+        self.output_wires: list[Wire] = []
 
     def add_gate(self, gate):
         self.gates.append(gate)
@@ -238,7 +239,7 @@ class Circuit(VGroup):
         self.output_wires.append(wire)
         self.add_wire(wire)
 
-    def create(self, scene, duration):
+    def create(self, scene: Scene, duration: float):
         # creates the circuit similarly to run_forward function
 
         # first change activation_animation to True for all wires and gates
@@ -250,7 +251,6 @@ class Circuit(VGroup):
 
         for gate in self.gates:
             gate.activation_animation = True
-            gate.done = False
             scene.add(gate)
 
         # activate input wires
@@ -264,7 +264,7 @@ class Circuit(VGroup):
         # for gate in self.gates:
         #     gate.activation_animation = True
 
-    def run_forward(self, scene, inputs, duration=10):
+    def run_forward(self, scene: Scene, inputs: list[bool], duration=10):
         self._remove_updaters(scene)
         if len(inputs) != len(self.input_wires):
             raise ValueError("Number of inputs must match number of input wires")
@@ -287,7 +287,7 @@ class Circuit(VGroup):
 
         scene.wait(duration)
 
-    def run_backward(self, scene, inputs, duration=10):
+    def run_backward(self, scene: Scene, inputs: list[bool], duration=10):
         self._remove_updaters(scene)
 
         for wire in self.wires:

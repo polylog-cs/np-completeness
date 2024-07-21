@@ -122,6 +122,7 @@ def clipart_yes_no_maybe(which, height):
     ]
 
     color = ""
+    small_circle = None
 
     if which == "yes":
         color = GREEN
@@ -135,8 +136,7 @@ def clipart_yes_no_maybe(which, height):
             .move_to(ORIGIN)
             .scale_to_fit_height(height / 2)
         )
-
-    if which == "no":
+    elif which == "no":
         color = RED
         clipart = (
             Polygon(
@@ -148,8 +148,7 @@ def clipart_yes_no_maybe(which, height):
             .move_to(ORIGIN)
             .scale_to_fit_height(height / 2)
         )
-
-    if which == "maybe":
+    elif which == "maybe":
         color = ORANGE
         clipart = (
             Polygon(
@@ -168,6 +167,8 @@ def clipart_yes_no_maybe(which, height):
             fill_opacity=1,
         ).next_to(clipart, DOWN, buff=height / 20)
         Group(clipart, small_circle).move_to(ORIGIN)
+    else:
+        raise ValueError(f"Invalid value for 'which': {which}")
 
     circle = Circle(
         radius=height / 2,
@@ -176,10 +177,10 @@ def clipart_yes_no_maybe(which, height):
         fill_opacity=1,
     ).move_to(ORIGIN)
 
-    if which != "maybe":
-        return Group(circle, clipart)
-    else:
+    if small_circle is not None:
         return Group(circle, clipart, small_circle)
+    else:
+        return Group(circle, clipart)
 
 
 def clipart_house(color=RED, height=1, z_index=100):

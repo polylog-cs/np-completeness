@@ -9,6 +9,10 @@ readme = "README.md"
 python = "^3.10,<3.13"
 manim = "^0.18.1"
 numpy = "^1.26"
+python-sat = {extras = ["aiger", "approxmc", "pblib"], version = "^1.8.dev13"}
+
+[tool.poetry.group.dev.dependencies]
+pyright = "^1.1.372"
 
 [build-system]
 requires = ["poetry-core"]
@@ -33,3 +37,13 @@ select = [
     "I", # Sort imports
     "F401", # Remove unused imports
 ]
+
+[tool.pyright]
+
+include = [
+    "np_completeness/",
+    # "code/", # We might want to include this in the future
+]
+
+# `from manim import *` is an unfortunate Manim convention.
+reportWildcardImportFromLibrary = false
