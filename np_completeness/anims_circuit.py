@@ -176,4 +176,15 @@ class ExampleCircuitScene(Scene):
 
         self.play(manim_circuit.animate_evaluation())
 
-        self.wait()
+        self.wait(1)
+
+        circuit = make_example_circuit()
+        reversed_manim_circuit = ManimCircuit(circuit.reverse())
+
+        # We can add a crossfade in post, no need to do it in Manim.
+        self.clear()
+        self.wait(1)
+        self.add(reversed_manim_circuit)
+
+        self.play(reversed_manim_circuit.animate_evaluation(reversed=True))
+        self.wait(2)

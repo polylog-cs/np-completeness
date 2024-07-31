@@ -121,16 +121,20 @@ class ManimCircuit(VGroup):
         # Add wires first so they are behind the gates
         self.add(*self.wires.values(), *self.gates.values())
 
-    def animate_evaluation(self) -> AnimationGroup:
+    def animate_evaluation(self, reversed: bool = False) -> AnimationGroup:
         evaluation = self.circuit.evaluate()
         animations = []
+
+        MIN_DURATION = 0.01  # Prevent divison by 0
 
         for (wire_start, wire_end), manim_wire in self.wires.items():
             start_time = (
                 evaluation.gate_evaluations[wire_start].reach_time
                 + self.circuit.gates[wire_start].length
             )
-            duration = self.circuit.get_wire_length(wire_start, wire_end)
+            duration = max(
+                self.circuit.get_wire_length(wire_start, wire_end), MIN_DURATION
+            )
 
             # A complicated Manim construction that says "wait for start_time seconds,
             # start filling the wire and end at end_time seconds"
@@ -148,14 +152,16 @@ class ManimCircuit(VGroup):
         for gate_name, manim_gate in self.gates.items():
             gate_evaluation = evaluation.gate_evaluations[gate_name]
             start_time = gate_evaluation.reach_time
-            duration = self.circuit.gates[gate_name].length
+            duration = max(self.circuit.gates[gate_name].length, MIN_DURATION)
 
             animations.append(
                 AnimationGroup(
                     *[
                         Wait(start_time),
                         manim_gate.animate_to_value(
-                            evaluation.get_simplified_value(gate_name)
+                            evaluation.get_simplified_value(
+                                gate_name, reversed=reversed
+                            )
                         ),
                     ],
                     lag_ratio=1.0,

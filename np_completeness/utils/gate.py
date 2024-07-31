@@ -24,7 +24,7 @@ class Gate:
 
         self.position: InternalPoint3D = normalize_position(position)
         self.length = length
-        self.visual_type = visual_type
+        self.visual_type: GateVisualType = visual_type
 
     def check_truth_table(self):
         entries = list(self.truth_table.items())
@@ -61,7 +61,7 @@ class Gate:
         self.check_truth_table()
         return len(list(self.truth_table.values())[0])
 
-    def invert(self, gate_evaluation: GateEvaluation) -> Gate:
+    def reverse(self, gate_evaluation: GateEvaluation) -> Gate:
         input_values = gate_evaluation.input_values
         output_values = self.truth_table[input_values]
 
@@ -74,6 +74,8 @@ class Gate:
             # backwards is hard).
             truth_table={output_values: input_values},
             position=self.position.copy(),
+            length=self.length,
+            visual_type=self.visual_type,
         )
 
     @staticmethod

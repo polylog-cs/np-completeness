@@ -44,13 +44,15 @@ class CircuitEvaluation:
         # Convenience method for symmetry with get_gate_outputs()
         return self.gate_evaluations[name].input_values
 
-    def get_simplified_value(self, name: str) -> bool | None:
+    def get_simplified_value(self, name: str, reversed: bool = False) -> bool | None:
         """Returns a single value representing the gate's output.
 
         Multi-output gates are simplified to a single value, using None
         if there's ambiguity.
         """
-        gate_outputs = self.get_gate_outputs(name)
+        gate_outputs = (
+            self.get_gate_outputs(name) if not reversed else self.get_gate_inputs(name)
+        )
 
         match self.get_gate_outputs(name):
             case (single_output,):
@@ -253,7 +255,7 @@ class Circuit:
 
         reversed = Circuit()
         reversed.gates = {
-            name: gate.invert(evaluation.gate_evaluations[name])
+            name: gate.reverse(evaluation.gate_evaluations[name])
             for name, gate in self.gates.items()
         }
 
