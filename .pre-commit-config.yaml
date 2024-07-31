@@ -31,3 +31,10 @@ repos:
         entry: poetry run pyright
         stages: [push]
         pass_filenames: false
+      - id: pytest
+        name: Pytest
+        language: system
+        types_or: [python, pyi]
+        entry: poetry run pytest
+        stages: [push]
+        pass_filenames: false
