@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from typing import Literal
+
 import numpy as np
 from manim.typing import InternalPoint3D, Point2D, Point3D
 from pydantic import BaseModel
+
+GateVisualType = Literal["default", "constant", "knot", "and", "or"]
 
 
 class Gate:
@@ -11,12 +15,14 @@ class Gate:
         truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
         position: Point3D | Point2D,
         length: float = 1,
+        visual_type: GateVisualType = "default",
     ):
         self.truth_table = truth_table
         self.check_truth_table()
 
         self.position: InternalPoint3D = normalize_position(position)
         self.length = length
+        self.visual_type = visual_type
 
     def check_truth_table(self):
         entries = list(self.truth_table.items())
@@ -75,7 +81,17 @@ class Gate:
             tuple([False] * n_inputs): tuple([False] * n_outputs),
             tuple([True] * n_inputs): tuple([True] * n_outputs),
         }
-        return Gate(truth_table, position, length=0)
+
+        # No inputs or no outputs means it's a constant at the beginning or end
+        # of the graph
+        is_constant = n_inputs == 0 or n_outputs == 0
+
+        return Gate(
+            truth_table,
+            position,
+            length=0,
+            visual_type="constant" if is_constant else "knot",
+        )
 
 
 class GateEvaluation(BaseModel):
