@@ -12,7 +12,7 @@ from np_completeness.utils.util_general import (
 )
 
 
-class Wire(VMobject):
+class OldWire(VMobject):
     def __init__(self, start: InternalPoint3D, end: InternalPoint3D, **kwargs: Any):
         super().__init__(**kwargs)
         self.start_point: InternalPoint3D = start
@@ -46,10 +46,10 @@ class Wire(VMobject):
     def get_length(self) -> float:
         return np.linalg.norm(self.end_point - self.start_point).astype(float)
 
-    def add_input_wire(self, wire: Wire):
+    def add_input_wire(self, wire: OldWire):
         self.input_wire = wire
 
-    def add_output_wire(self, wire: Wire):
+    def add_output_wire(self, wire: OldWire):
         self.output_wires.append(wire)
 
     def set_value(self, value: bool | None):

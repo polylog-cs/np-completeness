@@ -12,15 +12,15 @@ from np_completeness.utils.util_general import (
     SIGNAL_SPEED,
     get_wire_color,
 )
-from np_completeness.utils.wire import Wire
+from np_completeness.utils.old_wire import OldWire
 
 
-class Gate(VMobject):
+class OldGate(VMobject):
     def __init__(
         self,
         gate_type: str,
-        inputs: list[Wire] | None = None,
-        output: Wire | None = None,
+        inputs: list[OldWire] | None = None,
+        output: OldWire | None = None,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -104,7 +104,7 @@ class Gate(VMobject):
         return self.rect.get_top() + GATE_WIDTH / 6 * RIGHT
 
 
-class AndGate(Gate):
+class AndGate(OldGate):
     def __init__(self, **kwargs: Any):
         super().__init__("AND", **kwargs)
 
@@ -112,7 +112,7 @@ class AndGate(Gate):
         return all(wire.value for wire in self.inputs)
 
 
-class OrGate(Gate):
+class OrGate(OldGate):
     def __init__(self, **kwargs: Any):
         super().__init__("OR", **kwargs)
 

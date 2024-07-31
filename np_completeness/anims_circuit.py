@@ -4,19 +4,19 @@ from manim import *
 from manim.typing import InternalPoint3D
 
 # Imported for the side effect of changing the default colors
-from np_completeness.utils.circuit import Circuit
-from np_completeness.utils.gate import AndGate
+from np_completeness.utils.old_circuit import OldCircuit
+from np_completeness.utils.old_gate import AndGate
 from np_completeness.utils.util_general import (
     GATE_HEIGHT,
     GATE_HORIZONTAL_SPACING,
     GATE_VERTICAL_SPACING,
     GATE_WIDTH,
 )
-from np_completeness.utils.wire import Wire
+from np_completeness.utils.old_wire import OldWire
 
 
-def make_multiplication_circuit() -> Circuit:
-    circuit = Circuit()
+def make_multiplication_circuit() -> OldCircuit:
+    circuit = OldCircuit()
 
     # first we create 4x4 and gates
     for i in range(4):
@@ -30,7 +30,7 @@ def make_multiplication_circuit() -> Circuit:
                 + 4 * RIGHT
             )
             circuit.add_gate(and_gate)
-            out_wire = Wire(
+            out_wire = OldWire(
                 cast(InternalPoint3D, and_gate.get_bottom()),
                 and_gate.get_bottom() + 0.3 * GATE_HEIGHT * DOWN,
             )
@@ -40,7 +40,7 @@ def make_multiplication_circuit() -> Circuit:
     # create the 8 input wires
     for t in range(2):
         for i in range(4):
-            input_wire = Wire(
+            input_wire = OldWire(
                 circuit.gates[i].left_input_position()
                 + t * 0.3 * GATE_WIDTH * RIGHT
                 + (t + 1) * GATE_HEIGHT * UP,
@@ -55,7 +55,7 @@ def make_multiplication_circuit() -> Circuit:
     for i in range(4):
         for j in range(4):
             # first add a short wire connecting the last wire to the appropriate gate
-            short_wire = Wire(
+            short_wire = OldWire(
                 last_wires[j].end_point, circuit.gates[i * 4 + j].left_input_position()
             )
             last_wires[j].add_output_wire(short_wire)
@@ -67,7 +67,7 @@ def make_multiplication_circuit() -> Circuit:
                 continue
 
             # then add a wire going to the left
-            left_wire = Wire(
+            left_wire = OldWire(
                 last_wires[j].end_point,
                 last_wires[j].end_point
                 + (1 / 3 * GATE_WIDTH + 1 / 2 * (GATE_HORIZONTAL_SPACING - GATE_WIDTH))
@@ -78,7 +78,7 @@ def make_multiplication_circuit() -> Circuit:
             circuit.add_wire(left_wire)
 
             # next wire goes down
-            down_wire = Wire(
+            down_wire = OldWire(
                 left_wire.end_point,
                 left_wire.end_point + 0.9 * GATE_VERTICAL_SPACING * DOWN,
             )
@@ -87,7 +87,7 @@ def make_multiplication_circuit() -> Circuit:
             circuit.add_wire(down_wire)
 
             # next wire is diagonal
-            diagonal_wire = Wire(
+            diagonal_wire = OldWire(
                 down_wire.end_point,
                 down_wire.end_point
                 + 0.1 * GATE_VERTICAL_SPACING * DOWN
@@ -98,7 +98,7 @@ def make_multiplication_circuit() -> Circuit:
             circuit.add_wire(diagonal_wire)
 
             # final wire goes to the left again
-            last_wire = Wire(
+            last_wire = OldWire(
                 diagonal_wire.end_point,
                 circuit.gates[(i + 1) * 4 + j].left_input_position()
                 + 0.3 * GATE_HEIGHT * UP,
@@ -111,7 +111,7 @@ def make_multiplication_circuit() -> Circuit:
 
     # next we do the other four input wires
     for i in range(4):
-        first_wire = Wire(
+        first_wire = OldWire(
             circuit.input_wires[4 + i].end_point,
             circuit.gates[4 * i].right_input_position() + 0.6 * GATE_HEIGHT * UP,
         )
@@ -122,7 +122,7 @@ def make_multiplication_circuit() -> Circuit:
         last_wire = first_wire
         left_wires = []
         for j in range(3):
-            left_wire = Wire(
+            left_wire = OldWire(
                 last_wire.end_point,
                 last_wire.end_point + GATE_HORIZONTAL_SPACING * LEFT,
             )
@@ -133,7 +133,7 @@ def make_multiplication_circuit() -> Circuit:
             last_wire = left_wire
 
         for j, wire in enumerate([first_wire] + left_wires):
-            down_wire = Wire(
+            down_wire = OldWire(
                 wire.end_point, circuit.gates[4 * i + j].right_input_position()
             )
             wire.add_output_wire(down_wire)
@@ -166,5 +166,11 @@ class CircuitScene(Scene):
 
 
 if __name__ == "__main__":
-    scene = CircuitScene()
-    scene.render()
+    # scene = CircuitScene()
+    # scene.render()
+
+    # circuit = make_multiplication_circuit()
+
+    circuit
+
+    circuit.compute_timing_forward().pretty_print()

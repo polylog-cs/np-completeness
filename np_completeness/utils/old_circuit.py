@@ -3,38 +3,38 @@ from typing import Any
 from manim import *
 
 # Imported for the side effect of changing the default colors
-from np_completeness.utils.gate import Gate
+from np_completeness.utils.old_gate import OldGate
 from np_completeness.utils.util_general import (
     WIRE_COLOR_NONE,
 )
-from np_completeness.utils.wire import Wire
+from np_completeness.utils.old_wire import OldWire
 
 
-class Circuit(VGroup):
+class OldCircuit(VGroup):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
-        self.gates: list[Gate] = []
-        self.wires: list[Wire] = []
-        self.input_wires: list[Wire] = []
-        self.output_wires: list[Wire] = []
+        self.gates: list[OldGate] = []
+        self.wires: list[OldWire] = []
+        self.input_wires: list[OldWire] = []
+        self.output_wires: list[OldWire] = []
 
-    def add_gate(self, gate: Gate):
+    def add_gate(self, gate: OldGate):
         self.gates.append(gate)
         self.add(gate)
 
-    def add_wire(self, wire: Wire):
+    def add_wire(self, wire: OldWire):
         self.wires.append(wire)
         self.add(wire)
 
-    def add_input_wire(self, wire: Wire):
+    def add_input_wire(self, wire: OldWire):
         self.input_wires.append(wire)
         self.add_wire(wire)
 
-    def add_output_wire(self, wire: Wire):
+    def add_output_wire(self, wire: OldWire):
         self.output_wires.append(wire)
         self.add_wire(wire)
 
-    def get_all_wires(self) -> list[Wire]:
+    def get_all_wires(self) -> list[OldWire]:
         return self.input_wires + self.wires + self.output_wires
 
     def create(self, scene: Scene, duration: float):
