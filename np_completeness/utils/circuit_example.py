@@ -62,4 +62,4 @@ def make_example_circuit() -> Circuit:
 if __name__ == "__main__":
     circuit = make_example_circuit()
     evaluation = circuit.evaluate()
-    print(evaluation)
+    circuit.display_graph()
