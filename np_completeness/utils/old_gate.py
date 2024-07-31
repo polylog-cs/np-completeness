@@ -2,6 +2,8 @@ from typing import Any
 
 from manim import *
 
+from np_completeness.utils.old_wire import OldWire
+
 # Imported for the side effect of changing the default colors
 from np_completeness.utils.util_general import (
     BASE00,
@@ -12,7 +14,6 @@ from np_completeness.utils.util_general import (
     SIGNAL_SPEED,
     get_wire_color,
 )
-from np_completeness.utils.old_wire import OldWire
 
 
 class OldGate(VMobject):
@@ -95,7 +96,7 @@ class OldGate(VMobject):
             output_value = self.output.value
             self.rect.set_fill(get_wire_color(output_value))
             for input_wire in self.inputs:
-                input_wire.set_value(input_wire._future_value)
+                input_wire.set_value(input_wire.future_value)
 
     def left_input_position(self):
         return self.rect.get_top() + GATE_WIDTH / 6 * LEFT

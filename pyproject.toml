@@ -10,6 +10,7 @@ python = "^3.10,<3.13"
 manim = "^0.18.1"
 numpy = "^1.26"
 python-sat = {extras = ["aiger", "approxmc", "pblib"], version = "^1.8.dev13"}
+pydantic = "^2.8.2"
 
 [tool.poetry.group.dev.dependencies]
 pyright = "^1.1.372"
@@ -43,10 +44,25 @@ select = [
 
 include = [
     "np_completeness/",
+    "tests/",
     # "code/", # We might want to include this in the future
 ]
 
+typeCheckingMode = "strict"
+
 # `from manim import *` is an unfortunate Manim convention.
 reportWildcardImportFromLibrary = false
-# Enforce type-annotating function parameters
-reportMissingParameterType = "error"
+
+# In strict mode, Pyright wants to know the types of all variables.
+# This is too strict.
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+
+reportMissingTypeStubs = false
+
+# We redefine some Manim colors - it's hacky because then the import order matters,
+# but it also makes some things easier.
+reportConstantRedefinition = false

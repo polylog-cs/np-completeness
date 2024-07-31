@@ -19,7 +19,7 @@ class OldWire(VMobject):
         self.end_point: InternalPoint3D = end
 
         self.value: bool | None = None
-        self._future_value: bool | None = None
+        self.future_value: bool | None = None
         self.is_forward = True
         self.input_wire = None
         self.output_wires = []

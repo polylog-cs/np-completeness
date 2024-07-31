@@ -4,10 +4,10 @@ from manim import *
 
 # Imported for the side effect of changing the default colors
 from np_completeness.utils.old_gate import OldGate
+from np_completeness.utils.old_wire import OldWire
 from np_completeness.utils.util_general import (
     WIRE_COLOR_NONE,
 )
-from np_completeness.utils.old_wire import OldWire
 
 
 class OldCircuit(VGroup):
@@ -99,7 +99,7 @@ class OldCircuit(VGroup):
         self._run_forward_internal(inputs)
 
         for wire in self.output_wires:
-            wire.set_value(wire._future_value)
+            wire.set_value(wire.future_value)
 
         for wire in self.wires:
             scene.add_updater(wire.propagate_signal_back)
@@ -111,11 +111,11 @@ class OldCircuit(VGroup):
 
     def _run_forward_internal(self, inputs: list[bool]):
         for wire in self.wires:
-            wire._future_value = None
+            wire.future_value = None
 
         # Set input values
         for wire, value in zip(self.input_wires, inputs):
-            wire._future_value = value
+            wire.future_value = value
 
         # Keep track of gates that have been evaluated
         evaluated_gates = set()
@@ -123,15 +123,15 @@ class OldCircuit(VGroup):
         while len(evaluated_gates) < len(self.gates):
             for gate in self.gates:
                 if gate not in evaluated_gates and all(
-                    input_wire._future_value is not None for input_wire in gate.inputs
+                    input_wire.future_value is not None for input_wire in gate.inputs
                 ):
                     output_value = gate.evaluate()
                     if gate.output:
-                        gate.output._future_value = output_value
+                        gate.output.future_value = output_value
                     evaluated_gates.add(gate)
             for wire in self.wires:
-                if wire.input_wire and wire.input_wire._future_value is not None:
-                    wire._future_value = wire.input_wire._future_value
+                if wire.input_wire and wire.input_wire.future_value is not None:
+                    wire.future_value = wire.input_wire.future_value
 
     def _remove_updaters(self, scene: Scene):
         for wire in self.wires:
