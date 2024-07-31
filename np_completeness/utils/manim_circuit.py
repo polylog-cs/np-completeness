@@ -57,7 +57,8 @@ class ManimGate(VMobject):
 
     def animate_to_value(self, value: bool | None) -> Animation:
         new_gate = ManimGate(self.gate, value)
-        return self.animate.become(new_gate)
+        # need to type: ignore because of Manim magic
+        return self.animate.become(new_gate)  # type: ignore[reportReturnType]
 
 
 class ManimWire(VMobject):
