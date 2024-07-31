@@ -139,6 +139,7 @@ WIRE_WIDTH = 10
 GATE_TEXT_RATIO = 0.4
 GATE_HORIZONTAL_SPACING = 1.5
 GATE_VERTICAL_SPACING = 1
+DEFAULT_GATE_LENGTH = 0.5
 
 
 def get_wire_color(value: bool | None) -> str:

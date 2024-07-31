@@ -6,6 +6,8 @@ import numpy as np
 from manim.typing import InternalPoint3D, Point2D, Point3D
 from pydantic import BaseModel
 
+from np_completeness.utils.util_general import DEFAULT_GATE_LENGTH
+
 GateVisualType = Literal["default", "constant", "knot", "and", "or"]
 
 
@@ -14,7 +16,7 @@ class Gate:
         self,
         truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
         position: Point3D | Point2D,
-        length: float = 1,
+        length: float = DEFAULT_GATE_LENGTH,
         visual_type: GateVisualType = "default",
     ):
         self.truth_table = truth_table

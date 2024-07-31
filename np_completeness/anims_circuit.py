@@ -5,7 +5,7 @@ from manim.typing import InternalPoint3D
 
 # Imported for the side effect of changing the default colors
 from np_completeness.utils.circuit_example import make_example_circuit
-from np_completeness.utils.manim_circuit import FillWire, ManimCircuit
+from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.old_circuit import OldCircuit
 from np_completeness.utils.old_gate import AndGate
 from np_completeness.utils.old_wire import OldWire
@@ -174,31 +174,6 @@ class ExampleCircuitScene(Scene):
         self.add(manim_circuit)
         self.wait()
 
-        self.play(
-            AnimationGroup(
-                *[
-                    Wait(1.0),
-                    FillWire(manim_circuit.wires[4], run_time=1.0),
-                ],
-                lag_ratio=1.0,
-                run_time=2.0,
-            ),
-            AnimationGroup(
-                *[
-                    Wait(0.3),
-                    FillWire(manim_circuit.wires[3], run_time=1.0),
-                ],
-                lag_ratio=1.0,
-                run_time=1.3,
-            ),
-            AnimationGroup(
-                *[
-                    Wait(0.7),
-                    # manim_circuit.gates[0].animate.set_color(RED),
-                    manim_circuit.gates[0].animate_to_value(True),
-                ],
-                lag_ratio=1.0,
-                run_time=1.3,
-            ),
-        )
+        self.play(manim_circuit.animate_evaluation())
+
         self.wait()

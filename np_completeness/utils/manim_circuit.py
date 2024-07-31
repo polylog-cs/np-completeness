@@ -55,7 +55,7 @@ class ManimGate(VMobject):
 
             self.add(self.rect, self.text)
 
-    def animate_to_value(self, value: bool) -> Animation:
+    def animate_to_value(self, value: bool | None) -> Animation:
         new_gate = ManimGate(self.gate, value)
         return self.animate.become(new_gate)
 
@@ -106,17 +106,63 @@ class ManimCircuit(VGroup):
         self.circuit = circuit
         evaluation = circuit.evaluate()
 
-        self.gates = VGroup(*[ManimGate(gate) for gate in self.circuit.gates.values()])
+        self.gates = {
+            name: ManimGate(gate) for name, gate in self.circuit.gates.items()
+        }
+        self.wires = {
+            (wire_start, wire_end): ManimWire(
+                self.circuit.gates[wire_start].position,
+                self.circuit.gates[wire_end].position,
+                evaluation.get_wire_value(wire_start, wire_end),
+            )
+            for wire_start, wire_end in self.circuit.wires
+        }
 
-        self.wires = VGroup(
-            *[
-                ManimWire(
-                    self.circuit.gates[wire_start].position,
-                    self.circuit.gates[wire_end].position,
-                    evaluation.get_wire_value(wire_start, wire_end),
-                )
-                for wire_start, wire_end in self.circuit.wires
-            ]
-        )
         # Add wires first so they are behind the gates
-        self.add(self.wires, self.gates)
+        self.add(*self.wires.values(), *self.gates.values())
+
+    def animate_evaluation(self) -> AnimationGroup:
+        evaluation = self.circuit.evaluate()
+        animations = []
+
+        for (wire_start, wire_end), manim_wire in self.wires.items():
+            start_time = (
+                evaluation.gate_evaluations[wire_start].reach_time
+                + self.circuit.gates[wire_start].length
+            )
+            duration = self.circuit.get_wire_length(wire_start, wire_end)
+
+            # A complicated Manim construction that says "wait for start_time seconds,
+            # start filling the wire and end at end_time seconds"
+            animations.append(
+                AnimationGroup(
+                    *[
+                        Wait(start_time),
+                        FillWire(manim_wire, run_time=duration),
+                    ],
+                    lag_ratio=1.0,
+                    run_time=start_time + duration,
+                )
+            )
+
+        for gate_name, manim_gate in self.gates.items():
+            gate_evaluation = evaluation.gate_evaluations[gate_name]
+            start_time = gate_evaluation.reach_time
+            duration = self.circuit.gates[gate_name].length
+
+            animations.append(
+                AnimationGroup(
+                    *[
+                        Wait(start_time),
+                        manim_gate.animate_to_value(
+                            evaluation.get_simplified_value(gate_name)
+                        ),
+                    ],
+                    lag_ratio=1.0,
+                    run_time=start_time + duration,
+                )
+            )
+
+        # These all get played "simultaneously" but there are delays internal to the
+        # individual animations
+        return AnimationGroup(*animations)

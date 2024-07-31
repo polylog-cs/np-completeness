@@ -44,6 +44,26 @@ class CircuitEvaluation:
         # Convenience method for symmetry with get_gate_outputs()
         return self.gate_evaluations[name].input_values
 
+    def get_simplified_value(self, name: str) -> bool | None:
+        """Returns a single value representing the gate's output.
+
+        Multi-output gates are simplified to a single value, using None
+        if there's ambiguity.
+        """
+        gate_outputs = self.get_gate_outputs(name)
+
+        match self.get_gate_outputs(name):
+            case (single_output,):
+                return single_output
+            case _:
+                # Multi-output gate
+                if all(gate_outputs):
+                    return True
+                elif all(not output for output in gate_outputs):
+                    return False
+                else:
+                    return None
+
 
 class Circuit:
     def __init__(self):
@@ -147,7 +167,14 @@ class Circuit:
             if n_inputs_done[name] == self.gates[name].n_inputs:
                 for output_name in self.get_successors(name):
                     event_queue.put(
-                        (time + self.get_wire_length(name, output_name), output_name)
+                        (
+                            time
+                            + self.get_wire_length(name, output_name)
+                            # This is when the wire starts filling,
+                            # so we add the gate's length
+                            + self.gates[name].length,
+                            output_name,
+                        )
                     )
 
                 gate_inputs = self.get_predecessors(name)
