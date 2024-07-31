@@ -1,7 +1,11 @@
+import logging
 import random
+import sys
 
+import manim
 from manim import *
 from manim.typing import InternalPoint3D
+from rich.logging import RichHandler
 
 ############### DEFAULT OPTIONS
 
@@ -123,6 +127,34 @@ BACKGROUND_COLOR_DARK = BASE02
 BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
 
 config.max_files_cached = 1000
+
+
+def disable_rich_logging():
+    """Disable Manim's Rich-based logger because it's annoying.
+
+    Manim uses the Python package Rich to format its logs.
+    It tries to split lines nicely, but then it also splits file paths and then you can't
+    command-click them to open them in the terminal.
+    """
+    # It seems that manim only has the rich handler, but let's remove it specifically
+    # in case any file handlers are added under some circumstances.
+    for handler in manim.logger.handlers:
+        if isinstance(handler, RichHandler):
+            manim.logger.handlers.remove(handler)
+
+    ANSI_DARK_GRAY = "\033[1;30m"
+    ANSI_END = "\033[0m"
+
+    # Add a new handler with a given format. Note that the removal above is still needed
+    # because otherwise we get two copies of the same log messages.
+    logging.basicConfig(
+        format=f"{ANSI_DARK_GRAY}%(asctime)s %(levelname)s{ANSI_END} %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+
+
+disable_rich_logging()
 
 #### Video-specific
 
