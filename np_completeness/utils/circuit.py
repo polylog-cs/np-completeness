@@ -1,21 +1,17 @@
+from __future__ import annotations
+
 from queue import PriorityQueue
 
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from manim.typing import Point2D
-from pydantic import BaseModel
 
-from np_completeness.utils.gate import Gate
+from np_completeness.utils.gate import Gate, GateEvaluation
 from np_completeness.utils.util_general import (
     GATE_HEIGHT,
     get_wire_color,
 )
-
-
-class GateEvaluation(BaseModel):
-    input_values: tuple[bool, ...]
-    reach_time: float
 
 
 class CircuitEvaluation:
@@ -43,6 +39,10 @@ class CircuitEvaluation:
     def get_gate_outputs(self, name: str) -> tuple[bool, ...]:
         input_values = self.gate_evaluations[name].input_values
         return self.circuit.gates[name].truth_table[input_values]
+
+    def get_gate_inputs(self, name: str) -> tuple[bool, ...]:
+        # Convenience method for symmetry with get_gate_outputs()
+        return self.gate_evaluations[name].input_values
 
 
 class Circuit:
@@ -212,11 +212,6 @@ class Circuit:
             width=2,
         )
 
-        edge_labels = {
-            k: round(v, 2) for k, v in nx.get_edge_attributes(g, "length").items()
-        }
-        nx.draw_networkx_edge_labels(g, positions, edge_labels=edge_labels)
-
         plt.show()
 
     def get_wire_length(self, wire_start: str, wire_end: str) -> float:
@@ -225,3 +220,17 @@ class Circuit:
         )
         # Round for legibility when debugging.
         return round(float(distance), 2)
+
+    def reverse(self) -> Circuit:
+        evaluation = self.evaluate()
+
+        reversed = Circuit()
+        reversed.gates = {
+            name: gate.invert(evaluation.gate_evaluations[name])
+            for name, gate in self.gates.items()
+        }
+
+        reversed.wires = [(wire_end, wire_start) for wire_start, wire_end in self.wires]
+
+        reversed.check()
+        return reversed

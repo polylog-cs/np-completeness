@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import numpy as np
 from manim.typing import InternalPoint3D, Point2D, Point3D
+from pydantic import BaseModel
 
 
 class Gate:
@@ -50,6 +53,21 @@ class Gate:
         self.check_truth_table()
         return len(list(self.truth_table.values())[0])
 
+    def invert(self, gate_evaluation: GateEvaluation) -> Gate:
+        input_values = gate_evaluation.input_values
+        output_values = self.truth_table[input_values]
+
+        return Gate(
+            # The only supported input value for the inverted gate
+            # is the actual output value that we got. This is because
+            # gates will usually be non-invertible - for example, if
+            # we have an AND gate that had False as the output, we don't
+            # know what the inputs were (which is why running circuits
+            # backwards is hard).
+            truth_table={output_values: input_values},
+            position=self.position.copy(),
+        )
+
     @staticmethod
     def make_knot(n_inputs: int, n_outputs: int, position: InternalPoint3D):
         # A mix of True and False values is not supported.
@@ -58,6 +76,11 @@ class Gate:
             tuple([True] * n_inputs): tuple([True] * n_outputs),
         }
         return Gate(truth_table, position, length=0)
+
+
+class GateEvaluation(BaseModel):
+    input_values: tuple[bool, ...]
+    reach_time: float
 
 
 def normalize_position(

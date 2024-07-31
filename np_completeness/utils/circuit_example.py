@@ -28,22 +28,22 @@ def make_example_circuit() -> Circuit:
     for i, out_value in enumerate([False, True, True]):
         circuit.add_gate(
             f"input_{i}",
-            Gate(truth_table={(): (out_value,)}, position=np.array([i, 1, 0])),
+            Gate(truth_table={(): (out_value,)}, position=np.array([i, 2, 0])),
         )
 
     for i in range(2):
         circuit.add_gate(
             f"output_{i}",
-            Gate.make_knot(1, 0, np.array([i, -3, 0])),
+            Gate.make_knot(1, 0, np.array([i, -6, 0])),
         )
 
     circuit.add_gate(
-        "and_gate", Gate(truth_table=AND_TABLE, position=np.array([1, 0, 0]))
+        "and_gate", Gate(truth_table=AND_TABLE, position=np.array([1.5, 0, 0]))
     )
     circuit.add_gate(
-        "or_gate", Gate(truth_table=OR_TABLE, position=np.array([0, -1, 0]))
+        "or_gate", Gate(truth_table=OR_TABLE, position=np.array([0.5, -2, 0]))
     )
-    circuit.add_gate("knot", Gate.make_knot(1, 2, np.array([1, -2, 0])))
+    circuit.add_gate("knot", Gate.make_knot(1, 2, np.array([1, -4, 0])))
 
     circuit.wires = [
         ("input_0", "or_gate"),
@@ -61,5 +61,6 @@ def make_example_circuit() -> Circuit:
 
 if __name__ == "__main__":
     circuit = make_example_circuit()
+    # evaluation = circuit.evaluate()
+    circuit = circuit.reverse()
     evaluation = circuit.evaluate()
-    circuit.display_graph()
