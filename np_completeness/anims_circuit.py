@@ -6,13 +6,13 @@ from manim.typing import InternalPoint3D
 # Imported for the side effect of changing the default colors
 from np_completeness.utils.old_circuit import OldCircuit
 from np_completeness.utils.old_gate import AndGate
+from np_completeness.utils.old_wire import OldWire
 from np_completeness.utils.util_general import (
     GATE_HEIGHT,
     GATE_HORIZONTAL_SPACING,
     GATE_VERTICAL_SPACING,
     GATE_WIDTH,
 )
-from np_completeness.utils.old_wire import OldWire
 
 
 def make_multiplication_circuit() -> OldCircuit:
@@ -166,11 +166,8 @@ class CircuitScene(Scene):
 
 
 if __name__ == "__main__":
+    pass
     # scene = CircuitScene()
     # scene.render()
 
     # circuit = make_multiplication_circuit()
-
-    circuit
-
-    circuit.compute_timing_forward().pretty_print()

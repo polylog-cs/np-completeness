@@ -148,5 +148,3 @@ def get_wire_color(value: bool | None) -> str:
             return WIRE_COLOR_FALSE
         case None:
             return WIRE_COLOR_NONE
-        case _:
-            raise ValueError(f"Invalid {value=}")

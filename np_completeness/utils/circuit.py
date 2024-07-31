@@ -1,31 +1,18 @@
-import networkx as nx
+from queue import PriorityQueue
 
-from manim.typing import InternalPoint3D, Point3D, Point2D
-import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
+from manim.typing import Point2D
+from pydantic import BaseModel
 
+from np_completeness.utils.gate import Gate
 from np_completeness.utils.util_general import GATE_HEIGHT
 
 
-class Gate:
-    def __init__(
-        self,
-        truth_table: dict[tuple[bool], tuple[bool]],
-        position: Point3D | Point2D,
-        length: float = 1,
-    ):
-        self.truth_table = truth_table
-        self.position: InternalPoint3D = normalize_position(position)
-        self.length = length
-
-    @staticmethod
-    def make_knot(n_inputs: int, n_outputs: int, position: InternalPoint3D):
-        # A mix of True and False values is not supported.
-        truth_table = {
-            tuple([False] * n_inputs): tuple([False] * n_outputs),
-            tuple([True] * n_inputs): tuple([True] * n_outputs),
-        }
-        return Gate(truth_table, position, length=0)
+class GateResult(BaseModel):
+    input_values: tuple[bool, ...]
+    reach_time: float
 
 
 class Circuit:
@@ -52,7 +39,37 @@ class Circuit:
                         f"Invalid gate id: {gate_id}. Available: {self.gates.keys()}"
                     )
 
-    def to_networkx(self) -> tuple[nx.DiGraph, dict[str, Point2D]]:
+    def get_gate_inputs(self, name: str) -> list[str]:
+        """Return the gates that are inputs to the given gate, in order.
+
+        The order matters for gates that are not commutative.
+        """
+        relevant_wires = [wire for wire in self.wires if wire[1] == name]
+
+        if len(relevant_wires) != self.gates[name].n_inputs:
+            raise ValueError(
+                f"Gate {name} has {self.gates[name].n_inputs} inputs, but got "
+                f"{len(relevant_wires)} wires"
+            )
+
+        return [wire[0] for wire in relevant_wires]
+
+    def get_gate_outputs(self, name: str) -> list[str]:
+        """Return the gates that are outputs to the given gate, in order.
+
+        The order matters for gates with multiple outputs that are not commutative.
+        """
+        relevant_wires = [wire for wire in self.wires if wire[0] == name]
+
+        if len(relevant_wires) != self.gates[name].n_outputs:
+            raise ValueError(
+                f"Gate {name} has {self.gates[name].n_outputs} outputs, but got "
+                f"{len(relevant_wires)} wires"
+            )
+
+        return [wire[1] for wire in relevant_wires]
+
+    def to_networkx(self) -> tuple[nx.DiGraph, dict[str, Point2D]]:  # type: ignore[reportMissingTypeArgument]
         g = nx.DiGraph()
 
         positions = {}
@@ -79,6 +96,62 @@ class Circuit:
 
         return g, positions
 
+    def get_wire_value(
+        self, wire_start: str, wire_end: str, input_values: tuple[bool, ...]
+    ) -> bool:
+        """Get the value of the wire from wire_start to wire_end.
+
+        Args:
+            wire_start: The name of the gate where the wire starts.
+            wire_end: The name of the gate where the wire ends.
+            input_values: The values of the inputs to `wire_start`.
+        """
+        truth_table = self.gates[wire_start].truth_table
+        outputs = truth_table[input_values]
+        output_index = self.get_gate_outputs(wire_start).index(wire_end)
+
+        return outputs[output_index]
+
+    def evaluate(self) -> dict[str, GateResult]:
+        """Compute the gates' values and reach times."""
+        # (reach time, node name)
+        event_queue: PriorityQueue[tuple[float, str]] = PriorityQueue()
+        n_inputs_done: dict[str, int] = {name: 0 for name in self.gates}
+        evaluation: dict[str, GateResult] = {}
+
+        for name, gate in self.gates.items():
+            # Start from the nodes that have no inputs
+            if gate.n_inputs == 0:
+                event_queue.put((0, name))
+                n_inputs_done[name] = -1
+
+        while not event_queue.empty():
+            time, name = event_queue.get()
+            n_inputs_done[name] += 1
+
+            # If we've already visited from all of its inputs
+            if n_inputs_done[name] == self.gates[name].n_inputs:
+                for output_name in self.get_gate_outputs(name):
+                    event_queue.put(
+                        (time + self.get_wire_length(name, output_name), output_name)
+                    )
+
+                gate_inputs = self.get_gate_inputs(name)
+                input_values = []
+                for input_name in gate_inputs:
+                    value = self.get_wire_value(
+                        wire_start=input_name,
+                        wire_end=name,
+                        input_values=evaluation[input_name].input_values,
+                    )
+                    input_values.append(value)
+
+                evaluation[name] = GateResult(
+                    input_values=tuple(input_values), reach_time=time
+                )
+
+        return evaluation
+
     def display_graph(self):
         g, positions = self.to_networkx()
 
@@ -93,29 +166,8 @@ class Circuit:
         plt.show()
 
     def get_wire_length(self, wire_start: str, wire_end: str) -> float:
-        return np.linalg.norm(
+        distance = np.linalg.norm(
             self.gates[wire_start].position - self.gates[wire_end].position
         )
-
-
-def normalize_position(
-    position: Point3D | Point2D,
-) -> InternalPoint3D:
-    if isinstance(position, tuple):
-        if len(position) == 2:
-            position = np.array([*position, 0])
-        elif len(position) == 3:
-            position = np.array(position)
-        else:
-            raise ValueError(f"Invalid position: {position}")
-    elif isinstance(position, np.ndarray):
-        if position.shape == (2,):
-            position = np.array([*position, 0])
-        elif position.shape == (3,):
-            pass
-        else:
-            raise ValueError(f"Invalid position: {position}")
-    else:
-        raise ValueError(f"Invalid position: {position}")
-
-    return position.astype(np.float64)
+        # Round for legibility when debugging.
+        return round(float(distance), 2)

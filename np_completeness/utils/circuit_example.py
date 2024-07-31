@@ -1,6 +1,7 @@
 import numpy as np
-from np_completeness.utils.circuit import Circuit, Gate
 
+from np_completeness.utils.circuit import Circuit
+from np_completeness.utils.gate import Gate
 
 AND_TABLE = {
     (False, False): (False,),
@@ -18,12 +19,16 @@ OR_TABLE = {
 
 
 def make_example_circuit() -> Circuit:
+    """Make a simple example circuit with 3 inputs and 2 outputs.
+
+    ALSO USED IN TESTS!
+    """
     circuit = Circuit()
 
     for i, out_value in enumerate([False, True, True]):
         circuit.add_gate(
             f"input_{i}",
-            Gate(truth_table={(): out_value}, position=np.array([i, 1, 0])),
+            Gate(truth_table={(): (out_value,)}, position=np.array([i, 1, 0])),
         )
 
     for i in range(2):
@@ -56,4 +61,5 @@ def make_example_circuit() -> Circuit:
 
 if __name__ == "__main__":
     circuit = make_example_circuit()
-    circuit.display_graph()
+    evaluation = circuit.evaluate()
+    print(evaluation)
