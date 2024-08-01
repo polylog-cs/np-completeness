@@ -1,10 +1,12 @@
 import logging
 import random
 import sys
+from typing import TypeAlias
 
 import manim
+import numpy as np
 from manim import *
-from manim.typing import InternalPoint3D
+from manim.typing import InternalPoint3D, Point2D, Point3D
 from rich.logging import RichHandler
 
 ############### DEFAULT OPTIONS
@@ -159,14 +161,14 @@ disable_rich_logging()
 #### Video-specific
 
 
-GATE_WIDTH = 1
-GATE_HEIGHT = 0.5
+GATE_WIDTH = 0.5
+GATE_HEIGHT = 0.3
 SIGNAL_SPEED = 2.5  # units per second
 
 WIRE_COLOR_NONE = BASE00
 WIRE_COLOR_TRUE = YELLOW
 WIRE_COLOR_FALSE = BASE02
-WIRE_WIDTH = 10
+WIRE_WIDTH = 5
 
 GATE_TEXT_RATIO = 0.4
 GATE_HORIZONTAL_SPACING = 1.5
@@ -182,3 +184,25 @@ def get_wire_color(value: bool | None) -> str:
             return WIRE_COLOR_FALSE
         case None:
             return WIRE_COLOR_NONE
+
+
+Point: TypeAlias = Point3D | Point2D
+
+
+def normalize_position(position: Point) -> InternalPoint3D:
+    if isinstance(position, tuple):
+        if len(position) == 2:
+            position = np.array([*position, 0])
+        elif len(position) == 3:
+            position = np.array(position)
+        else:
+            raise ValueError(f"Invalid position: {position}")
+    else:
+        if position.shape == (2,):
+            position = np.array([*position, 0])
+        elif position.shape == (3,):
+            pass
+        else:
+            raise ValueError(f"Invalid position: {position}")
+
+    return position.astype(np.float64)

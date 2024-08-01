@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-import numpy as np
-from manim.typing import InternalPoint3D, Point2D, Point3D
+from manim.typing import InternalPoint3D
 from pydantic import BaseModel
 
-from np_completeness.utils.util_general import DEFAULT_GATE_LENGTH
+from np_completeness.utils.util_general import (
+    DEFAULT_GATE_LENGTH,
+    Point,
+    normalize_position,
+)
 
 GateVisualType = Literal["default", "constant", "knot", "and", "or"]
 
@@ -15,7 +18,7 @@ class Gate:
     def __init__(
         self,
         truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
-        position: Point3D | Point2D,
+        position: Point,
         length: float = DEFAULT_GATE_LENGTH,
         visual_type: GateVisualType = "default",
     ):
@@ -79,7 +82,7 @@ class Gate:
         )
 
     @staticmethod
-    def make_knot(n_inputs: int, n_outputs: int, position: InternalPoint3D):
+    def make_knot(n_inputs: int, n_outputs: int, position: Point):
         # A mix of True and False values is not supported.
         truth_table = {
             tuple([False] * n_inputs): tuple([False] * n_outputs),
@@ -101,24 +104,3 @@ class Gate:
 class GateEvaluation(BaseModel):
     input_values: tuple[bool, ...]
     reach_time: float
-
-
-def normalize_position(
-    position: Point3D | Point2D,
-) -> InternalPoint3D:
-    if isinstance(position, tuple):
-        if len(position) == 2:
-            position = np.array([*position, 0])
-        elif len(position) == 3:
-            position = np.array(position)
-        else:
-            raise ValueError(f"Invalid position: {position}")
-    else:
-        if position.shape == (2,):
-            position = np.array([*position, 0])
-        elif position.shape == (3,):
-            pass
-        else:
-            raise ValueError(f"Invalid position: {position}")
-
-    return position.astype(np.float64)

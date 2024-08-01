@@ -5,13 +5,9 @@ from queue import PriorityQueue
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-from manim.typing import Point2D
 
 from np_completeness.utils.gate import Gate, GateEvaluation
-from np_completeness.utils.util_general import (
-    GATE_HEIGHT,
-    get_wire_color,
-)
+from np_completeness.utils.util_general import Point, get_wire_color
 
 
 class CircuitEvaluation:
@@ -50,21 +46,31 @@ class CircuitEvaluation:
         Multi-output gates are simplified to a single value, using None
         if there's ambiguity.
         """
-        gate_outputs = (
-            self.get_gate_outputs(name) if not reversed else self.get_gate_inputs(name)
-        )
+        gate_inputs = self.get_gate_inputs(name)
+        gate_outputs = self.get_gate_outputs(name)
+
+        if reversed:
+            gate_inputs, gate_outputs = gate_outputs, gate_inputs
+
+        def simplify(values: tuple[bool, ...]) -> bool | None:
+            if not values:
+                return None
+            elif all(values):
+                return True
+            elif all(not value for value in values):
+                return False
+            else:
+                return None
 
         match self.get_gate_outputs(name):
+            case ():
+                # No outputs
+                return simplify(gate_inputs)
             case (single_output,):
                 return single_output
             case _:
                 # Multi-output gate
-                if all(gate_outputs):
-                    return True
-                elif all(not output for output in gate_outputs):
-                    return False
-                else:
-                    return None
+                return simplify(gate_outputs)
 
 
 class Circuit:
@@ -82,6 +88,41 @@ class Circuit:
             raise ValueError(f"Gate name must not contain slashes, got {repr(name)}")
 
         self.gates[name] = gate
+
+    def add_wire(
+        self,
+        wire_start: str,
+        wire_end: str,
+        knot_positions: list[Point] | None = None,
+    ):
+        """Add a wire from `wire_start` to `wire_end`.
+
+        By default, the wire goes directly between the two gates. By adding
+        `knot_positions`, the wire will go through the given points. This is
+        for readability purposes.
+        """
+        gates = [wire_start]
+
+        for knot_position in knot_positions or []:
+            knot_name = self.add_knot(knot_position)
+            gates.append(knot_name)
+
+        gates.append(wire_end)
+
+        for start, end in zip(gates, gates[1:]):
+            self.wires.append((start, end))
+
+    def add_knot(self, position: Point, name: str | None = None) -> str:
+        if name is None:
+            for i in range(len(self.gates) + 1):
+                if name not in self.gates:
+                    break
+                name = f"knot_{i}"
+
+            assert name is not None, "Internal error"
+
+        self.add_gate(name, Gate.make_knot(1, 1, position))
+        return name
 
     def check(self):
         for wire_start, wire_end in self.wires:
@@ -127,22 +168,14 @@ class Circuit:
         positions = {}
 
         for gate in self.gates:
-            g.add_node(f"{gate}/in")
-            g.add_node(f"{gate}/out")
+            g.add_node(gate)
 
-            positions[f"{gate}/in"] = self.gates[gate].position[:2] + np.array(
-                [0, GATE_HEIGHT / 2]
-            )
-            positions[f"{gate}/out"] = self.gates[gate].position[:2] + np.array(
-                [0, -GATE_HEIGHT / 2]
-            )
-
-            g.add_edge(f"{gate}/in", f"{gate}/out", length=self.gates[gate].length)
+            positions[gate] = self.gates[gate].position[:2]
 
         for wire_start, wire_end in self.wires:
             g.add_edge(
-                f"{wire_start}/out",
-                f"{wire_end}/in",
+                wire_start,
+                wire_end,
                 length=self.get_wire_length(wire_start, wire_end),
             )
 
@@ -194,40 +227,42 @@ class Circuit:
 
         return evaluation
 
-    def display_graph(self):
+    def display_graph(self, with_evaluation: bool = True):
         g, positions = self.to_networkx()
-        evaluation = self.evaluate()
+
+        if with_evaluation:
+            evaluation = self.evaluate()
+        else:
+            evaluation = None
 
         node_color = []
-        for node in g.nodes:
-            gate = node.removesuffix("/out").removesuffix("/in")
-            gate_outputs = evaluation.get_gate_outputs(gate)
+        for gate in g.nodes:
+            if evaluation is not None:
+                gate_outputs = evaluation.get_gate_outputs(gate)
 
-            match gate_outputs:
-                case (single_output,):
-                    node_color.append(get_wire_color(single_output))
-                case _:
-                    # Multi-output gate
-                    if all(gate_outputs):
-                        node_color.append(get_wire_color(True))
-                    elif all(not output for output in gate_outputs):
-                        node_color.append(get_wire_color(False))
-                    else:
-                        node_color.append(get_wire_color(None))
+                match gate_outputs:
+                    case (single_output,):
+                        node_color.append(get_wire_color(single_output))
+                    case _:
+                        # Multi-output gate
+                        if all(gate_outputs):
+                            node_color.append(get_wire_color(True))
+                        elif all(not output for output in gate_outputs):
+                            node_color.append(get_wire_color(False))
+                        else:
+                            node_color.append(get_wire_color(None))
+            else:
+                node_color.append(get_wire_color(None))
 
         edge_colors = []
-        for in_node, out_node in g.edges:
-            if in_node.endswith("/in") and out_node.endswith("/out"):
-                # Internal gate edge
-                edge_colors.append(get_wire_color(None))
-                continue
+        for in_gate, out_gate in g.edges:
+            if evaluation is not None:
+                wire_value = evaluation.get_wire_value(
+                    wire_start=in_gate, wire_end=out_gate
+                )
+            else:
+                wire_value = None
 
-            in_gate = in_node.removesuffix("/out")
-            out_gate = out_node.removesuffix("/in")
-
-            wire_value = evaluation.get_wire_value(
-                wire_start=in_gate, wire_end=out_gate
-            )
             edge_colors.append(get_wire_color(wire_value))
 
         plt.figure(figsize=(12, 8))
@@ -263,3 +298,20 @@ class Circuit:
 
         reversed.check()
         return reversed
+
+    def add_outputs(self):
+        """Add output nodes to any gates that don't lead anywhere.
+
+        Useful for debugging.
+        """
+        # Need to make a copy because we're modifying the dictionary
+        gates_to_check = list(self.gates.items())
+
+        for name, gate in gates_to_check:
+            n_outputs = len([wire for wire in self.wires if wire[0] == name])
+            for i in range(gate.n_outputs - n_outputs):
+                self.add_gate(
+                    f"output_{name}_{i}",
+                    Gate.make_knot(1, 0, gate.position + np.array([i * 0.5, -0.5, 0])),
+                )
+                self.add_wire(wire_start=name, wire_end=f"output_{name}_{i}")

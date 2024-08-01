@@ -27,7 +27,7 @@ class ManimGate(VMobject):
             pass  # A knot is not shown at all
         elif gate.visual_type == "constant":
             self.circle = Circle(
-                radius=GATE_HEIGHT / 2,
+                radius=GATE_HEIGHT * 0.3,
                 color=BASE00,
                 fill_color=fill_color,
                 fill_opacity=0.9,
@@ -102,10 +102,14 @@ class FillWire(Animation):
 
 
 class ManimCircuit(VGroup):
-    def __init__(self, circuit: Circuit):
+    def __init__(self, circuit: Circuit, with_evaluation: bool = True):
         super().__init__()
         self.circuit = circuit
-        evaluation = circuit.evaluate()
+
+        if with_evaluation:
+            evaluation = circuit.evaluate()
+        else:
+            evaluation = None
 
         self.gates = {
             name: ManimGate(gate) for name, gate in self.circuit.gates.items()
@@ -114,7 +118,9 @@ class ManimCircuit(VGroup):
             (wire_start, wire_end): ManimWire(
                 self.circuit.gates[wire_start].position,
                 self.circuit.gates[wire_end].position,
-                evaluation.get_wire_value(wire_start, wire_end),
+                evaluation.get_wire_value(wire_start, wire_end)
+                if evaluation
+                else False,
             )
             for wire_start, wire_end in self.circuit.wires
         }
