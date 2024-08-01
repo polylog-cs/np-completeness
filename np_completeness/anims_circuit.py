@@ -189,8 +189,8 @@ class CircuitScene(Scene):
         # manim_circuit.shift(DOWN)
         self.add(manim_circuit)
 
-        self.play(manim_circuit.animate_evaluation())
-        self.wait()
+        self.play(manim_circuit.animate_evaluation(speed=2))
+        self.wait(3)
 
 
 class ExampleCircuitScene(Scene):
