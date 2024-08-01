@@ -60,7 +60,7 @@ def make_multiplication_circuit(a: list[bool], b: list[bool]) -> Circuit:
             gate_position = circuit.gates[gate_name].position
             input_pos = np.array(
                 [
-                    gate_position[0] + (0.15 if symbol == "a" else -0.35),
+                    gate_position[0] + (0.15 if symbol == "a" else -0.2),
                     3.5 - t * 0.5,
                 ]
             )
@@ -171,7 +171,14 @@ def make_multiplication_circuit(a: list[bool], b: list[bool]) -> Circuit:
     # the adder, meaning we need to put them here at the end
     for i in range(n - 1):
         for j in range(n - 1):
-            circuit.add_wire(f"plus_{i}_{j}", f"plus_{i}_{j+1}")
+            circuit.add_wire(
+                f"plus_{i}_{j}",
+                f"plus_{i}_{j+1}",
+                knot_positions=[
+                    circuit.gates[f"plus_{i}_{j}"].position + DOWN * 0.2 + LEFT * 0.2,
+                    circuit.gates[f"plus_{i}_{j+1}"].position + UP * 0.3 + RIGHT * 0.3,
+                ],
+            )
 
     # Some of the adders don't have 3 inputs, add invisible inputs that go to 0
     circuit.add_missing_inputs_and_outputs(visible=False)
