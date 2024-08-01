@@ -55,12 +55,11 @@ class CircuitEvaluation:
         def simplify(values: tuple[bool, ...]) -> bool | None:
             if not values:
                 return None
-            elif all(values):
-                return True
-            elif all(not value for value in values):
-                return False
             else:
-                return None
+                # If any of the values is true, return true. This is not entirely
+                # accurate if the output is e.g. (True, False) but it's clearer visually
+                # than using None because then the gate would look unvisited.
+                return any(values)
 
         match self.get_gate_outputs(name):
             case ():
