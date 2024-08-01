@@ -11,7 +11,7 @@ from np_completeness.utils.util_general import (
     normalize_position,
 )
 
-GateVisualType = Literal["default", "constant", "knot", "and", "or", "+"]
+GateVisualType = Literal["default", "constant", "knot", "invisible", "and", "or", "+"]
 
 
 class Gate:

@@ -6,7 +6,7 @@ from manim.typing import InternalPoint3D
 from np_completeness.utils.circuit import Circuit
 from np_completeness.utils.gate import Gate
 from np_completeness.utils.util_general import (
-    BASE00,
+    BASE01,
     BASE2,
     GATE_HEIGHT,
     GATE_TEXT_RATIO,
@@ -23,14 +23,24 @@ class ManimGate(VMobject):
 
         fill_color = get_wire_color(value)
 
-        if gate.visual_type == "knot":
-            pass  # A knot is not shown at all
+        if gate.visual_type == "invisible":
+            pass
+        elif gate.visual_type == "knot":
+            self.circle = Circle(
+                radius=0.008,
+                color=fill_color,
+                fill_color=fill_color,
+                fill_opacity=1.0,
+            )
+            self.circle.move_to(gate.position)
+
+            self.add(self.circle)
         elif gate.visual_type == "constant":
             self.circle = Circle(
                 radius=GATE_HEIGHT * 0.3,
-                color=BASE00,
+                color=fill_color,
                 fill_color=fill_color,
-                fill_opacity=0.9,
+                fill_opacity=1.0,
             )
             self.circle.move_to(gate.position)
 
@@ -39,8 +49,8 @@ class ManimGate(VMobject):
             self.rect = Rectangle(
                 height=GATE_HEIGHT,
                 width=GATE_WIDTH,
-                fill_opacity=0.9,
-                color=BASE00,
+                fill_opacity=1.0,
+                color=BASE01,
                 fill_color=fill_color,
             )
             self.rect.move_to(gate.position)

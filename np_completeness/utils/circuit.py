@@ -322,7 +322,7 @@ class Circuit:
                         position=(gate.position + np.array([i * 0.5, 0.5, 0]))
                         if visible
                         else gate.position,
-                        visual_type="constant" if visible else "knot",
+                        visual_type="constant" if visible else "invisible",
                     ),
                 )
                 self.add_wire(wire_start=f"input_{name}_{i}", wire_end=name)
@@ -336,7 +336,7 @@ class Circuit:
                         position=(gate.position + np.array([i * 0.5, -0.5, 0]))
                         if visible
                         else gate.position,
-                        visual_type="constant" if visible else "knot",
+                        visual_type="constant" if visible else "invisible",
                     ),
                 )
                 self.add_wire(wire_start=name, wire_end=f"output_{name}_{i}")
