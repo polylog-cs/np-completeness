@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from np_completeness.utils.util_general import (
     DEFAULT_GATE_LENGTH,
-    Point,
+    AnyPoint,
     normalize_position,
 )
 
@@ -18,7 +18,7 @@ class Gate:
     def __init__(
         self,
         truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
-        position: Point,
+        position: AnyPoint,
         length: float = DEFAULT_GATE_LENGTH,
         visual_type: GateVisualType = "default",
     ):
@@ -82,7 +82,7 @@ class Gate:
         )
 
     @staticmethod
-    def make_knot(n_inputs: int, n_outputs: int, position: Point):
+    def make_knot(n_inputs: int, n_outputs: int, position: AnyPoint):
         # A mix of True and False values is not supported.
         truth_table = {
             tuple([False] * n_inputs): tuple([False] * n_outputs),

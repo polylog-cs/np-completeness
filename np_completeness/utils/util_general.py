@@ -186,10 +186,10 @@ def get_wire_color(value: bool | None) -> str:
             return WIRE_COLOR_NONE
 
 
-Point: TypeAlias = Point3D | Point2D
+AnyPoint: TypeAlias = Point3D | Point2D
 
 
-def normalize_position(position: Point) -> InternalPoint3D:
+def normalize_position(position: AnyPoint) -> InternalPoint3D:
     if isinstance(position, tuple):
         if len(position) == 2:
             position = np.array([*position, 0])

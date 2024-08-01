@@ -7,7 +7,7 @@ import networkx as nx
 import numpy as np
 
 from np_completeness.utils.gate import Gate, GateEvaluation
-from np_completeness.utils.util_general import Point, get_wire_color
+from np_completeness.utils.util_general import AnyPoint, get_wire_color
 
 
 class CircuitEvaluation:
@@ -93,7 +93,7 @@ class Circuit:
         self,
         wire_start: str,
         wire_end: str,
-        knot_positions: list[Point] | None = None,
+        knot_positions: list[AnyPoint] | None = None,
     ):
         """Add a wire from `wire_start` to `wire_end`.
 
@@ -112,7 +112,7 @@ class Circuit:
         for start, end in zip(gates, gates[1:]):
             self.wires.append((start, end))
 
-    def add_knot(self, position: Point, name: str | None = None) -> str:
+    def add_knot(self, position: AnyPoint, name: str | None = None) -> str:
         if name is None:
             for i in range(len(self.gates) + 1):
                 if name not in self.gates:
