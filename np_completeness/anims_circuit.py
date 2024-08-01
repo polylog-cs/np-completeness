@@ -173,6 +173,9 @@ def make_multiplication_circuit(a: list[bool], b: list[bool]) -> Circuit:
         for j in range(n - 1):
             circuit.add_wire(f"plus_{i}_{j}", f"plus_{i}_{j+1}")
 
+    # Some of the adders don't have 3 inputs, add invisible inputs that go to 0
+    circuit.add_missing_inputs_and_outputs(visible=False)
+
     circuit.check()
     return circuit
 

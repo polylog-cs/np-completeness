@@ -305,7 +305,7 @@ class Circuit:
         reversed.check()
         return reversed
 
-    def add_missing_inputs_and_outputs(self):
+    def add_missing_inputs_and_outputs(self, visible: bool = True):
         """Add input/output nodes to any gates that don't lead anywhere.
 
         Useful for debugging.
@@ -318,7 +318,13 @@ class Circuit:
             for i in range(gate.n_inputs - n_inputs):
                 self.add_gate(
                     f"input_{name}_{i}",
-                    Gate.make_knot(0, 1, gate.position + np.array([i * 0.5, 0.5, 0])),
+                    Gate(
+                        truth_table={(): (False,)},
+                        position=(gate.position + np.array([i * 0.5, 0.5, 0]))
+                        if visible
+                        else gate.position,
+                        visual_type="constant" if visible else "knot",
+                    ),
                 )
                 self.add_wire(wire_start=f"input_{name}_{i}", wire_end=name)
 
@@ -326,7 +332,13 @@ class Circuit:
             for i in range(gate.n_outputs - n_outputs):
                 self.add_gate(
                     f"output_{name}_{i}",
-                    Gate.make_knot(1, 0, gate.position + np.array([i * 0.5, -0.5, 0])),
+                    Gate(
+                        truth_table={(False,): (), (True,): ()},
+                        position=(gate.position + np.array([i * 0.5, -0.5, 0]))
+                        if visible
+                        else gate.position,
+                        visual_type="constant" if visible else "knot",
+                    ),
                 )
                 self.add_wire(wire_start=name, wire_end=f"output_{name}_{i}")
 
