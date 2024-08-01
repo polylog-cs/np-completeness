@@ -101,6 +101,11 @@ class Circuit:
         `knot_positions`, the wire will go through the given points. This is
         for readability purposes.
         """
+        if wire_start not in self.gates:
+            raise ValueError(f"Invalid wire start: {wire_start}")
+        if wire_end not in self.gates:
+            raise ValueError(f"Invalid wire end: {wire_end}")
+
         gates = [wire_start]
 
         for knot_position in knot_positions or []:
@@ -114,6 +119,7 @@ class Circuit:
 
     def add_knot(self, position: AnyPoint, name: str | None = None) -> str:
         if name is None:
+            name = f"knot_0"
             for i in range(len(self.gates) + 1):
                 if name not in self.gates:
                     break
@@ -299,8 +305,8 @@ class Circuit:
         reversed.check()
         return reversed
 
-    def add_outputs(self):
-        """Add output nodes to any gates that don't lead anywhere.
+    def add_missing_inputs_and_outputs(self):
+        """Add input/output nodes to any gates that don't lead anywhere.
 
         Useful for debugging.
         """
@@ -308,6 +314,14 @@ class Circuit:
         gates_to_check = list(self.gates.items())
 
         for name, gate in gates_to_check:
+            n_inputs = len([wire for wire in self.wires if wire[1] == name])
+            for i in range(gate.n_inputs - n_inputs):
+                self.add_gate(
+                    f"input_{name}_{i}",
+                    Gate.make_knot(0, 1, gate.position + np.array([i * 0.5, 0.5, 0])),
+                )
+                self.add_wire(wire_start=f"input_{name}_{i}", wire_end=name)
+
             n_outputs = len([wire for wire in self.wires if wire[0] == name])
             for i in range(gate.n_outputs - n_outputs):
                 self.add_gate(
@@ -315,3 +329,29 @@ class Circuit:
                     Gate.make_knot(1, 0, gate.position + np.array([i * 0.5, -0.5, 0])),
                 )
                 self.add_wire(wire_start=name, wire_end=f"output_{name}_{i}")
+
+
+AND_TABLE = {
+    (False, False): (False,),
+    (False, True): (False,),
+    (True, False): (False,),
+    (True, True): (True,),
+}
+OR_TABLE = {
+    (False, False): (False,),
+    (False, True): (True,),
+    (True, False): (True,),
+    (True, True): (True,),
+}
+
+# the output is (lower bit, upper bit = carry)
+ADD_TABLE = {
+    (False, False, False): (False, False),
+    (False, False, True): (True, False),
+    (False, True, False): (True, False),
+    (False, True, True): (False, True),
+    (True, False, False): (True, False),
+    (True, False, True): (False, True),
+    (True, True, False): (False, True),
+    (True, True, True): (True, True),
+}

@@ -11,7 +11,7 @@ from np_completeness.utils.util_general import (
     normalize_position,
 )
 
-GateVisualType = Literal["default", "constant", "knot", "and", "or"]
+GateVisualType = Literal["default", "constant", "knot", "and", "or", "+"]
 
 
 class Gate:
@@ -83,11 +83,15 @@ class Gate:
 
     @staticmethod
     def make_knot(n_inputs: int, n_outputs: int, position: AnyPoint):
-        # A mix of True and False values is not supported.
-        truth_table = {
-            tuple([False] * n_inputs): tuple([False] * n_outputs),
-            tuple([True] * n_inputs): tuple([True] * n_outputs),
-        }
+        if n_inputs == 0:
+            # For constants, always output False.
+            truth_table = {(): tuple([False] * n_outputs)}
+        else:
+            # A mix of True and False values is not supported.
+            truth_table = {
+                tuple([False] * n_inputs): tuple([False] * n_outputs),
+                tuple([True] * n_inputs): tuple([True] * n_outputs),
+            }
 
         # No inputs or no outputs means it's a constant at the beginning or end
         # of the graph

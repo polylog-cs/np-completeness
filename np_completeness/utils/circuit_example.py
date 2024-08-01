@@ -1,21 +1,7 @@
 import numpy as np
 
-from np_completeness.utils.circuit import Circuit
+from np_completeness.utils.circuit import AND_TABLE, OR_TABLE, Circuit
 from np_completeness.utils.gate import Gate
-
-AND_TABLE = {
-    (False, False): (False,),
-    (False, True): (False,),
-    (True, False): (False,),
-    (True, True): (True,),
-}
-
-OR_TABLE = {
-    (False, False): (False,),
-    (False, True): (True,),
-    (True, False): (True,),
-    (True, True): (True,),
-}
 
 
 def make_example_circuit() -> Circuit:
