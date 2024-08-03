@@ -1,5 +1,5 @@
 from np_completeness.utils.circuit import CircuitEvaluation
-from np_completeness.utils.circuit_example import make_example_circuit
+from np_completeness.utils.specific_circuits import make_example_circuit
 
 
 def test_evaluate():
