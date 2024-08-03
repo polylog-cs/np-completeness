@@ -15,6 +15,9 @@ from np_completeness.utils.specific_circuits import (
         (1, 1),
         (3, 1),
         (3, 5),
+        (2**MULTIPLICATION_CIRCUIT_SIZE - 1, 1),
+        (2**MULTIPLICATION_CIRCUIT_SIZE - 1, 3),
+        (2**MULTIPLICATION_CIRCUIT_SIZE - 1, 2**MULTIPLICATION_CIRCUIT_SIZE - 1),
     ],
 )
 def test_multiplication_circuit(a: int, b: int):

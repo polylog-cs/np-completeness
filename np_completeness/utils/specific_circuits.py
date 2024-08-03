@@ -214,11 +214,11 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
 
         circuit.add_gate(gate_name, Gate.make_knot(1, 0, position))
         from_i = min(i - 1, n - 2)
-        # The `min` on this one is just because the last row's adder leads
-        # to two outputs.
-        from_j = min(i - 1 - from_i, n - 1)
+        from_j = i - 1 - from_i
 
-        if i > 0:
+        # The first output gets its input without any adders, the last
+        # output gets it from the carry of the last adder (wire added later)
+        if i > 0 and i < n * 2 - 1:
             circuit.add_wire(f"plus_{from_i}_{from_j}", gate_name)
 
     # for n rows, there are n-1 adders, so the first row is special
@@ -243,13 +243,20 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
     # carry wires - note these must be the second and not the first output of
     # the adder, meaning we need to put them here at the end
     for i in range(n - 1):
-        for j in range(n - 1):
+        for j in range(n):
+            if i == n - 2 and j == n - 1:
+                to = f"output_{n*2-1}"
+            else:
+                to = f"plus_{i}_{j+1}" if j < n - 1 else f"plus_{i+1}_{j}"
+
             circuit.add_wire(
                 f"plus_{i}_{j}",
-                f"plus_{i}_{j+1}",
+                to,
                 knot_positions=[
                     circuit.gates[f"plus_{i}_{j}"].position + DOWN * 0.2 + LEFT * 0.2,
-                    circuit.gates[f"plus_{i}_{j+1}"].position + UP * 0.3 + RIGHT * 0.3,
+                    circuit.gates[f"plus_{i}_{j}"].position
+                    + UP * 0.3
+                    + RIGHT * (0.3 - GATE_HORIZONTAL_SPACING),
                 ],
             )
 
