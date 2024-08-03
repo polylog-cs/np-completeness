@@ -17,7 +17,9 @@ class CircuitScene(Scene):
         disable_rich_logging()
 
         circuit = make_multiplication_circuit(
-            a=[True, False, True, True], b=[False, True, False, True]
+            # a=[True, False, True, True], b=[False, True, False, True]
+            a=1,
+            b=1,
         )
         circuit.add_missing_inputs_and_outputs()
         manim_circuit = ManimCircuit(circuit, with_evaluation=True)

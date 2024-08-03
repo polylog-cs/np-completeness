@@ -83,9 +83,31 @@ def add_snake_wire(
     )
 
 
-def make_multiplication_circuit(a: list[bool], b: list[bool]) -> Circuit:
+MULTIPLICATION_CIRCUIT_SIZE = 4
+
+
+def to_binary(x: int, n_digits: int = MULTIPLICATION_CIRCUIT_SIZE) -> list[bool]:
+    """Convert an integer to a binary list of booleans, least significant bit first.
+
+    Example:
+    >>> to_binary(2, n_digits=4)
+    [False, True, False, False]
+    """
+    res = [bool(int(digit)) for digit in bin(x)[2:]][::-1]
+    while len(res) < n_digits:
+        res.append(False)
+
+    return res
+
+
+def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Circuit:
     circuit = Circuit()
-    n = 4
+    n = MULTIPLICATION_CIRCUIT_SIZE
+
+    if isinstance(a, int):
+        a = to_binary(a, n_digits=n)
+    if isinstance(b, int):
+        b = to_binary(b, n_digits=n)
 
     # Define the AND gates with appropriate positions
     for i in range(n):
