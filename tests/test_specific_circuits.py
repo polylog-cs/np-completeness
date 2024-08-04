@@ -1,7 +1,9 @@
 import pytest
 
+from np_completeness.utils.circuit import ADD_TABLE
 from np_completeness.utils.specific_circuits import (
     MULTIPLICATION_CIRCUIT_SIZE,
+    make_adder_circuit,
     make_multiplication_circuit,
     to_binary,
 )
@@ -32,3 +34,15 @@ def test_multiplication_circuit(a: int, b: int):
         ]
 
         assert expected == actual, f"Expected {expected}, got {actual}"
+
+
+def test_adder_circuit():
+    for inputs, (lower_bit, upper_bit) in ADD_TABLE.items():
+        circuit = make_adder_circuit(list(inputs))
+        evaluation = circuit.evaluate()
+        assert (
+            evaluation.get_simplified_value("lower_output") == lower_bit
+        ), f"Wrong lower bit for {inputs}"
+        assert (
+            evaluation.get_simplified_value("upper_output") == upper_bit
+        ), f"Wrong upper bit for {inputs}"

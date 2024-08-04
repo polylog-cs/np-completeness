@@ -11,7 +11,9 @@ from np_completeness.utils.util_general import (
     normalize_position,
 )
 
-GateVisualType = Literal["default", "constant", "knot", "invisible", "and", "or", "+"]
+GateVisualType = Literal[
+    "default", "constant", "knot", "invisible", "not", "and", "or", "+"
+]
 
 
 class Gate:
@@ -82,7 +84,7 @@ class Gate:
         )
 
     @staticmethod
-    def make_knot(n_inputs: int, n_outputs: int, position: AnyPoint):
+    def make_knot(position: AnyPoint, n_inputs: int = 1, n_outputs: int = 1):
         if n_inputs == 0:
             # For constants, always output False.
             truth_table = {(): tuple([False] * n_outputs)}

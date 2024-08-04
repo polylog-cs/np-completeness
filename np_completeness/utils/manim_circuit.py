@@ -135,8 +135,15 @@ class ManimCircuit(VGroup):
             for wire_start, wire_end in self.circuit.wires
         }
 
-        # Add wires first so they are behind the gates
-        self.add(*self.wires.values(), *self.gates.values())
+        # TODO(vv): some knots appear before AND gates and this `bg_gates` doesn't
+        #   seem to help. Why?
+        bg_gates = ["knot", "invisible"]
+        self.add(
+            # Add wires first so they are behind the gates
+            *self.wires.values(),
+            *[g for g in self.gates.values() if g.gate.visual_type in bg_gates],
+            *[g for g in self.gates.values() if g.gate.visual_type not in bg_gates],
+        )
 
     def animate_evaluation(
         self, reversed: bool = False, speed: float = 1

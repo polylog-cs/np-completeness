@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from queue import PriorityQueue
 
 import matplotlib.pyplot as plt
@@ -8,7 +9,11 @@ import numpy as np
 from manim.typing import InternalPoint3D
 
 from np_completeness.utils.gate import Gate, GateEvaluation
-from np_completeness.utils.util_general import AnyPoint, get_wire_color
+from np_completeness.utils.util_general import (
+    AnyPoint,
+    get_wire_color,
+    normalize_position,
+)
 
 
 class CircuitEvaluation:
@@ -79,15 +84,14 @@ class Circuit:
         self.gates: dict[str, Gate] = {}
         self.wires: list[tuple[str, str]] = []
 
-    def add_gate(self, name: str, gate: Gate):
+    def add_gate(self, name: str, gate: Gate) -> str:
+        """Add a gate and, for convenience, return its name."""
         if name in self.gates:
             raise ValueError(f"Gate with name {repr(name)} already exists")
 
-        if "/" in name:
-            # This is because when we convert to networkx
-            raise ValueError(f"Gate name must not contain slashes, got {repr(name)}")
-
         self.gates[name] = gate
+
+        return name
 
     def add_wire(
         self,
@@ -109,6 +113,12 @@ class Circuit:
         gates = [wire_start]
 
         for knot_position in knot_positions or []:
+            if np.array_equal(
+                normalize_position(knot_position), self.gates[gates[-1]].position
+            ):
+                # The knot is in the same place as the last one, so it's not needed
+                continue
+
             knot_name = self.add_knot(knot_position)
             gates.append(knot_name)
 
@@ -117,7 +127,13 @@ class Circuit:
         for start, end in zip(gates, gates[1:]):
             self.wires.append((start, end))
 
-    def add_knot(self, position: AnyPoint, name: str | None = None) -> str:
+    def add_knot(
+        self,
+        position: AnyPoint,
+        name: str | None = None,
+        n_inputs: int = 1,
+        n_outputs: int = 1,
+    ) -> str:
         if name is None:
             name = f"knot_0"
             for i in range(len(self.gates) + 1):
@@ -127,8 +143,22 @@ class Circuit:
 
             assert name is not None, "Internal error"
 
-        self.add_gate(name, Gate.make_knot(1, 1, position))
+        self.add_gate(
+            name, Gate.make_knot(position, n_inputs=n_inputs, n_outputs=n_outputs)
+        )
         return name
+
+    def position_of(self, name: str) -> InternalPoint3D:
+        """Get the position of a gate as a [x, y, 0] NumPy array."""
+        return self.gates[name].position
+
+    def x_of(self, name: str) -> float:
+        """Get the X position of a gate."""
+        return self.gates[name].position[0]
+
+    def y_of(self, name: str) -> float:
+        """Get the Y position of a gate."""
+        return self.gates[name].position[1]
 
     def check(self):
         for wire_start, wire_end in self.wires:
@@ -243,22 +273,12 @@ class Circuit:
 
         node_color = []
         for gate in g.nodes:
-            if evaluation is not None:
-                gate_outputs = evaluation.get_gate_outputs(gate)
-
-                match gate_outputs:
-                    case (single_output,):
-                        node_color.append(get_wire_color(single_output))
-                    case _:
-                        # Multi-output gate
-                        if all(gate_outputs):
-                            node_color.append(get_wire_color(True))
-                        elif all(not output for output in gate_outputs):
-                            node_color.append(get_wire_color(False))
-                        else:
-                            node_color.append(get_wire_color(None))
-            else:
-                node_color.append(get_wire_color(None))
+            simplified_value = (
+                evaluation.get_simplified_value(gate)
+                if evaluation is not None
+                else None
+            )
+            node_color.append(get_wire_color(simplified_value))
 
         edge_colors = []
         for in_gate, out_gate in g.edges:
@@ -365,18 +385,33 @@ class Circuit:
         return self
 
 
+def all_inputs(n_inputs: int) -> list[tuple[bool, ...]]:
+    """Return all possible input combinations for `n_inputs`."""
+    return list(itertools.product([False, True], repeat=n_inputs))
+
+
+NOT_TABLE = {
+    (False,): (True,),
+    (True,): (False,),
+}
+
 AND_TABLE = {
     (False, False): (False,),
     (False, True): (False,),
     (True, False): (False,),
     (True, True): (True,),
 }
+
 OR_TABLE = {
     (False, False): (False,),
     (False, True): (True,),
     (True, False): (True,),
     (True, True): (True,),
 }
+
+
+OR3_TABLE = {inputs: (any(inputs),) for inputs in all_inputs(3)}
+
 
 # the output is (lower bit, upper bit = carry)
 ADD_TABLE = {

@@ -2,6 +2,7 @@ from manim import *
 
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import (
+    make_adder_circuit,
     make_example_circuit,
     make_multiplication_circuit,
     to_binary,
@@ -249,8 +250,25 @@ class ExampleCircuitScene(Scene):
         self.wait(2)
 
 
+class AdderCircuitScene(Scene):
+    def construct(self):
+        circuit = make_adder_circuit(inputs=[False, False, True])
+
+        circuit.add_missing_inputs_and_outputs()
+
+        manim_circuit = ManimCircuit(circuit)
+        self.add(manim_circuit)
+        self.wait()
+
+        self.play(manim_circuit.animate_evaluation())
+
+        self.wait(1)
+
+
 if __name__ == "__main__":
-    circuit = make_multiplication_circuit(
-        a=[True, False, True, True], b=[False, True, False, True]
-    )
-    circuit.display_graph(with_evaluation=False)
+    circuit = make_adder_circuit(inputs=[False, False, True])
+
+    with_evaluation = False
+    if with_evaluation:
+        circuit.add_missing_inputs_and_outputs()
+    circuit.display_graph(with_evaluation=with_evaluation)

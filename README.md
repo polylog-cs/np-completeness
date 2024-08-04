@@ -31,4 +31,5 @@ To install pre-commit hooks that check the code for correct formatting etc.:
 ```bash
 pip install pre-commit
 pre-commit install
+pre-commit install --hook pre-push
 ```

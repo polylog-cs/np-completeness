@@ -19,7 +19,7 @@ def default():
     Polygon.set_default(color=RED)
     Text.set_default(color=GRAY)
     Tex.set_default(color=GRAY)
-    VMobject.set_default(color=GRAY) 
+    VMobject.set_default(color=GRAY)
     # SurroundingRectangle.set_default(color = RED)
     # SurroundingRectangle.set_default(fill_color = config.background_color)
     # SurroundingRectangle.set_default(fill_opacity = 1)
@@ -172,6 +172,7 @@ WIRE_COLOR_NONE = BASE00
 WIRE_COLOR_TRUE = YELLOW
 WIRE_COLOR_FALSE = BASE02
 WIRE_WIDTH = 5
+WIRE_TIGHT_SPACING = 0.1
 
 GATE_TEXT_RATIO = 0.4
 GATE_HORIZONTAL_SPACING = 1.2
