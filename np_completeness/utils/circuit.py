@@ -5,6 +5,7 @@ from queue import PriorityQueue
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+from manim.typing import InternalPoint3D
 
 from np_completeness.utils.gate import Gate, GateEvaluation
 from np_completeness.utils.util_general import AnyPoint, get_wire_color
@@ -340,6 +341,28 @@ class Circuit:
                     ),
                 )
                 self.add_wire(wire_start=name, wire_end=f"output_{name}_{i}")
+
+    def scale(self, factor: float) -> Circuit:
+        """Scale the positions of the gates in-place.
+
+        Manim's built-in scaling breaks when we animate the circuit, so this
+        is a workaround.
+        """
+        for gate in self.gates.values():
+            gate.position *= factor
+
+        return self
+
+    def shift(self, shift: InternalPoint3D) -> Circuit:
+        """Shift the positions of the gates in-place.
+
+        Manim's built-in shifting breaks when we animate the circuit, so this
+        is a workaround.
+        """
+        for gate in self.gates.values():
+            gate.position += shift
+
+        return self
 
 
 AND_TABLE = {

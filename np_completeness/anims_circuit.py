@@ -4,10 +4,16 @@ from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import (
     make_example_circuit,
     make_multiplication_circuit,
+    to_binary,
 )
 
 # Imported for the side effect of changing the default colors
-from np_completeness.utils.util_general import BASE00, MAGENTA, disable_rich_logging
+from np_completeness.utils.util_general import (
+    BASE00,
+    BLUE,
+    MAGENTA,
+    disable_rich_logging,
+)
 
 
 def make_multiplication_by_hand(
@@ -130,18 +136,94 @@ class CircuitScene(Scene):
     def construct(self):
         disable_rich_logging()
 
-        circuit = make_multiplication_circuit(
-            # a=[True, False, True, True], b=[False, True, False, True]
-            a=15,
-            b=15,
-        )
+        a, b = 3, 5
+
+        circuit = make_multiplication_circuit(a=a, b=b)
+
+        # We want to leave a bit of room at the bottom because of subtitles
+        # TODO: is this enough?
+        circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
+
         circuit.add_missing_inputs_and_outputs()
         manim_circuit = ManimCircuit(circuit, with_evaluation=True)
-        # manim_circuit.shift(DOWN)
-        self.add(manim_circuit)
+
+        self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
+        self.wait()
+
+        TEXT_SCALE = 1.4
+
+        # Add explanations to the inputs
+        for symbol, value in zip("ab", [a, b]):
+            binary_values = to_binary(value)
+            explanations = []
+            anims = []
+
+            for i, bit in enumerate(binary_values):
+                manim_gate = manim_circuit.gates[f"input_{symbol}_{i}"]
+
+                explanation = (
+                    Tex(str(int(bit)), color=BLUE)
+                    .scale(TEXT_SCALE)
+                    .move_to(
+                        manim_gate.get_center()
+                        + (
+                            np.array([-0.3, 0.3, 0])
+                            if symbol == "a"
+                            else np.array([-0.3, 0.1, 0])
+                        )
+                    )
+                )
+                explanations.append(explanation)
+
+                anims.append(manim_gate.animate_to_value(bit))
+                anims.append(Create(explanation))
+
+            decimal_explanation = (
+                Tex(f"={value}", color=MAGENTA)
+                .scale(TEXT_SCALE)
+                .move_to(
+                    np.array(
+                        [
+                            manim_circuit.gates[f"input_a_0"].get_center()[0] + 0.9,
+                            explanations[0].get_center()[1],
+                            0,
+                        ]
+                    )
+                )
+            )
+            anims.append(Create(decimal_explanation))
+
+            self.play(LaggedStart(*anims))
+            self.wait()
 
         self.play(manim_circuit.animate_evaluation(speed=2))
-        self.wait(3)
+        self.wait()
+
+        # Add explanations to the outputs
+        anims = []
+        explanations = []
+        for i, bit in enumerate(to_binary(a * b, n_digits=8)):
+            manim_gate = manim_circuit.gates[f"output_{i}"]
+
+            explanation = (
+                Tex(str(int(bit)), color=BLUE)
+                .scale(TEXT_SCALE)
+                .move_to(manim_gate.get_center() + np.array([-0.3, -0.3, 0]))
+            )
+            explanations.append(explanation)
+
+            anims.append(manim_gate.animate_to_value(bit))
+            anims.append(Create(explanation))
+
+        decimal_explanation = (
+            Tex(f"={a * b}", color=MAGENTA)
+            .scale(TEXT_SCALE)
+            .move_to(explanations[0].get_center() + RIGHT * 1.5)
+        )
+        anims.append(Create(decimal_explanation))
+
+        self.play(LaggedStart(*anims))
+        self.wait(2)
 
 
 class ExampleCircuitScene(Scene):
