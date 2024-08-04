@@ -63,13 +63,20 @@ class NP(Scene):
         
         problems = ["SATISFIABILITY", "COLORING", "FACTORING", "MULTIPLYING"]
         problem_texs = [Tex(problem) for problem in problems]
-        problem_rects = Group(*[Group(tex, SurroundingRectangle(tex, color = text_color)) for tex in problem_texs])
-        print(len(problem_rects))
+        problem_rects = Group(*[Group(
+            SurroundingRectangle(tex, color=text_color, fill_opacity=1, fill_color=BACKGROUND_COLOR),
+            tex            
+        ) for tex in problem_texs])
+        
+        for rect, tex in problem_rects:
+            rect.set_z_index(10)
+            tex.set_z_index(20)
+
         problem_rects[0].next_to(np_rect, UP, buff=0.5)
         problem_rects[1:].arrange(DOWN).move_to(np_rect.get_center()).shift(0.5*DOWN)
         problem_rects[1].shift(1.5*LEFT)
         problem_rects[2].shift(0.2*RIGHT)
-        problem_rects[3].shift(1*RIGHT)
+        problem_rects[3].shift(1*RIGHT + 0.5 * DOWN)
 
         self.play(Create(np_rect), Write(np_label))
         for rect in problem_rects[1:]:
@@ -114,6 +121,10 @@ class NP(Scene):
             )
         self.wait()
 
+        crown = SVGMobject("img/crown.svg").scale(0.25).next_to(problem_rects[0], UP, buff = 0.1).set_color(text_color)
+
+        self.play(FadeIn(crown))
+        self.wait()
 
 
 class NP2(Scene):
