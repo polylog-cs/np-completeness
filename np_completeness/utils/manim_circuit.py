@@ -26,11 +26,9 @@ class ManimGate(VMobject):
         if gate.visual_type == "invisible":
             pass
         elif gate.visual_type == "knot":
-            self.circle = Circle(
-                radius=0.008,
+            self.circle = Dot(
+                radius=0.028,
                 color=fill_color,
-                fill_color=fill_color,
-                fill_opacity=1.0,
             )
             self.circle.move_to(gate.position)
 
