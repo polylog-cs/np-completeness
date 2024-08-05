@@ -1,3 +1,5 @@
+from typing import Callable, cast
+
 from manim import *
 
 from np_completeness.utils.coloring_circuits import (
@@ -288,33 +290,60 @@ class ColoringCircuitScene(Scene):
 
         self.wait(1)
 
-        self.play(Create(manim_circuit, lag_ratio=0.002), Uncreate(graph), run_time=3)
+        self.play(
+            Create(manim_circuit, lag_ratio=0.002),
+            LaggedStart(
+                *[
+                    cast(Animation, v.animate.fade(0.5).scale(5))
+                    for v in graph.vertices.values()
+                ]
+            ),
+            *[FadeOut(e) for e in graph.edges.values()],
+            run_time=3,
+        )
+        self.wait(2)
+
+        # The idea is that you have one variable per vertex and color
+        self.play(manim_circuit.animate_inputs())
         self.wait()
+
+        def make_highlight_rectangles(
+            condition: Callable[[str], bool],
+        ) -> None:
+            evaluation = circuit.evaluate()
+
+            selected_gates = [
+                name for name in evaluation.gate_evaluations if condition(name)
+            ]
+            rectangles = VGroup(
+                *[
+                    SurroundingRectangle(manim_circuit.gates[gate], color=RED)
+                    for gate in selected_gates
+                ]
+            )
+            self.play(Create(rectangles, lag_ratio=0.05))
+            self.wait()
+            self.play(Uncreate(rectangles, lag_ratio=0.05))
+            self.wait()
+
+        make_highlight_rectangles(
+            lambda name: name.startswith("vertex_") and not "value" in name
+        )
+
+        make_highlight_rectangles(lambda name: name.startswith("edge_"))
 
         self.play(manim_circuit.animate_evaluation())
 
-        self.wait(1)
+        self.wait()
 
         evaluation = circuit.evaluate()
-
-        unhappy_gates = [
-            name
-            for name in evaluation.gate_evaluations
-            if "nand" in name
+        make_highlight_rectangles(
+            lambda name: "nand" in name
             and not name.startswith("output_")  # auto-generated hidden output nodes
             and not evaluation.get_gate_outputs(name)[0]
-        ]
+        )
 
-        anims = []
-
-        for gate in unhappy_gates:
-            anims.append(
-                Create(SurroundingRectangle(manim_circuit.gates[gate], color=RED))
-            )
-
-        self.play(anims)
-
-        self.wait(2)
+        self.wait()
 
 
 if __name__ == "__main__":

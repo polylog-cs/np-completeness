@@ -143,9 +143,20 @@ class ManimCircuit(VGroup):
             *[g for g in self.gates.values() if g.gate.visual_type not in bg_gates],
         )
 
+    def animate_inputs(self) -> AnimationGroup:
+        """Animate the input nodes filling with their given color."""
+        anims = []
+        for manim_gate in self.gates.values():
+            if manim_gate.gate.n_inputs == 0:
+                value = manim_gate.gate.truth_table[()][0]
+                anims.append(manim_gate.animate_to_value(value))
+
+        return LaggedStart(*anims)
+
     def animate_evaluation(
         self, reversed: bool = False, speed: float = 1
     ) -> AnimationGroup:
+        """Animate the color flowing through the wires to evaluate the circuit."""
         evaluation = self.circuit.evaluate()
         animations = []
 
