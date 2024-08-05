@@ -74,7 +74,7 @@ def make_multiplication_by_hand(
 
 
 def lagged_create(
-    objects: list[VMobject], lag_ratio: float = 0.1, anim=None
+    objects: list[VMobject], lag_ratio: float = 0.1, anim: type[Animation] | None = None
 ) -> AnimationGroup:
     if anim is None:
         anim = Create

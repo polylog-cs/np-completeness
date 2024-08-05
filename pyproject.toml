@@ -11,6 +11,7 @@ manim = "^0.18.1"
 numpy = "^1.26"
 python-sat = {extras = ["aiger", "approxmc", "pblib"], version = "^1.8.dev13"}
 pydantic = "^2.8.2"
+matplotlib = "^3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pyright = "^1.1.372"
