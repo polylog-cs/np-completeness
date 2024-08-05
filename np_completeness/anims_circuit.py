@@ -73,8 +73,12 @@ def make_multiplication_by_hand(
     return (group, numbers, lines)
 
 
-def lagged_create(objects: list[VMobject], lag_ratio: float = 0.1) -> AnimationGroup:
-    return LaggedStart(*[Create(obj) for obj in objects], lag_ratio=lag_ratio)
+def lagged_create(
+    objects: list[VMobject], lag_ratio: float = 0.1, anim=None
+) -> AnimationGroup:
+    if anim is None:
+        anim = Create
+    return LaggedStart(*[anim(obj) for obj in objects], lag_ratio=lag_ratio)
 
 
 class MultiplicationByHand(Scene):
@@ -106,15 +110,15 @@ class MultiplicationByHand(Scene):
         group, numbers, lines = make_multiplication_by_hand(grid)
         group.scale(2).center().shift(LEFT * 2)
 
-        self.play(lagged_create(numbers[0] + numbers[1]))
+        self.play(lagged_create(numbers[0] + numbers[1], anim=Write))
         self.wait(1)
         base10_rows = [
-            Tex("=3", color=MAGENTA),
-            Tex("=5", color=MAGENTA),
+            Tex("=\\,3", color=MAGENTA),
+            Tex("=\\,5", color=MAGENTA),
             VGroup(),
             VGroup(),
             VGroup(),
-            Tex("=15", color=MAGENTA),
+            Tex("=\\,15", color=MAGENTA),
         ]
 
         for i, row in enumerate(base10_rows):
@@ -123,13 +127,15 @@ class MultiplicationByHand(Scene):
             )
 
         # this is what it is in base10
-        self.play(lagged_create([base10_rows[0], base10_rows[1]]))
+        self.play(lagged_create([base10_rows[0], base10_rows[1]], anim=Write))
         self.wait(1)
         # intermediate results
-        self.play(lagged_create([lines[0], *numbers[2], *numbers[3], *numbers[4]]))
+        self.play(
+            lagged_create([lines[0], *numbers[2], *numbers[3], *numbers[4]], anim=Write)
+        )
         self.wait(1)
         # final result, explanation in base10
-        self.play(lagged_create([lines[1], *numbers[5], base10_rows[5]]))
+        self.play(lagged_create([lines[1], *numbers[5], base10_rows[5]], anim=Write))
         self.wait(1)
 
 
@@ -177,10 +183,10 @@ class CircuitScene(Scene):
                 explanations.append(explanation)
 
                 anims.append(manim_gate.animate_to_value(bit))
-                anims.append(Create(explanation))
+                anims.append(Write(explanation))
 
             decimal_explanation = (
-                Tex(f"={value}", color=MAGENTA)
+                Tex(f"=\\,{value}", color=MAGENTA)
                 .scale(TEXT_SCALE)
                 .move_to(
                     np.array(
@@ -192,7 +198,7 @@ class CircuitScene(Scene):
                     )
                 )
             )
-            anims.append(Create(decimal_explanation))
+            anims.append(Write(decimal_explanation))
 
             self.play(LaggedStart(*anims))
             self.wait()
@@ -214,14 +220,14 @@ class CircuitScene(Scene):
             explanations.append(explanation)
 
             anims.append(manim_gate.animate_to_value(bit))
-            anims.append(Create(explanation))
+            anims.append(Write(explanation))
 
         decimal_explanation = (
-            Tex(f"={a * b}", color=MAGENTA)
+            Tex(f"=\\,{a * b}", color=MAGENTA)
             .scale(TEXT_SCALE)
             .move_to(explanations[0].get_center() + RIGHT * 1.5)
         )
-        anims.append(Create(decimal_explanation))
+        anims.append(Write(decimal_explanation))
 
         self.play(LaggedStart(*anims))
         self.wait(2)
