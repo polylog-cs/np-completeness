@@ -12,7 +12,7 @@ from np_completeness.utils.util_general import (
 )
 
 GateVisualType = Literal[
-    "default", "constant", "knot", "invisible", "not", "and", "or", "+"
+    "default", "constant", "knot", "invisible", "not", "and", "or", "nand", "+"
 ]
 
 

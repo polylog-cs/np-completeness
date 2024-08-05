@@ -402,6 +402,13 @@ AND_TABLE = {
     (True, True): (True,),
 }
 
+NAND_TABLE = {
+    (False, False): (True,),
+    (False, True): (True,),
+    (True, False): (True,),
+    (True, True): (False,),
+}
+
 OR_TABLE = {
     (False, False): (False,),
     (False, True): (True,),

@@ -1,5 +1,9 @@
 from manim import *
 
+from np_completeness.utils.coloring_circuits import (
+    get_example_graph,
+    make_coloring_circuit,
+)
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import (
     make_adder_circuit,
@@ -13,6 +17,7 @@ from np_completeness.utils.util_general import (
     BASE00,
     BLUE,
     MAGENTA,
+    RED,
     disable_rich_logging,
 )
 
@@ -271,8 +276,50 @@ class AdderCircuitScene(Scene):
         self.wait(1)
 
 
+class ColoringCircuitScene(Scene):
+    def construct(self):
+        graph, coloring = get_example_graph(good_coloring=False)
+
+        self.play(Create(graph, lag_ratio=0.1))
+
+        circuit = make_coloring_circuit(graph, coloring)
+        circuit.add_missing_inputs_and_outputs(visible=False)
+        manim_circuit = ManimCircuit(circuit)
+
+        self.wait(1)
+
+        self.play(Create(manim_circuit, lag_ratio=0.002), Uncreate(graph), run_time=3)
+        self.wait()
+
+        self.play(manim_circuit.animate_evaluation())
+
+        self.wait(1)
+
+        evaluation = circuit.evaluate()
+
+        unhappy_gates = [
+            name
+            for name in evaluation.gate_evaluations
+            if "nand" in name
+            and not name.startswith("output_")  # auto-generated hidden output nodes
+            and not evaluation.get_gate_outputs(name)[0]
+        ]
+
+        anims = []
+
+        for gate in unhappy_gates:
+            anims.append(
+                Create(SurroundingRectangle(manim_circuit.gates[gate], color=RED))
+            )
+
+        self.play(anims)
+
+        self.wait(2)
+
+
 if __name__ == "__main__":
-    circuit = make_adder_circuit(inputs=[False, False, True])
+    graph, coloring = get_example_graph(good_coloring=False)
+    circuit = make_coloring_circuit(graph, coloring)
 
     with_evaluation = False
     if with_evaluation:
