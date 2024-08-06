@@ -290,11 +290,6 @@ class ExampleCircuitScene(Scene):
             for name, gate in manim_circuit.gates.items()
             if not name.startswith(("input_", "output_"))
         ]
-        input_gates = [
-            gate
-            for name, gate in manim_circuit.gates.items()
-            if name.startswith("input_")
-        ]
 
         # highlight the wires
         # TODO somehow this does not work
