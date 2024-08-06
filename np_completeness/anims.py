@@ -4,6 +4,8 @@ from manim import *
 
 from np_completeness.utils.util_general import *
 
+# from utils.util_general import *
+
 CROWN_BUFF = 0.1
 CROWN_SCALE = 0.25
 BOX_COLOR = BASE3
@@ -267,7 +269,7 @@ class NP3(MovingCameraScene):
             .scale(1.5)
             .to_edge(UP, buff=1)
         )
-        self.add(thm_tex)
+        self.add(thm_tex[0])
 
         karp_img = (
             Group(
@@ -445,6 +447,7 @@ class NP3(MovingCameraScene):
 
         # Animation code
         problems[0][1].move_to(thm_tex[0])
+        self.remove(thm_tex[0])
         self.play(
             Create(problems[0][0]),
             problems[0][1].animate.scale(1 / 1.5).move_to(problems[0][0].get_center()),
@@ -838,7 +841,7 @@ class SATJoke(Scene):
     def construct(self):
         main_text = (
             Tex(
-                r"{{Description of brute force SAT solving strategies \\ }}{{from [Jagger, Richards, et al.; published in Out of Our Heads, 1965]}}",
+                r"{{Description of brute force SAT solving strategies \\ }}{{\text{from [Jagger, Richards, et al.; published in Out of Our Heads, 1965, available online]} }}",
                 color=text_color,
             )
             .scale(0.7)
@@ -861,8 +864,6 @@ class SATJoke(Scene):
         # quote = Tex(r"{{I can't get no satisfaction\\}}{{'Cause I try\\}}{{and I try\\}}{{and I try\\}}{{and I try}}",
         #             color=text_color, slant=ITALIC).scale(0.8).next_to(main_text, DOWN, buff=0.5)
 
-        self.play(Write(quote, run_time=3))
-
         # Images
         jagger_img = ImageMobject("img/jagger.jpg").scale_to_fit_height(3)
         richards_img = ImageMobject("img/richards.jpg").scale_to_fit_height(3)
@@ -871,9 +872,14 @@ class SATJoke(Scene):
             Group(jagger_img, richards_img)
             .arrange(RIGHT, buff=0.2)
             .to_edge(RIGHT)
-            .shift(1.5 * DOWN)
+            .shift(1 * DOWN)
         )
-        self.play(FadeIn(images))
+
+        self.play(
+            Write(quote),
+            FadeIn(images),
+            run_time=3,
+        )
 
         self.wait(3)
 
@@ -903,6 +909,10 @@ class NP5(Scene):
             ImageMobject("img/sus.png").scale_to_fit_width(1).next_to(text, UP)
             for text in eqs
         ]
+        ticks = [
+            Text("✓", color=GREEN).scale_to_fit_height(1).next_to(text, UP)
+            for text in eqs
+        ]
 
         for i in range(2):
             self.play(Write(texts[3 * i]))
@@ -914,6 +924,9 @@ class NP5(Scene):
 
         self.play(
             *[FadeOut(s) for s in smileys],
+        )
+        self.play(
+            *[FadeIn(t) for t in ticks],
         )
         self.wait()
 
@@ -966,12 +979,18 @@ class Outro(Scene):
         intuition2 = (
             Tex("Can we solve problems if we can verify solutions?", color=text_color)
             .scale(1)
-            .next_to(intuition1, DOWN, buff=1)
+            .move_to(intuition1)
         )
 
-        for t in [pnp_tex, intuition1, intuition2]:
+        for t in [pnp_tex, intuition1]:
             self.play(Write(t))
             self.wait()
+
+        self.play(
+            Write(intuition2),
+            FadeOut(intuition1),
+        )
+        self.wait()
 
         # thanks part
         patrons_thanks_text = "Our amazing Patrons:"
@@ -1007,8 +1026,9 @@ class Outro(Scene):
             .next_to(patrons_thanks_tex, DOWN, buff=0.5)
         )
 
-        # cut here
+        # a cut here, a head-scene follows, then what's below
         self.remove(intuition2)
+        self.add(intuition1)
         intuition1.shift(0.5 * UP)
 
         self.wait()
