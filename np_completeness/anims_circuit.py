@@ -97,7 +97,7 @@ class MultiplicationByHand(Scene):
         mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,= ???$}}").scale(4)
         self.play(
             AnimationGroup(
-                *[Write(mult_tex[i]) for i in range(4)],
+                *[Write(cast(VMobject, mult_tex[i])) for i in range(4)],
                 lag_ratio=0.5,
             )
         )
