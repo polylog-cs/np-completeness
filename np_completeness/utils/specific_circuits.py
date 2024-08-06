@@ -495,3 +495,45 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
     circuit.add_wire("maj_or3", upper_output)
 
     return circuit
+
+
+def make_adder_gate(inputs: list[bool]) -> Circuit:
+    circuit = Circuit()
+
+    # Add the adder gate
+    circuit.add_gate(
+        "adder",
+        Gate(
+            truth_table=ADD_TABLE,
+            position=(0, 0, 0),
+            visual_type="add",
+        ),
+    )
+
+    # Add input gates
+    for i, value in enumerate(inputs):
+        input_name = f"input_{i}"
+        circuit.add_gate(
+            input_name,
+            Gate(
+                truth_table={(): (value,)},
+                position=(-1 + i * 1, 1, 0),
+                visual_type="constant",
+            ),
+        )
+        circuit.add_wire(input_name, "adder")
+
+    # Add output gates
+    for i in range(2):
+        output_name = f"output_{i}"
+        circuit.add_gate(
+            output_name,
+            Gate.make_knot(
+                position=(0.5 - i, -1, 0),
+                n_inputs=1,
+                n_outputs=0,
+            ),
+        )
+        circuit.add_wire("adder", output_name)
+
+    return circuit

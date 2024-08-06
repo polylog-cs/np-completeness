@@ -9,6 +9,7 @@ from np_completeness.utils.coloring_circuits import (
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import (
     make_adder_circuit,
+    make_adder_gate,
     make_example_circuit,
     make_multiplication_circuit,
     to_binary,
@@ -20,8 +21,11 @@ from np_completeness.utils.util_general import (
     BLUE,
     MAGENTA,
     RED,
+    WIRE_WIDTH,
     default,
     disable_rich_logging,
+    get_wire_color,
+    text_color,
 )
 
 
@@ -269,10 +273,65 @@ class ExampleCircuitScene(Scene):
         self.add(manim_circuit)
         self.wait()
 
+        # Create input labels
+        input_values = [0, 1, 1]  # Matching the out_value in make_example_circuit
+        input_labels = []
+        for i, value in enumerate(input_values):
+            color = get_wire_color(bool(value))
+            label = Text(str(value), color=color).scale(0.8)
+
+            input_gate = manim_circuit.gates[f"input_{i}"]
+            label.next_to(input_gate, UP, buff=0.2)
+
+            input_labels.append(label)
+
+        internal_gates = [
+            gate
+            for name, gate in manim_circuit.gates.items()
+            if not name.startswith(("input_", "output_"))
+        ]
+        input_gates = [
+            gate
+            for name, gate in manim_circuit.gates.items()
+            if name.startswith("input_")
+        ]
+
+        # highlight the wires
+        # TODO somehow this does not work
+        for sc in [10, 1]:
+            self.play(
+                *[
+                    wire.animate.set_stroke_width(WIRE_WIDTH * sc)
+                    for wire in manim_circuit.wires.values()
+                ],
+                run_time=0.5,
+            )
+            self.wait(0.5)
+
+        # highlight the gates
+        for sc in [1.5, 1 / 1.5]:
+            self.play(
+                *[gate.animate.scale(sc) for gate in internal_gates], run_time=0.5
+            )
+            self.wait(0.5)
+
+        # Animate the appearance of input labels
+        self.play(
+            AnimationGroup(
+                *[Write(label) for label in input_labels],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
+
+        # Animate inputs
+        self.play(manim_circuit.animate_inputs())
+        self.wait()
+
+        # Simulate the circuit
         self.play(manim_circuit.animate_evaluation())
-
         self.wait(1)
-
+        return
         circuit = make_example_circuit()
         reversed_manim_circuit = ManimCircuit(circuit.reverse())
 
@@ -287,8 +346,34 @@ class ExampleCircuitScene(Scene):
 
 class AdderCircuitScene(Scene):
     def construct(self):
-        circuit = make_adder_circuit(inputs=[False, False, True])
+        circuit = make_adder_gate(inputs=[True, False, True])
+        circuit.add_missing_inputs_and_outputs()
+        manim_circuit = ManimCircuit(circuit)
+        self.add(manim_circuit)
+        self.wait()
 
+        description_tex = Group(
+            *[
+                Tex(str, color=text_color)
+                for str in [
+                    r"Input:",
+                    r"three bits",
+                    r"Output:",
+                    r"their sum in binary",
+                ]
+            ]
+        ).arrange_in_grid(rows=2, cell_alignment=LEFT)
+        rect = SurroundingRectangle(description_tex, color=text_color)
+        description = Group(description_tex, rect).to_corner(UR)
+
+        self.play(
+            FadeIn(description),
+        )
+        self.wait()
+        return
+
+        # TODO change the adder gate to adder circuit by expanding the adder-gate rectangle and fading the circuit in it?
+        circuit = make_adder_circuit(inputs=[False, False, True])
         circuit.add_missing_inputs_and_outputs()
 
         manim_circuit = ManimCircuit(circuit)
