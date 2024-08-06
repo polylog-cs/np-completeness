@@ -306,7 +306,8 @@ class ExampleCircuitScene(Scene):
         # highlight the gates
         for sc in [1.5, 1 / 1.5]:
             self.play(
-                *[gate.animate.scale(sc) for gate in internal_gates], run_time=0.5
+                *[cast(Animation, gate.animate.scale(sc)) for gate in internal_gates],
+                run_time=0.5,
             )
             self.wait(0.5)
 

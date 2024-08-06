@@ -506,7 +506,7 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
         Gate(
             truth_table=ADD_TABLE,
             position=(0, 0, 0),
-            visual_type="add",
+            visual_type="+",
         ),
     )
 
