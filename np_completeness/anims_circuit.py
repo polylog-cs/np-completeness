@@ -20,6 +20,7 @@ from np_completeness.utils.util_general import (
     BLUE,
     MAGENTA,
     RED,
+    default,
     disable_rich_logging,
 )
 
@@ -91,6 +92,18 @@ def lagged_create(
 class MultiplicationByHand(Scene):
     def construct(self):
         disable_rich_logging()
+        default()
+
+        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,= ???$}}").scale(4)
+        self.play(
+            AnimationGroup(
+                *[Write(mult_tex[i]) for i in range(4)],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait(1)
+        self.play(FadeOut(mult_tex))
+        self.wait()
 
         grid = [
             "  68",
@@ -100,7 +113,7 @@ class MultiplicationByHand(Scene):
             "1224",
         ]
         group, _, _ = make_multiplication_by_hand(grid)
-        group.scale(2).center()
+        group.scale(2).to_edge(UP, buff=0.75)
 
         self.play(FadeIn(group))
         self.wait(2)
@@ -115,13 +128,11 @@ class MultiplicationByHand(Scene):
             " 1111",
         ]
         group, numbers, lines = make_multiplication_by_hand(grid)
-        group.scale(2).center().shift(LEFT * 2)
+        group.scale(1.75).center().shift(LEFT * 2).to_edge(UP, buff=0.5)
 
-        self.play(lagged_create(numbers[0] + numbers[1], anim=Write))
-        self.wait(1)
         base10_rows = [
-            Tex("=\\,3", color=MAGENTA),
-            Tex("=\\,5", color=MAGENTA),
+            Tex("{{=}}{{\\,3}}", color=MAGENTA),
+            Tex("{{=}}{{\\,5}}", color=MAGENTA),
             VGroup(),
             VGroup(),
             VGroup(),
@@ -134,16 +145,27 @@ class MultiplicationByHand(Scene):
             )
 
         # this is what it is in base10
-        self.play(lagged_create([base10_rows[0], base10_rows[1]], anim=Write))
+        for j in [1, 0]:
+            objects_to_animate = [
+                cast(VMobject, base10_rows[0][j]),
+                cast(VMobject, base10_rows[1][j]),
+            ]
+            self.play(lagged_create(objects_to_animate, anim=Write))
+            self.wait(0.5)
+
+        self.play(lagged_create(numbers[0] + numbers[1], anim=Write))
         self.wait(1)
+
         # intermediate results
         self.play(
             lagged_create([lines[0], *numbers[2], *numbers[3], *numbers[4]], anim=Write)
         )
         self.wait(1)
         # final result, explanation in base10
-        self.play(lagged_create([lines[1], *numbers[5], base10_rows[5]], anim=Write))
-        self.wait(1)
+        self.play(lagged_create([lines[1], *numbers[5]], anim=Write))
+        self.wait(0.5)
+        self.play(lagged_create([base10_rows[5]], anim=Write))
+        self.wait(2)
 
 
 class CircuitScene(Scene):
