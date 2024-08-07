@@ -278,7 +278,7 @@ class ExampleCircuitScene(Scene):
         input_labels = []
         for i, value in enumerate(input_values):
             color = get_wire_color(bool(value))
-            label = Text(str(value), color=color).scale(0.8)
+            label = Tex(str(value), color=color).scale(1.5)
 
             input_gate = manim_circuit.gates[f"input_{i}"]
             label.next_to(input_gate, UP, buff=0.2)
@@ -326,17 +326,6 @@ class ExampleCircuitScene(Scene):
 
         # Simulate the circuit
         self.play(manim_circuit.animate_evaluation())
-        self.wait(1)
-        return
-        circuit = make_example_circuit()
-        reversed_manim_circuit = ManimCircuit(circuit.reverse())
-
-        # We can add a crossfade in post, no need to do it in Manim.
-        self.clear()
-        self.wait(1)
-        self.add(reversed_manim_circuit)
-
-        self.play(reversed_manim_circuit.animate_evaluation(reversed=True))
         self.wait(2)
 
 

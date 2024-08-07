@@ -11,17 +11,14 @@ from np_completeness.utils.circuit import (
 )
 from np_completeness.utils.gate import Gate
 from np_completeness.utils.util_general import (
-    GATE_HORIZONTAL_SPACING,
-    GATE_VERTICAL_SPACING,
+    GATE_X_SPACING,
+    GATE_Y_SPACING,
     WIRE_TIGHT_SPACING,
 )
 
 
 def make_example_circuit() -> Circuit:
-    """Make a simple example circuit with 3 inputs and 2 outputs.
-
-    ALSO USED IN TESTS!
-    """
+    """Make a simple example circuit with 3 inputs and 2 outputs."""
     circuit = Circuit()
 
     for i, out_value in enumerate([False, True, True]):
@@ -29,38 +26,71 @@ def make_example_circuit() -> Circuit:
             f"input_{i}",
             Gate(
                 truth_table={(): (out_value,)},
-                position=np.array([i, 3, 0]),
+                position=np.array(
+                    [
+                        (i - 1) * GATE_X_SPACING * 2,
+                        GATE_Y_SPACING * 2,
+                        0,
+                    ]
+                ),
                 visual_type="constant",
             ),
         )
 
     circuit.add_gate(
-        "and_gate",
-        Gate(truth_table=AND_TABLE, position=np.array([1.5, 1, 0]), visual_type="and"),
+        "not_gate",
+        Gate(
+            truth_table=NOT_TABLE,
+            position=circuit.position_of("input_1") + DOWN * GATE_Y_SPACING,
+            visual_type="not",
+        ),
     )
+
     circuit.add_gate(
         "or_gate",
-        Gate(truth_table=OR_TABLE, position=np.array([0.5, 0, 0]), visual_type="or"),
+        Gate(
+            truth_table=OR_TABLE,
+            position=np.array([circuit.x_of("input_1") + GATE_X_SPACING, 0, 0]),
+            visual_type="or",
+        ),
     )
     circuit.add_gate(
-        "knot", Gate.make_knot(np.array([1, -1, 0]), n_inputs=1, n_outputs=2)
+        "and_gate",
+        Gate(
+            truth_table=AND_TABLE,
+            position=np.array(
+                [circuit.x_of("input_1") - GATE_X_SPACING, -GATE_Y_SPACING, 0]
+            ),
+            visual_type="and",
+        ),
+    )
+    circuit.add_gate(
+        "knot",
+        Gate.make_knot(
+            np.array([circuit.x_of("or_gate"), -GATE_Y_SPACING / 2, 0]),
+            n_inputs=1,
+            n_outputs=2,
+        ),
     )
 
     for i in range(2):
         circuit.add_gate(
             f"output_{i}",
-            Gate.make_knot(np.array([i, -3, 0]), n_inputs=1, n_outputs=0),
+            Gate.make_knot(
+                np.array([(i - 0.5) * GATE_X_SPACING * 2, -GATE_Y_SPACING * 2, 0]),
+                n_inputs=1,
+                n_outputs=0,
+            ),
         )
 
-    circuit.wires = [
-        ("input_0", "or_gate"),
-        ("input_1", "and_gate"),
-        ("input_2", "and_gate"),
-        ("and_gate", "or_gate"),
-        ("or_gate", "knot"),
-        ("knot", "output_0"),
-        ("knot", "output_1"),
-    ]
+    add_snake_wire(circuit, "input_0", "and_gate")
+    circuit.add_wire("input_1", "not_gate")
+    add_snake_wire(circuit, "input_2", "or_gate")
+    add_snake_wire(circuit, "not_gate", "or_gate", y_start_offset=-0.5)
+    circuit.add_wire("or_gate", "knot")
+    add_snake_wire(circuit, "knot", "and_gate", y_start_offset=0)
+    circuit.add_wire("knot", "output_1")
+    circuit.add_wire("and_gate", "output_0")
 
     circuit.check()
     return circuit
@@ -78,8 +108,8 @@ def add_snake_wire(
     wire_start: str,
     wire_end: str,
     *,
-    y_start_offset: float,
-    x_end_offset: float = 0,
+    y_start_offset: float = -0.25,
+    x_end_offset: float = WIRE_TIGHT_SPACING * 2,
 ):
     x_start, y_start, _ = circuit.position_of(wire_start)
     x_end, y_end, _ = circuit.position_of(wire_end)
@@ -134,8 +164,8 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
         for j in range(n):
             gate_name = f"and_{i}_{j}"
             position = (
-                2 - 1 * (i + j) * GATE_HORIZONTAL_SPACING - 0.5 * i,
-                2 - i * GATE_VERTICAL_SPACING,
+                2 - 1 * (i + j) * GATE_X_SPACING - 0.5 * i,
+                2 - i * GATE_Y_SPACING,
             )
             circuit.add_gate(
                 gate_name,
@@ -212,8 +242,8 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
         for j in range(n):
             gate_name = f"plus_{i}_{j}"
             position = (
-                (4 - i - j) * GATE_HORIZONTAL_SPACING,
-                (0 - i) * GATE_VERTICAL_SPACING,
+                (4 - i - j) * GATE_X_SPACING,
+                (0 - i) * GATE_Y_SPACING,
             )
             circuit.add_gate(
                 gate_name,
@@ -227,8 +257,8 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
     for i in range(n * 2):
         gate_name = f"output_{i}"
         position = (
-            (5 - i) * GATE_HORIZONTAL_SPACING,
-            (-3) * GATE_VERTICAL_SPACING,
+            (5 - i) * GATE_X_SPACING,
+            (-3) * GATE_Y_SPACING,
         )
 
         circuit.add_gate(gate_name, Gate.make_knot(position, n_inputs=1, n_outputs=0))
@@ -247,6 +277,7 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
             f"and_0_{j}",
             f"plus_0_{j-1}" if j > 0 else "output_0",
             y_start_offset=-WIRE_TIGHT_SPACING * (j + 1),
+            x_end_offset=0.0,
         )
 
     for i in range(1, n):
@@ -256,7 +287,6 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
                 f"and_{i}_{j}",
                 f"plus_{i-1}_{j}",
                 y_start_offset=-0.2 - WIRE_TIGHT_SPACING * j,
-                x_end_offset=0.2,
             )
 
     # carry wires - note these must be the second and not the first output of
@@ -275,7 +305,7 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
                     circuit.position_of(f"plus_{i}_{j}") + DOWN * 0.2 + LEFT * 0.2,
                     circuit.position_of(f"plus_{i}_{j}")
                     + UP * 0.3
-                    + RIGHT * (0.3 - GATE_HORIZONTAL_SPACING),
+                    + RIGHT * (0.3 - GATE_X_SPACING),
                 ],
             )
 
@@ -302,7 +332,7 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
         knot_name = circuit.add_gate(
             f"{prefix}_knot_{i}",
             Gate.make_knot(
-                (input_x, input_y - GATE_VERTICAL_SPACING * 0.5),
+                (input_x, input_y - GATE_Y_SPACING * 0.5),
                 n_inputs=1,
                 n_outputs=2,
             ),
@@ -316,8 +346,8 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
                 position=circuit.position_of(knot_name)
                 + np.array(
                     [
-                        GATE_HORIZONTAL_SPACING * 0.5 * (-1 if i == 0 else 1),
-                        -GATE_VERTICAL_SPACING / 2,
+                        GATE_X_SPACING * 0.5 * (-1 if i == 0 else 1),
+                        -GATE_Y_SPACING / 2,
                         0,
                     ]
                 ),
@@ -340,7 +370,7 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
             f"{prefix}_and_{i}",
             Gate(
                 truth_table=AND_TABLE,
-                position=circuit.position_of(knot_name) + DOWN * GATE_VERTICAL_SPACING,
+                position=circuit.position_of(knot_name) + DOWN * GATE_Y_SPACING,
                 visual_type="and",
             ),
         )
@@ -358,7 +388,7 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
             OR_TABLE,
             (
                 (input_x_0 + input_x_1) / 2,
-                circuit.y_of(f"{prefix}_and_0") - GATE_VERTICAL_SPACING * 0.5,
+                circuit.y_of(f"{prefix}_and_0") - GATE_Y_SPACING * 0.5,
             ),
             visual_type="or",
         ),
@@ -377,7 +407,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             f"input_{i}",
             Gate(
                 truth_table={(): (inputs[i],)},
-                position=(-GATE_HORIZONTAL_SPACING * i, GATE_VERTICAL_SPACING * 3.5),
+                position=(-GATE_X_SPACING * i, GATE_Y_SPACING * 3.5),
                 visual_type="constant",
             ),
         )
@@ -390,8 +420,8 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             Gate(
                 truth_table=AND_TABLE,
                 position=(
-                    -GATE_HORIZONTAL_SPACING * (i + 2),
-                    GATE_VERTICAL_SPACING * 1.5,
+                    -GATE_X_SPACING * (i + 2),
+                    GATE_Y_SPACING * 1.5,
                 ),
                 visual_type="and",
             ),
@@ -425,11 +455,9 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             circuit.x_of(f"input_{i}"),
             circuit.x_of(output_knot1),
             circuit.x_of(output_knot2),
-            circuit.x_of(f"input_{i}") + GATE_HORIZONTAL_SPACING * (3 - i * 0.5),
+            circuit.x_of(f"input_{i}") + GATE_X_SPACING * (3 - i * 0.5),
         ]
-        knot_y = (
-            circuit.y_of(f"input_{i}") - GATE_VERTICAL_SPACING + WIRE_TIGHT_SPACING * i
-        )
+        knot_y = circuit.y_of(f"input_{i}") - GATE_Y_SPACING + WIRE_TIGHT_SPACING * i
         k1 = circuit.add_knot(
             (knot_x[0], knot_y), n_inputs=1, n_outputs=2, name=f"input_{i}_knot"
         )
@@ -456,7 +484,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
         name,
         Gate(
             truth_table=OR3_TABLE,
-            position=circuit.position_of("maj_and_1") + DOWN * GATE_VERTICAL_SPACING,
+            position=circuit.position_of("maj_and_1") + DOWN * GATE_Y_SPACING,
             visual_type="or",
         ),
     )
@@ -466,7 +494,6 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             f"maj_and_{i}",
             "maj_or3",
             y_start_offset=-0.3,
-            x_end_offset=WIRE_TIGHT_SPACING,
         )
 
     # XORing three numbers via two XOR gadgets
@@ -478,7 +505,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
     )
 
     lower_output = circuit.add_knot(
-        position=circuit.position_of(xor_output_1) + DOWN * GATE_VERTICAL_SPACING,
+        position=circuit.position_of(xor_output_1) + DOWN * GATE_Y_SPACING,
         name="lower_output",
         n_inputs=1,
         n_outputs=0,
@@ -487,7 +514,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
 
     # The upper output bit also happens to be the upper one on the screen hehe
     upper_output = circuit.add_knot(
-        position=circuit.position_of("maj_or3") + DOWN * GATE_VERTICAL_SPACING,
+        position=circuit.position_of("maj_or3") + DOWN * GATE_Y_SPACING,
         name="upper_output",
         n_inputs=1,
         n_outputs=0,
