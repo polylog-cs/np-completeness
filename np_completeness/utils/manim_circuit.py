@@ -160,6 +160,8 @@ class ManimCircuit(VGroup):
         evaluation = self.circuit.evaluate()
         animations = []
 
+        speed *= 3  # make it faster while keeping the default speed at 0
+
         MIN_DURATION = 0.01  # Prevent divison by 0
 
         for (wire_start, wire_end), manim_wire in self.wires.items():

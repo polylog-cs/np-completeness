@@ -390,7 +390,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             Gate(
                 truth_table=AND_TABLE,
                 position=(
-                    -GATE_HORIZONTAL_SPACING * (i + 1),
+                    -GATE_HORIZONTAL_SPACING * (i + 2),
                     GATE_VERTICAL_SPACING * 1.5,
                 ),
                 visual_type="and",
@@ -425,7 +425,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             circuit.x_of(f"input_{i}"),
             circuit.x_of(output_knot1),
             circuit.x_of(output_knot2),
-            circuit.x_of(f"input_{i}") + GATE_HORIZONTAL_SPACING * (4 - i * 0.5),
+            circuit.x_of(f"input_{i}") + GATE_HORIZONTAL_SPACING * (3 - i * 0.5),
         ]
         knot_y = (
             circuit.y_of(f"input_{i}") - GATE_VERTICAL_SPACING + WIRE_TIGHT_SPACING * i

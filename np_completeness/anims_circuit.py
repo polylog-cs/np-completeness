@@ -236,7 +236,7 @@ class CircuitScene(Scene):
             self.play(LaggedStart(*anims))
             self.wait()
 
-        self.play(manim_circuit.animate_evaluation(speed=2))
+        self.play(manim_circuit.animate_evaluation())
         self.wait()
 
         # Add explanations to the outputs
@@ -352,31 +352,31 @@ class AdderCircuitScene(Scene):
             *[
                 Tex(str, color=text_color)
                 for str in [
-                    r"Input:",
+                    r"In:",
                     r"three bits",
-                    r"Output:",
+                    r"Out:",
                     r"their sum in binary",
                 ]
             ]
         ).arrange_in_grid(rows=2, cell_alignment=LEFT)
-        rect = SurroundingRectangle(description_tex, color=text_color)
-        description = Group(description_tex, rect).to_corner(UR)
+        description = Group(description_tex).to_corner(UR)
+
+        self.play(FadeIn(description))
+        self.wait()
+
+        detailed_circuit = make_adder_circuit(inputs=[False, False, True])
+        detailed_circuit.add_missing_inputs_and_outputs()
+        detailed_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
+        detailed_manim_circuit = ManimCircuit(detailed_circuit)
 
         self.play(
-            FadeIn(description),
+            cast(Animation, manim_circuit.animate.scale(30).fade(1)),
+            FadeIn(detailed_manim_circuit, scale=0.1),
+            run_time=2,
         )
         self.wait()
-        return
 
-        # TODO change the adder gate to adder circuit by expanding the adder-gate rectangle and fading the circuit in it?
-        circuit = make_adder_circuit(inputs=[False, False, True])
-        circuit.add_missing_inputs_and_outputs()
-
-        manim_circuit = ManimCircuit(circuit)
-        self.add(manim_circuit)
-        self.wait()
-
-        self.play(manim_circuit.animate_evaluation())
+        self.play(detailed_manim_circuit.animate_evaluation())
 
         self.wait(1)
 
