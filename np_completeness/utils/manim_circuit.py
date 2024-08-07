@@ -17,17 +17,18 @@ from np_completeness.utils.util_general import (
 
 
 class ManimGate(VMobject):
-    def __init__(self, gate: Gate, value: bool | None = None):
+    def __init__(self, gate: Gate, value: bool | None = None, scale: float = 1):
         super().__init__()
         self.gate = gate
 
         fill_color = get_wire_color(value)
+        self._scale = scale  # don't conflict with the `scale()` method
 
         if gate.visual_type == "invisible":
             pass
         elif gate.visual_type == "knot":
             self.circle = Dot(
-                radius=0.028,
+                radius=0.028 * scale,
                 color=fill_color,
             )
             self.circle.move_to(gate.position)
@@ -35,7 +36,7 @@ class ManimGate(VMobject):
             self.add(self.circle)
         elif gate.visual_type == "constant":
             self.circle = Circle(
-                radius=GATE_HEIGHT * 0.3,
+                radius=GATE_HEIGHT * 0.3 * scale,
                 color=fill_color,
                 fill_color=fill_color,
                 fill_opacity=1.0,
@@ -45,8 +46,8 @@ class ManimGate(VMobject):
             self.add(self.circle)
         else:
             self.rect = Rectangle(
-                height=GATE_HEIGHT,
-                width=GATE_WIDTH,
+                height=GATE_HEIGHT * scale,
+                width=GATE_WIDTH * scale,
                 fill_opacity=1.0,
                 color=BASE01,
                 fill_color=fill_color,
@@ -58,13 +59,13 @@ class ManimGate(VMobject):
             self.text = (
                 Text(text, color=BASE2)
                 .move_to(self.rect.get_center())
-                .scale_to_fit_height(GATE_HEIGHT * GATE_TEXT_RATIO)
+                .scale_to_fit_height(GATE_HEIGHT * GATE_TEXT_RATIO * scale)
             )
 
             self.add(self.rect, self.text)
 
     def animate_to_value(self, value: bool | None) -> Animation:
-        new_gate = ManimGate(self.gate, value)
+        new_gate = ManimGate(self.gate, value, scale=self._scale)
         # need to type: ignore because of Manim magic
         return self.animate.become(new_gate)  # type: ignore[reportReturnType]
 
@@ -76,27 +77,31 @@ class ManimWire(VMobject):
         end: InternalPoint3D,
         value: bool,
         progress: float = 0,
+        scale: float = 1,
     ):
         super().__init__()
         self.start_point: InternalPoint3D = start
         self.end_point: InternalPoint3D = end
         self.value = value
         self.progress = progress
+        self._scale = scale  # don't conflict with the `scale()` method
 
         self.background_line = Line(
-            start, end, color=get_wire_color(None), stroke_width=WIRE_WIDTH
+            start, end, color=get_wire_color(None), stroke_width=WIRE_WIDTH * scale
         )
         self.value_line = Line(
             start,
             interpolate(start, end, progress),
             color=get_wire_color(value),
-            stroke_width=WIRE_WIDTH,
+            stroke_width=WIRE_WIDTH * scale,
         )
 
         self.add(self.background_line, self.value_line)
 
     def set_progress(self, progress: float):
-        new_wire = ManimWire(self.start_point, self.end_point, self.value, progress)
+        new_wire = ManimWire(
+            self.start_point, self.end_point, self.value, progress, scale=self._scale
+        )
         self.become(new_wire)
 
 
@@ -110,7 +115,19 @@ class FillWire(Animation):
 
 
 class ManimCircuit(VGroup):
-    def __init__(self, circuit: Circuit, with_evaluation: bool = True):
+    def __init__(
+        self, circuit: Circuit, scale: float = 1, with_evaluation: bool = True
+    ):
+        """A Manim representation of a circuit.
+
+        Args:
+            circuit: The circuit to visualize.
+            scale: The scale of the circuit. This doesn't scale the positions, just the
+                size of the gates and wires.
+            with_evaluation: Whether to evaluate the circuit to be able to show the
+                progress of the evaluation. (We could probably do this lazily only when
+                we need to and not in the constructor.)
+        """
         super().__init__()
         self.circuit = circuit
 
@@ -120,7 +137,8 @@ class ManimCircuit(VGroup):
             evaluation = None
 
         self.gates = {
-            name: ManimGate(gate) for name, gate in self.circuit.gates.items()
+            name: ManimGate(gate, scale=scale)
+            for name, gate in self.circuit.gates.items()
         }
         self.wires = {
             (wire_start, wire_end): ManimWire(
@@ -129,6 +147,7 @@ class ManimCircuit(VGroup):
                 evaluation.get_wire_value(wire_start, wire_end)
                 if evaluation
                 else False,
+                scale=scale,
             )
             for wire_start, wire_end in self.circuit.wires
         }

@@ -269,7 +269,7 @@ class CircuitScene(Scene):
 class ExampleCircuitScene(Scene):
     def construct(self):
         circuit = make_example_circuit()
-        manim_circuit = ManimCircuit(circuit)
+        manim_circuit = ManimCircuit(circuit, scale=2)
         self.add(manim_circuit)
         self.wait()
 
