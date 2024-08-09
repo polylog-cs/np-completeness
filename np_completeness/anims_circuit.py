@@ -239,6 +239,7 @@ class MultiplicationCircuitScene(Scene):
 
         # We want to leave a bit of room at the bottom because of subtitles
         # TODO: is this enough?
+        # NOTE: Keep in sync with GreaterThanOneConstraint
         circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
 
         circuit.add_missing_inputs_and_outputs()
@@ -289,6 +290,7 @@ class GreaterThanOneConstraint(Scene):
     def construct(self):
         a, b = 1, 15
         circuit = make_multiplication_circuit_constraints(a, b)
+        # NOTE: Keep in sync with MultiplicationCircuitScene
         circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
 
         manim_circuit = ManimCircuit(circuit)
