@@ -1,4 +1,3 @@
-
 from typing import Callable, cast
 
 from manim import *
@@ -10,6 +9,7 @@ from np_completeness.utils.coloring_circuits import (
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import (
     make_adder_circuit,
+    make_adder_gate,
     make_example_circuit,
     make_multiplication_circuit,
     to_binary,
@@ -17,14 +17,10 @@ from np_completeness.utils.specific_circuits import (
 
 # Imported for the side effect of changing the default colors
 from np_completeness.utils.util_general import (
-    BACKGROUND_COLOR,
     BASE00,
     BLUE,
-    CNF_CONSTRAINTS,
     MAGENTA,
     RED,
-    WIRE_COLOR_FALSE,
-    WIRE_COLOR_TRUE,
     WIRE_WIDTH,
     default,
     disable_rich_logging,
@@ -442,6 +438,7 @@ class ColoringCircuitScene(Scene):
         )
 
         self.wait()
+
 
 if __name__ == "__main__":
     graph, coloring = get_example_graph(good_coloring=False)

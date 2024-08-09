@@ -564,3 +564,18 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
         circuit.add_wire("adder", output_name)
 
     return circuit
+
+
+def make_trivial_circuit() -> Circuit:
+    circuit = Circuit()
+    circuit.add_gate(
+        "and_gate",
+        Gate(
+            truth_table=AND_TABLE,
+            position=(0, 0, 0),
+            visual_type="and",
+        ),
+    )
+
+    circuit.add_missing_inputs_and_outputs()
+    return circuit

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from manim import *
 from manim.typing import InternalPoint3D
@@ -64,10 +64,16 @@ class ManimGate(VMobject):
 
             self.add(self.rect, self.text)
 
+    def set_value(self, value: bool | None):
+        """Set the value of this gate. Helper for animate_to_value()."""
+        for mobject in self.submobjects:
+            if not isinstance(mobject, Text):
+                mobject.set_fill(get_wire_color(value))
+
     def animate_to_value(self, value: bool | None) -> Animation:
-        new_gate = ManimGate(self.gate, value, scale=self._scale)
-        # need to type: ignore because of Manim magic
-        return self.animate.become(new_gate)  # type: ignore[reportReturnType]
+        """Animate the setting of the value of this gate."""
+        # cast needed because of weird type annotation for self.animate
+        return cast(Animation, self.animate.set_value(value))
 
 
 class ManimWire(VMobject):
@@ -89,9 +95,10 @@ class ManimWire(VMobject):
         self.background_line = Line(
             start, end, color=get_wire_color(None), stroke_width=WIRE_WIDTH * scale
         )
+        progress_end = interpolate(start, end, max(progress, 0.01))
         self.value_line = Line(
             start,
-            interpolate(start, end, progress),
+            progress_end,
             color=get_wire_color(value),
             stroke_width=WIRE_WIDTH * scale,
         )
@@ -99,10 +106,12 @@ class ManimWire(VMobject):
         self.add(self.background_line, self.value_line)
 
     def set_progress(self, progress: float):
-        new_wire = ManimWire(
-            self.start_point, self.end_point, self.value, progress, scale=self._scale
-        )
-        self.become(new_wire)
+        start = self.background_line.get_all_points()[0]
+        end = self.background_line.get_all_points()[-1]
+        if not np.array_equal(start, end):
+            self.value_line.put_start_and_end_on(
+                start, interpolate(start, end, max(progress, 0.01))
+            )
 
 
 class FillWire(Animation):
