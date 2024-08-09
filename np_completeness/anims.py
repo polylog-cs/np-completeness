@@ -323,3 +323,17 @@ class IntroSAT(Scene):
             ],
         )
         self.wait()
+
+
+class BreakRSA(Scene):
+    def construct(self):
+        default()
+        texts = [
+            Tex(r"Breaking RSA \\ (factoring numbers of size $10^{500}$)"),
+            Tex(r"$\Downarrow$ our reduction"),
+            Tex(r"Solving SAT with $\sim50$M variables"),
+            # MathTex(r"\Rightarrow"),
+        ]
+        g = Group(*texts).arrange(DOWN, buff=1)
+        self.play(LaggedStart(*[Write(t) for t in texts], lag_ratio=0.8))
+        self.wait()
