@@ -1,8 +1,6 @@
-# pyright: ignore-all
-from typing import Callable, cast
-
 from manim import *
 
+from np_completeness.utils.cnf_constraints import CNF_CONSTRAINTS
 from np_completeness.utils.coloring_circuits import *
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import *
@@ -32,7 +30,7 @@ FINAL_VIDEO = False
 #             ball = Dot(wire.get_end(), color = text_color)
 #             small_gate_ins.append(Group(wire, ball))
 #         small_gate_ins = Group(*small_gate_ins)
-        
+
 #         small_gate_outs = []
 #         for i in range(2):
 #             wire = Line(
@@ -42,7 +40,7 @@ FINAL_VIDEO = False
 #             ball = Dot(wire.get_end(), color = text_color)
 #             small_gate_outs.append(Group(wire, ball))
 #         small_gate_outs = Group(*small_gate_outs)
-        
+
 #         small_gate = Group(small_gate_rec, small_gate_tex, small_gate_ins, small_gate_outs)
 
 #         self.play(
@@ -84,18 +82,18 @@ FINAL_VIDEO = False
 #                     end = small_gate_rec.target.get_top() + (small_gate_rec.target.get_width() * (i-1)/4) * RIGHT + small_gate_rec.target.get_height() * UP,
 #                     color = text_color,
 #                     ).set_stroke(opacity=0)
-            
+
 #             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
-        
+
 #         for i, g in enumerate(small_gate_outs):
 #             g[0].generate_target()
 #             g[0].target = Line(
 #                     start = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT,
 #                     end = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT + small_gate_rec.target.get_height() * DOWN,
 #                     color = text_color,
-#                     ).set_stroke(opacity=0)    
+#                     ).set_stroke(opacity=0)
 #             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
-        
+
 #         self.play(
 #             MoveToTarget(small_gate_rec),
 #             MoveToTarget(small_gate_tex),
@@ -119,7 +117,6 @@ FINAL_VIDEO = False
 #         self.wait(1)
 
 
-
 class ShowConstraints(Scene):
     def construct(self):
         default()
@@ -132,7 +129,7 @@ class ShowConstraints(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
         self.wait()
 
-        def clause_to_text(clause):
+        def clause_to_text(clause: list[int]) -> str:
             terms = []
             for literal in clause:
                 if literal < 0:
@@ -182,7 +179,7 @@ class ShowConstraints(Scene):
         self.play(FadeIn(full_display))
         self.wait()
         self.play(
-            full_display.animate.to_edge(DOWN),
+            animate(full_display).to_edge(DOWN),
         )
         self.wait()
 
@@ -201,7 +198,7 @@ class ShowConstraints(Scene):
         self.play(
             AnimationGroup(
                 *[
-                    clause.animate.move_to(new_pos)
+                    animate(clause).move_to(new_pos)
                     for clause, new_pos in zip(clause_texts, positions)
                 ]
             )
@@ -215,8 +212,8 @@ class ShowConstraints(Scene):
             circuit_logic_text,
         )
         new_rectangle = Rectangle(
-            width = 4.5,
-            height = new_rectangle.height,
+            width=4.5,
+            height=new_rectangle.height,
             color=text_color,
             fill_opacity=1.0,
             fill_color=BACKGROUND_COLOR,
@@ -229,7 +226,7 @@ class ShowConstraints(Scene):
         )
         self.wait()
         logic_group = Group(circuit_logic_text, new_rectangle)
-        self.play(logic_group.animate.to_corner(UR, buff=0.0).shift(0.3 * DL))
+        self.play(animate(logic_group).to_corner(UR, buff=0.0).shift(0.3 * DL))
 
         self.wait(2)
 
@@ -322,11 +319,6 @@ class ShowConstraints(Scene):
         constraint_b = Group(*constraint_b).arrange_in_grid(rows=2, cell_alignment=LEFT)
         eqs_b = Group(*eqs_b).arrange_in_grid(rows=2, cell_alignment=LEFT)
 
-        constraints = (
-            Group(*constraint_a, *constraint_b)
-            .arrange_in_grid(rows=4, cell_alignment=LEFT)
-            .next_to(logic_group, DOWN, buff=0.5)
-        )
         eqs = (
             Group(*eqs_a, *eqs_b)
             .arrange_in_grid(rows=4, cell_alignment=LEFT)
@@ -355,12 +347,12 @@ class ShowConstraints(Scene):
         new_eqs_a, new_eqs_b = [], []
         for eqs in [eqs_a, eqs_b]:
             for eq in eqs:
-                eq.generate_target()
-                eq.target.scale(0.5)
+                target = eq.generate_target()
+                target.scale(0.5)
                 if eqs == eqs_a:
-                    new_eqs_a.append(eq.target)
+                    new_eqs_a.append(target)
                 else:
-                    new_eqs_b.append(eq.target)
+                    new_eqs_b.append(target)
         new_eqs_a = Group(*new_eqs_a).arrange_in_grid(rows=1)
         new_eqs_b = (
             Group(*new_eqs_b).arrange_in_grid(rows=1).next_to(new_eqs_a, DOWN, buff=0.3)
@@ -377,7 +369,7 @@ class ShowConstraints(Scene):
         self.play(
             *[MoveToTarget(eq) for eq in eqs_a],
             *[MoveToTarget(eq) for eq in eqs_b],
-            Create(input_group[0]),
+            Create(rec),
         )
         self.wait()
         sat_group.next_to(input_group, DOWN, buff=0.5)
@@ -387,23 +379,28 @@ class ShowConstraints(Scene):
             sat_group, DOWN, buff=0.25
         )
 
-        inp_a = [
-            tx[1].copy() for tx in eqs_a
-        ]
-        inp_b = [
-            tx[1].copy() for tx in eqs_b
-        ]
+        inp_a = [tx[1].copy() for tx in eqs_a]
+        inp_b = [tx[1].copy() for tx in eqs_b]
         self.play(
-            *[inp.animate.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_a)],
-            *[inp.animate.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_b)],
+            *[
+                animate(inp)
+                .move_to(manim_circuit.gates[f"input_a_{i}"])
+                .shift(0.25 * UL)
+                for i, inp in enumerate(inp_a)
+            ],
+            *[
+                animate(inp)
+                .move_to(manim_circuit.gates[f"input_b_{i}"])
+                .shift(0.25 * UL)
+                for i, inp in enumerate(inp_b)
+            ],
         )
         self.wait()
 
-
         self.play(
             manim_circuit.animate_evaluation(speed=2),
-Write(mult_tex),
-            )
+            Write(mult_tex),
+        )
         self.wait()
 
         self.play(
@@ -414,39 +411,6 @@ Write(mult_tex),
             FadeOut(eqs_b),
         )
         self.wait()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         c = 15
         number_c = (
@@ -482,7 +446,7 @@ Write(mult_tex),
         for i in range(8):
             col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
             st = r"$x_{" + str(i + 74) + r"}$"
-            eqst = r"{{$x_{" + str(i+74) + r"} = $}}"
+            eqst = r"{{$x_{" + str(i + 74) + r"} = $}}"
             if (c & (1 << i)) == 0:
                 st = r"NOT " + st
                 eqst = eqst + r"{{$0$}}"
@@ -491,8 +455,16 @@ Write(mult_tex),
             constraint_c.append(Tex(st, color=col))
             eqs_c.append(Tex(eqst, color=col))
 
-        constraint_c = Group(*constraint_c).arrange_in_grid(rows=4, cell_alignment=LEFT).next_to(logic_group, DOWN, buff=0.5)
-        eqs_c = Group(*eqs_c).arrange_in_grid(rows=4, cell_alignment=LEFT).next_to(logic_group, DOWN, buff=0.5)
+        constraint_c = (
+            Group(*constraint_c)
+            .arrange_in_grid(rows=4, cell_alignment=LEFT)
+            .next_to(logic_group, DOWN, buff=0.5)
+        )
+        eqs_c = (
+            Group(*eqs_c)
+            .arrange_in_grid(rows=4, cell_alignment=LEFT)
+            .next_to(logic_group, DOWN, buff=0.5)
+        )
 
         # Change binary numbers to constraints
         self.play(
@@ -510,23 +482,21 @@ Write(mult_tex),
         # Scale down the equation text
         new_eqs_c = []
         for eq in eqs_c:
-            eq.generate_target()
-            eq.target.scale(0.5)
-            new_eqs_c.append(eq.target)
-    
+            target = eq.generate_target()
+            target = target.scale(0.5)
+            new_eqs_c.append(target)
+
         new_eqs_c = Group(*new_eqs_c).arrange_in_grid(rows=2)
         rec = Rectangle(
             width=logic_group[1].get_width(),
             height=Group(new_eqs_c).get_height() + 0.5,
             color=text_color,
         ).move_to(new_eqs_c)
-        input_group = Group(rec, new_eqs_c).next_to(
-            logic_group, DOWN, buff=0.2
-        )
+        input_group = Group(rec, new_eqs_c).next_to(logic_group, DOWN, buff=0.2)
 
         self.play(
             *[MoveToTarget(eq) for eq in eqs_c],
-            Create(input_group[0]),
+            Create(rec),
         )
         self.wait()
         sat_group.next_to(input_group, DOWN, buff=0.5)
@@ -536,18 +506,19 @@ Write(mult_tex),
             sat_group, DOWN, buff=0.25
         )
 
-        inp_c = [
-            tx[1].copy() for tx in eqs_c
-        ]
+        inp_c = [tx[1].copy() for tx in eqs_c]
         self.play(
-            *[inp.animate.move_to(manim_circuit.gates[f"output_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_c)],
+            *[
+                animate(inp)
+                .move_to(manim_circuit.gates[f"output_{i}"])
+                .shift(0.25 * UL)
+                for i, inp in enumerate(inp_c)
+            ],
         )
         self.wait()
 
-
         self.play(
             manim_circuit.animate_evaluation(speed=2),
-Write(mult_tex),
-            )
+            Write(mult_tex),
+        )
         self.wait()
-
