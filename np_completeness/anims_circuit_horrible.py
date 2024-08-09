@@ -1,4 +1,4 @@
-# pyright: ignore
+# pyright: ignore-all
 from typing import Callable, cast
 
 from manim import *
@@ -6,12 +6,117 @@ from manim import *
 from np_completeness.utils.coloring_circuits import *
 from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import *
-
-# Imported for the side effect of changing the default colors
-from np_completeness.utils.util_general *
+from np_completeness.utils.util_general import *
 
 FINAL_VIDEO = False
 
+
+# class AdderCircuitScene(Scene):
+#     def construct(self):
+#         default()
+
+#         # circuit = make_adder_gate(inputs=[True, False, True])
+#         # circuit.add_missing_inputs_and_outputs()
+#         # manim_circuit = ManimCircuit(circuit)
+#         # self.add(manim_circuit)
+#         # self.wait()
+
+#         small_gate_tex = Tex(r"$\;\;+\;\;$", color=BASE2).scale(1.5)
+#         small_gate_rec = Rectangle(width = GATE_WIDTH, height = GATE_HEIGHT, color=text_color, fill_opacity = 1.0, fill_color = WIRE_COLOR_NONE).scale(2)
+#         small_gate_ins = []
+#         for i in range(3):
+#             wire = Line(
+#                     start = small_gate_rec.get_top() + (small_gate_rec.get_width() * (i-1)/4) * RIGHT,
+#                     end = small_gate_rec.get_top() + (small_gate_rec.get_width() * (i-1)/4) * RIGHT + small_gate_rec.get_height() * UP,
+#                     color = text_color)
+#             ball = Dot(wire.get_end(), color = text_color)
+#             small_gate_ins.append(Group(wire, ball))
+#         small_gate_ins = Group(*small_gate_ins)
+        
+#         small_gate_outs = []
+#         for i in range(2):
+#             wire = Line(
+#                     start = small_gate_rec.get_bottom() + (small_gate_rec.get_width() * (2*i-1)/6) * RIGHT,
+#                     end = small_gate_rec.get_bottom() + (small_gate_rec.get_width() * (2*i-1)/6) * RIGHT + small_gate_rec.get_height() * DOWN,
+#                     color = text_color)
+#             ball = Dot(wire.get_end(), color = text_color)
+#             small_gate_outs.append(Group(wire, ball))
+#         small_gate_outs = Group(*small_gate_outs)
+        
+#         small_gate = Group(small_gate_rec, small_gate_tex, small_gate_ins, small_gate_outs)
+
+#         self.play(
+#             FadeIn(small_gate),
+#         )
+#         self.wait()
+
+#         description_tex = Group(
+#             *[
+#                 Tex(str, color=text_color)
+#                 for str in [
+#                     r"Input:",
+#                     r"three bits",
+#                     r"Output:",
+#                     r"their sum in binary",
+#                 ]
+#             ]
+#         ).arrange_in_grid(rows=2, cell_alignment=LEFT)
+#         rect = SurroundingRectangle(description_tex, color=text_color)
+#         description = Group(description_tex, rect).to_corner(UR, buff = 0.25)
+
+#         self.play(
+#             FadeIn(description),
+#         )
+#         self.wait()
+
+#         sc = 7
+#         op = 0.2
+#         small_gate_rec.generate_target()
+#         small_gate_rec.target.scale(sc).set_opacity(op).shift(1*DOWN)
+
+#         small_gate_tex.generate_target()
+#         small_gate_tex.target.scale(sc).set_opacity(op).shift(1*DOWN)
+
+#         for i, g in enumerate(small_gate_ins):
+#             g[0].generate_target()
+#             g[0].target = Line(
+#                     start = small_gate_rec.target.get_top() + (small_gate_rec.target.get_width() * (i-1)/4) * RIGHT,
+#                     end = small_gate_rec.target.get_top() + (small_gate_rec.target.get_width() * (i-1)/4) * RIGHT + small_gate_rec.target.get_height() * UP,
+#                     color = text_color,
+#                     ).set_stroke(opacity=0)
+            
+#             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
+        
+#         for i, g in enumerate(small_gate_outs):
+#             g[0].generate_target()
+#             g[0].target = Line(
+#                     start = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT,
+#                     end = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT + small_gate_rec.target.get_height() * DOWN,
+#                     color = text_color,
+#                     ).set_stroke(opacity=0)    
+#             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
+        
+#         self.play(
+#             MoveToTarget(small_gate_rec),
+#             MoveToTarget(small_gate_tex),
+#             *[MoveToTarget(g[0]) for g in small_gate_ins],
+#             *[MoveToTarget(g[1]) for g in small_gate_ins],
+#             *[MoveToTarget(g[0]) for g in small_gate_outs],
+#             *[MoveToTarget(g[1]) for g in small_gate_outs],
+#         )
+#         self.wait()
+
+
+#         circuit = make_adder_circuit(inputs=[False, False, True])
+#         circuit.add_missing_inputs_and_outputs()
+
+#         manim_circuit = ManimCircuit(circuit)
+#         self.add(manim_circuit)
+#         self.wait()
+
+#         self.play(manim_circuit.animate_evaluation())
+
+#         self.wait(1)
 
 
 
@@ -19,7 +124,7 @@ class ShowConstraints(Scene):
     def construct(self):
         default()
 
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
         circuit = make_multiplication_circuit(a=7, b=4)
         circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
         circuit.add_missing_inputs_and_outputs()
@@ -108,11 +213,14 @@ class ShowConstraints(Scene):
         ).scale(1.5)
         new_rectangle = SurroundingRectangle(
             circuit_logic_text,
+        )
+        new_rectangle = Rectangle(
+            width = 4.5,
+            height = new_rectangle.height,
             color=text_color,
             fill_opacity=1.0,
             fill_color=BACKGROUND_COLOR,
         )
-        new_rectangle.set_width(4.5)
 
         self.play(
             Create(new_rectangle),
@@ -200,12 +308,12 @@ class ShowConstraints(Scene):
             for i in range(4):
                 col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
                 st = r"$x_{" + str((i if c == a else i + 4)) + r"}$"
-                eqst = r"$x_{" + str((i if c == a else i + 4)) + r"} = $"
+                eqst = r"{{$x_{" + str((i if c == a else i + 4)) + r"} = $}}"
                 if (c & (1 << i)) == 0:
                     st = r"NOT " + st
-                    eqst = eqst + "0"
+                    eqst = eqst + r"{{$0$}}"
                 else:
-                    eqst = eqst + "1"
+                    eqst = eqst + r"{{$1$}}"
                 constraint.append(Tex(st, color=col))
                 eqs.append(Tex(eqst, color=col))
 
@@ -263,7 +371,7 @@ class ShowConstraints(Scene):
             color=text_color,
         ).move_to(Group(new_eqs_a, new_eqs_b).get_center())
         input_group = Group(rec, new_eqs_a, new_eqs_b).next_to(
-            logic_group, DOWN, buff=0.5
+            logic_group, DOWN, buff=0.2
         )
 
         self.play(
@@ -276,43 +384,170 @@ class ShowConstraints(Scene):
         self.play(FadeIn(sat_group))
         self.wait()
         mult_tex = Tex(r"Multiplying $3 \times 5$", color=text_color).next_to(
-            sat_group, DOWN, buff=0.5
+            sat_group, DOWN, buff=0.25
         )
+
+        inp_a = [
+            tx[1].copy() for tx in eqs_a
+        ]
+        inp_b = [
+            tx[1].copy() for tx in eqs_b
+        ]
         self.play(
-            Write(mult_tex),
+            *[inp.animate.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_a)],
+            *[inp.animate.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_b)],
         )
         self.wait()
 
-        return
 
-        # Move bits to the respective input wires
-        for i, bit in enumerate(to_binary(a, n_digits=4)):
-            manim_gate = manim_circuit.gates[f"input_a_{i}"]
-            bit_text = (
-                Tex(str(int(bit)), color=BLUE)
-                .scale(1.2)
-                .move_to(binary_a.get_center() + RIGHT * (i - 1.5))
+        self.play(
+            manim_circuit.animate_evaluation(speed=2),
+Write(mult_tex),
             )
-
-            self.play(
-                Transform(bit_text, bit_text.copy().move_to(manim_gate.get_center()))
-            )
-            self.wait(0.5)
-
-        for i, bit in enumerate(to_binary(b, n_digits=4)):
-            manim_gate = manim_circuit.gates[f"input_b_{i}"]
-            bit_text = (
-                Tex(str(int(bit)), color=BLUE)
-                .scale(1.2)
-                .move_to(binary_b.get_center() + RIGHT * (i - 1.5))
-            )
-
-            self.play(
-                Transform(bit_text, bit_text.copy().move_to(manim_gate.get_center()))
-            )
-            self.wait(0.5)
-
         self.wait()
-        self.play(manim_circuit.animate_evaluation(speed=2))
+
+        self.play(
+            FadeOut(sat_group),
+            FadeOut(input_group),
+            FadeOut(mult_tex),
+            FadeOut(eqs_a),
+            FadeOut(eqs_b),
+        )
+        self.wait()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        c = 15
+        number_c = (
+            Tex(f"{c}", color=text_color)
+            .scale(1.4)
+            .next_to(logic_group, DOWN, buff=0.5)
+            .align_to(logic_group, LEFT)
+        )
+
+        self.play(Write(number_c))
+        self.wait()
+
+        binary_c = (
+            Tex(
+                r"{{$ = \,$}}{{$0\, $}}{{$0\, $}}{{$0\, $}}{{$0\, $}}}{{$1\, $}}{{$1\, $}}{{$1\, $}}{{$1\, $}}",
+                color=text_color,
+            )
+            .scale(1.2)
+            .next_to(number_c, RIGHT, buff=0.1)
+        )
+
+        for i in range(8):
+            binary_c[8 - i].set_color(
+                (WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE)
+            )
+
+        self.play(Write(binary_c))
+        self.wait()
+
+        # change bits to constraints
+        constraint_c = []
+        eqs_c = []
+        for i in range(8):
+            col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
+            st = r"$x_{" + str(i + 74) + r"}$"
+            eqst = r"{{$x_{" + str(i+74) + r"} = $}}"
+            if (c & (1 << i)) == 0:
+                st = r"NOT " + st
+                eqst = eqst + r"{{$0$}}"
+            else:
+                eqst = eqst + r"{{$1$}}"
+            constraint_c.append(Tex(st, color=col))
+            eqs_c.append(Tex(eqst, color=col))
+
+        constraint_c = Group(*constraint_c).arrange_in_grid(rows=4, cell_alignment=LEFT).next_to(logic_group, DOWN, buff=0.5)
+        eqs_c = Group(*eqs_c).arrange_in_grid(rows=4, cell_alignment=LEFT).next_to(logic_group, DOWN, buff=0.5)
+
+        # Change binary numbers to constraints
+        self.play(
+            *[ReplacementTransform(binary_c[i + 1], constraint_c[i]) for i in range(8)],
+            FadeOut(number_c),
+            FadeOut(binary_c[0]),
+        )
+        self.wait()
+
+        self.play(
+            *[ReplacementTransform(constraint_c[i], eqs_c[i]) for i in range(8)],
+        )
+        self.wait()
+
+        # Scale down the equation text
+        new_eqs_c = []
+        for eq in eqs_c:
+            eq.generate_target()
+            eq.target.scale(0.5)
+            new_eqs_c.append(eq.target)
+    
+        new_eqs_c = Group(*new_eqs_c).arrange_in_grid(rows=2)
+        rec = Rectangle(
+            width=logic_group[1].get_width(),
+            height=Group(new_eqs_c).get_height() + 0.5,
+            color=text_color,
+        ).move_to(new_eqs_c)
+        input_group = Group(rec, new_eqs_c).next_to(
+            logic_group, DOWN, buff=0.2
+        )
+
+        self.play(
+            *[MoveToTarget(eq) for eq in eqs_c],
+            Create(input_group[0]),
+        )
+        self.wait()
+        sat_group.next_to(input_group, DOWN, buff=0.5)
+        self.play(FadeIn(sat_group))
+        self.wait()
+        mult_tex = Tex(r"Factoring 15", color=text_color).next_to(
+            sat_group, DOWN, buff=0.25
+        )
+
+        inp_c = [
+            tx[1].copy() for tx in eqs_c
+        ]
+        self.play(
+            *[inp.animate.move_to(manim_circuit.gates[f"output_{i}"]).shift(0.25*UL) for i, inp in enumerate(inp_c)],
+        )
+        self.wait()
+
+
+        self.play(
+            manim_circuit.animate_evaluation(speed=2),
+Write(mult_tex),
+            )
         self.wait()
 
