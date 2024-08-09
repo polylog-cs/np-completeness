@@ -1,6 +1,6 @@
 import pytest
 
-from np_completeness.utils.circuit import ADD_TABLE
+from np_completeness.utils.gate import ADD_TABLE
 from np_completeness.utils.specific_circuits import (
     MULTIPLICATION_CIRCUIT_SIZE,
     make_adder_circuit,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from typing import Literal
 
 from manim.typing import InternalPoint3D
@@ -24,11 +25,26 @@ class Gate:
         length: float = DEFAULT_GATE_LENGTH,
         visual_type: GateVisualType = "default",
     ):
+        """A logical gate, possibly with multiple outputs.
+
+        Args:
+            truth_table: A dictionary mapping input values to output values. If we try
+                to evaluate for an input combination that's not present in the keys,
+                will raise an error.
+            position: The position of the gate when visualizing.
+            length: How long signal takes to propagate through this gate.
+            visual_type: The type of gate to visualize. If "default", will try to infer
+                the type from the truth table.
+        """
         self.truth_table = truth_table
         self.check_truth_table()
 
         self.position: InternalPoint3D = normalize_position(position)
         self.length = length
+
+        if visual_type == "default":
+            visual_type = infer_gate_visual_type(truth_table)
+
         self.visual_type: GateVisualType = visual_type
 
     def check_truth_table(self):
@@ -110,3 +126,67 @@ class Gate:
 class GateEvaluation(BaseModel):
     input_values: tuple[bool, ...]
     reach_time: float
+
+
+NOT_TABLE = {
+    (False,): (True,),
+    (True,): (False,),
+}
+
+AND_TABLE = {
+    (False, False): (False,),
+    (False, True): (False,),
+    (True, False): (False,),
+    (True, True): (True,),
+}
+
+OR_TABLE = {
+    (False, False): (False,),
+    (False, True): (True,),
+    (True, False): (True,),
+    (True, True): (True,),
+}
+
+NAND_TABLE = {
+    (False, False): (True,),
+    (False, True): (True,),
+    (True, False): (True,),
+    (True, True): (False,),
+}
+
+
+def all_inputs(n_inputs: int) -> list[tuple[bool, ...]]:
+    """Return all possible input combinations for `n_inputs`."""
+    return list(itertools.product([False, True], repeat=n_inputs))
+
+
+OR3_TABLE = {inputs: (any(inputs),) for inputs in all_inputs(3)}
+
+# the output is (lower bit, upper bit = carry)
+ADD_TABLE = {
+    (False, False, False): (False, False),
+    (False, False, True): (True, False),
+    (False, True, False): (True, False),
+    (False, True, True): (False, True),
+    (True, False, False): (True, False),
+    (True, False, True): (False, True),
+    (True, True, False): (False, True),
+    (True, True, True): (True, True),
+}
+
+
+def infer_gate_visual_type(
+    truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
+) -> GateVisualType:
+    if truth_table == NOT_TABLE:
+        return "not"
+    if truth_table == AND_TABLE:
+        return "and"
+    if truth_table == OR_TABLE:
+        return "or"
+    if truth_table == NAND_TABLE:
+        return "nand"
+    if truth_table == ADD_TABLE:
+        return "+"
+
+    return "default"  # unknown

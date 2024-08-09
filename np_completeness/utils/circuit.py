@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 from queue import PriorityQueue
 
 import matplotlib.pyplot as plt
@@ -382,51 +381,3 @@ class Circuit:
             gate.position += shift
 
         return self
-
-
-def all_inputs(n_inputs: int) -> list[tuple[bool, ...]]:
-    """Return all possible input combinations for `n_inputs`."""
-    return list(itertools.product([False, True], repeat=n_inputs))
-
-
-NOT_TABLE = {
-    (False,): (True,),
-    (True,): (False,),
-}
-
-AND_TABLE = {
-    (False, False): (False,),
-    (False, True): (False,),
-    (True, False): (False,),
-    (True, True): (True,),
-}
-
-NAND_TABLE = {
-    (False, False): (True,),
-    (False, True): (True,),
-    (True, False): (True,),
-    (True, True): (False,),
-}
-
-OR_TABLE = {
-    (False, False): (False,),
-    (False, True): (True,),
-    (True, False): (True,),
-    (True, True): (True,),
-}
-
-
-OR3_TABLE = {inputs: (any(inputs),) for inputs in all_inputs(3)}
-
-
-# the output is (lower bit, upper bit = carry)
-ADD_TABLE = {
-    (False, False, False): (False, False),
-    (False, False, True): (True, False),
-    (False, True, False): (True, False),
-    (False, True, True): (False, True),
-    (True, False, False): (True, False),
-    (True, False, True): (False, True),
-    (True, True, False): (False, True),
-    (True, True, True): (True, True),
-}

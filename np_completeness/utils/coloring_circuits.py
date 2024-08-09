@@ -2,8 +2,8 @@ from typing import Hashable, TypeAlias, cast
 
 from manim import *
 
-from np_completeness.utils.circuit import NAND_TABLE, OR3_TABLE, Circuit
-from np_completeness.utils.gate import Gate
+from np_completeness.utils.circuit import Circuit
+from np_completeness.utils.gate import NAND_TABLE, OR3_TABLE, Gate
 from np_completeness.utils.util_general import BASE00, CYAN, MAGENTA
 
 Coloring: TypeAlias = dict[int, int]

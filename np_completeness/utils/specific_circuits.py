@@ -2,14 +2,16 @@ import numpy as np
 from manim import DOWN, LEFT, RIGHT, UP, np
 
 from np_completeness.utils.circuit import (
+    Circuit,
+)
+from np_completeness.utils.gate import (
     ADD_TABLE,
     AND_TABLE,
     NOT_TABLE,
     OR3_TABLE,
     OR_TABLE,
-    Circuit,
+    Gate,
 )
-from np_completeness.utils.gate import Gate
 from np_completeness.utils.util_general import (
     GATE_X_SPACING,
     GATE_Y_SPACING,
@@ -150,6 +152,39 @@ def to_binary(x: int, n_digits: int = MULTIPLICATION_CIRCUIT_SIZE) -> list[bool]
     return res
 
 
+def _multiplication_and_gate_position(i: int, j: int) -> tuple[float, float]:
+    return (
+        2 - 1 * (i + j) * GATE_X_SPACING - 0.5 * i,
+        2 - i * GATE_Y_SPACING,
+    )
+
+
+def _add_multiplication_inputs(circuit: Circuit, a: list[bool], b: list[bool]) -> None:
+    assert len(a) == len(b)
+    n = len(a)
+
+    for t, symbol, values in [(0, "a", a), (1, "b", b)]:
+        for j in range(n):
+            input_name = f"input_{symbol}_{j}"
+            # For visual reasons, the horizontal positioning is different for
+            # input A and input B: they're placed under different gates.
+            if symbol == "a":
+                x = _multiplication_and_gate_position(j, 0)[0] + 0.15
+            else:
+                x = _multiplication_and_gate_position(0, j)[0] - 0.2
+
+            input_pos = np.array([x, 3.5 - t * 0.5])
+
+            circuit.add_gate(
+                input_name,
+                Gate(
+                    truth_table={(): (values[j],)},
+                    position=input_pos,
+                    visual_type="constant",
+                ),
+            )
+
+
 def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Circuit:
     circuit = Circuit()
     n = MULTIPLICATION_CIRCUIT_SIZE
@@ -163,37 +198,13 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
     for i in range(n):
         for j in range(n):
             gate_name = f"and_{i}_{j}"
-            position = (
-                2 - 1 * (i + j) * GATE_X_SPACING - 0.5 * i,
-                2 - i * GATE_Y_SPACING,
-            )
+            position = _multiplication_and_gate_position(i, j)
             circuit.add_gate(
                 gate_name,
                 Gate(truth_table=AND_TABLE, position=position, visual_type="and"),
             )
 
-    # Define the input gates and wires
-    for t, symbol, values in [(0, "a", a), (1, "b", b)]:
-        for j in range(n):
-            input_name = f"input_{symbol}_{j}"
-            # For visual reasons, the horizontal positioning is different for
-            # input A and input B: they're placed under different gates.
-            gate_name = f"and_0_{j}" if t == 1 else f"and_{j}_0"
-
-            input_pos = np.array(
-                [
-                    circuit.x_of(gate_name) + (0.15 if symbol == "a" else -0.2),
-                    3.5 - t * 0.5,
-                ]
-            )
-            circuit.add_gate(
-                input_name,
-                Gate(
-                    truth_table={(): (values[j],)},
-                    position=input_pos,
-                    visual_type="constant",
-                ),
-            )
+    _add_multiplication_inputs(circuit, a, b)
 
     # wires from input A
     for i in range(n):
@@ -313,6 +324,44 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
     circuit.add_missing_inputs_and_outputs(visible=False)
 
     circuit.check()
+    return circuit
+
+
+def make_multiplication_circuit_constraints(
+    a: list[bool] | int, b: list[bool] | int
+) -> Circuit:
+    circuit = Circuit()
+    n = MULTIPLICATION_CIRCUIT_SIZE
+
+    if isinstance(a, int):
+        a = to_binary(a, n_digits=n)
+    if isinstance(b, int):
+        b = to_binary(b, n_digits=n)
+
+    _add_multiplication_inputs(circuit, a, b)
+
+    for symbol in ["a", "b"]:
+        for j in range(n):
+            x = (
+                (-GATE_X_SPACING * j - 1)
+                if symbol == "a"
+                else (-GATE_X_SPACING * j + 5)
+            )
+            circuit.add_knot((x, 1), name=f"knot_{symbol}_{j}")
+            add_snake_wire(
+                circuit,
+                f"input_{symbol}_{j}",
+                f"knot_{symbol}_{j}",
+                y_start_offset=-GATE_Y_SPACING
+                + (j if symbol == "a" else (n - 1 - j)) * WIRE_TIGHT_SPACING,
+                x_end_offset=0,
+            )
+
+        circuit.add_gate(
+            f"not_{symbol}", Gate(NOT_TABLE, (circuit.x_of(f"knot_{symbol}_0"), 0))
+        )
+
+    circuit.add_missing_inputs_and_outputs()
     return circuit
 
 

@@ -1,12 +1,10 @@
 import numpy as np
 
 from np_completeness.utils.circuit import (
-    AND_TABLE,
-    OR_TABLE,
     Circuit,
     CircuitEvaluation,
 )
-from np_completeness.utils.gate import Gate
+from np_completeness.utils.gate import AND_TABLE, OR_TABLE, Gate
 
 
 def make_circuit_fixture() -> Circuit:
