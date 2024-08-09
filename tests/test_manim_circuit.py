@@ -4,11 +4,11 @@ import numpy as np
 from manim import RIGHT, Animation, Scene
 
 from np_completeness.utils.manim_circuit import ManimCircuit
-from np_completeness.utils.specific_circuits import make_example_circuit
+from tests.test_circuit import make_circuit_fixture
 
 
 def test_animation_after_shift():
-    circuit = make_example_circuit()
+    circuit = make_circuit_fixture()
     manim_circuit = ManimCircuit(circuit, scale=2)
 
     scene = Scene()
@@ -18,7 +18,7 @@ def test_animation_after_shift():
 
     positions_1 = [m.get_center() for m in manim_circuit.submobjects]
     scene.wait()
-    scene.play(manim_circuit.animate_evaluation())
+    scene.play(manim_circuit.animate_evaluation(speed=5))
     scene.wait()
     positions_2 = [m.get_center() for m in manim_circuit.submobjects]
 

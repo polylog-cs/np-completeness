@@ -12,6 +12,7 @@ from np_completeness.utils.specific_circuits import (
     make_adder_gate,
     make_example_circuit,
     make_multiplication_circuit,
+    make_multiplication_circuit_constraints,
     to_binary,
 )
 
@@ -174,7 +175,7 @@ class MultiplicationByHand(Scene):
         self.wait(2)
 
 
-class CircuitScene(Scene):
+class MultiplicationCircuitScene(Scene):
     def construct(self):
         disable_rich_logging()
 
@@ -266,6 +267,16 @@ class CircuitScene(Scene):
 
         self.play(LaggedStart(*anims))
         self.wait(2)
+
+
+class FactoringConstraint(Scene):
+    def construct(self):
+        circuit = make_multiplication_circuit_constraints(3, 5)
+        circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
+
+        manim_circuit = ManimCircuit(circuit)
+        self.add(manim_circuit)
+        self.wait()
 
 
 class ExampleCircuitScene(Scene):

@@ -20,7 +20,7 @@ from np_completeness.utils.util_general import (
 
 
 def make_example_circuit() -> Circuit:
-    """Make a simple example circuit with 3 inputs and 2 outputs."""
+    """Make a simple example circuit."""
     circuit = Circuit()
 
     for i, out_value in enumerate([False, True, True]):
@@ -35,7 +35,6 @@ def make_example_circuit() -> Circuit:
                         0,
                     ]
                 ),
-                visual_type="constant",
             ),
         )
 
@@ -44,7 +43,6 @@ def make_example_circuit() -> Circuit:
         Gate(
             truth_table=NOT_TABLE,
             position=circuit.position_of("input_1") + DOWN * GATE_Y_SPACING,
-            visual_type="not",
         ),
     )
 
@@ -53,7 +51,6 @@ def make_example_circuit() -> Circuit:
         Gate(
             truth_table=OR_TABLE,
             position=np.array([circuit.x_of("input_1") + GATE_X_SPACING, 0, 0]),
-            visual_type="or",
         ),
     )
     circuit.add_gate(
@@ -63,7 +60,6 @@ def make_example_circuit() -> Circuit:
             position=np.array(
                 [circuit.x_of("input_1") - GATE_X_SPACING, -GATE_Y_SPACING, 0]
             ),
-            visual_type="and",
         ),
     )
     circuit.add_gate(
@@ -180,7 +176,6 @@ def _add_multiplication_inputs(circuit: Circuit, a: list[bool], b: list[bool]) -
                 Gate(
                     truth_table={(): (values[j],)},
                     position=input_pos,
-                    visual_type="constant",
                 ),
             )
 
@@ -201,7 +196,7 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
             position = _multiplication_and_gate_position(i, j)
             circuit.add_gate(
                 gate_name,
-                Gate(truth_table=AND_TABLE, position=position, visual_type="and"),
+                Gate(truth_table=AND_TABLE, position=position),
             )
 
     _add_multiplication_inputs(circuit, a, b)
@@ -258,7 +253,7 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
             )
             circuit.add_gate(
                 gate_name,
-                Gate(truth_table=ADD_TABLE, position=position, visual_type="+"),
+                Gate(truth_table=ADD_TABLE, position=position),
             )
 
             if i > 0 and j < n - 1:
@@ -400,7 +395,6 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
                         0,
                     ]
                 ),
-                visual_type="not",
             ),
         )
         knot2_name = circuit.add_gate(
@@ -420,7 +414,6 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
             Gate(
                 truth_table=AND_TABLE,
                 position=circuit.position_of(knot_name) + DOWN * GATE_Y_SPACING,
-                visual_type="and",
             ),
         )
         circuit.add_wire(knot_name, f"{prefix}_and_{i}")
@@ -439,7 +432,6 @@ def _make_xor_gadget(circuit: Circuit, prefix: str, input_0: str, input_1: str) 
                 (input_x_0 + input_x_1) / 2,
                 circuit.y_of(f"{prefix}_and_0") - GATE_Y_SPACING * 0.5,
             ),
-            visual_type="or",
         ),
     )
     circuit.add_wire(f"{prefix}_and_0", or_name)
@@ -457,7 +449,6 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             Gate(
                 truth_table={(): (inputs[i],)},
                 position=(-GATE_X_SPACING * i, GATE_Y_SPACING * 3.5),
-                visual_type="constant",
             ),
         )
 
@@ -472,7 +463,6 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
                     -GATE_X_SPACING * (i + 2),
                     GATE_Y_SPACING * 1.5,
                 ),
-                visual_type="and",
             ),
         )
         for j in range(2):
@@ -582,7 +572,6 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
         Gate(
             truth_table=ADD_TABLE,
             position=(0, 0, 0),
-            visual_type="+",
         ),
     )
 
@@ -594,7 +583,6 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
             Gate(
                 truth_table={(): (value,)},
                 position=(-1 + i * 1, 1, 0),
-                visual_type="constant",
             ),
         )
         circuit.add_wire(input_name, "adder")
@@ -619,11 +607,7 @@ def make_trivial_circuit() -> Circuit:
     circuit = Circuit()
     circuit.add_gate(
         "and_gate",
-        Gate(
-            truth_table=AND_TABLE,
-            position=(0, 0, 0),
-            visual_type="and",
-        ),
+        Gate(truth_table=AND_TABLE, position=(0, 0, 0)),
     )
 
     circuit.add_missing_inputs_and_outputs()

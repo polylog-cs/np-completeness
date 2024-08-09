@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Literal
+from typing import Literal, TypeAlias
 
 from manim.typing import InternalPoint3D
 from pydantic import BaseModel
@@ -15,12 +15,13 @@ from np_completeness.utils.util_general import (
 GateVisualType = Literal[
     "default", "constant", "knot", "invisible", "not", "and", "or", "nand", "+"
 ]
+TruthTable: TypeAlias = dict[tuple[bool, ...], tuple[bool, ...]]
 
 
 class Gate:
     def __init__(
         self,
-        truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
+        truth_table: TruthTable,
         position: AnyPoint,
         length: float = DEFAULT_GATE_LENGTH,
         visual_type: GateVisualType = "default",
@@ -37,7 +38,7 @@ class Gate:
                 the type from the truth table.
         """
         self.truth_table = truth_table
-        self.check_truth_table()
+        check_truth_table(self.truth_table)
 
         self.position: InternalPoint3D = normalize_position(position)
         self.length = length
@@ -47,40 +48,13 @@ class Gate:
 
         self.visual_type: GateVisualType = visual_type
 
-    def check_truth_table(self):
-        entries = list(self.truth_table.items())
-
-        if not entries:
-            raise ValueError(
-                "Truth table is empty. For gates with no inputs or no outputs, "
-                "add an entry with an empty tuple () as the key (no inputs) "
-                "or value (no outputs)."
-            )
-
-        some_inputs, some_outputs = entries[0]
-
-        for inputs, outputs in entries:
-            if len(inputs) != len(some_inputs):
-                raise ValueError(
-                    f"Invalid truth table: {inputs} has {len(inputs)} inputs, "
-                    f"expected {len(some_inputs)}"
-                )
-
-            if len(outputs) != len(some_outputs):
-                raise ValueError(
-                    f"Invalid truth table: {outputs} has {len(outputs)} outputs, "
-                    f"expected {len(some_outputs)}"
-                )
-
     @property
     def n_inputs(self):
-        self.check_truth_table()
-        return len(list(self.truth_table.keys())[0])
+        return truth_table_n_inputs(self.truth_table)
 
     @property
     def n_outputs(self):
-        self.check_truth_table()
-        return len(list(self.truth_table.values())[0])
+        return truth_table_n_outputs(self.truth_table)
 
     def reverse(self, gate_evaluation: GateEvaluation) -> Gate:
         input_values = gate_evaluation.input_values
@@ -121,6 +95,42 @@ class Gate:
             length=0,
             visual_type="constant" if is_constant else "knot",
         )
+
+
+def check_truth_table(truth_table: TruthTable):
+    entries = list(truth_table.items())
+
+    if not entries:
+        raise ValueError(
+            "Truth table is empty. For gates with no inputs or no outputs, "
+            "add an entry with an empty tuple () as the key (no inputs) "
+            "or value (no outputs)."
+        )
+
+    some_inputs, some_outputs = entries[0]
+
+    for inputs, outputs in entries:
+        if len(inputs) != len(some_inputs):
+            raise ValueError(
+                f"Invalid truth table: {inputs} has {len(inputs)} inputs, "
+                f"expected {len(some_inputs)}"
+            )
+
+        if len(outputs) != len(some_outputs):
+            raise ValueError(
+                f"Invalid truth table: {outputs} has {len(outputs)} outputs, "
+                f"expected {len(some_outputs)}"
+            )
+
+
+def truth_table_n_inputs(truth_table: TruthTable) -> int:
+    check_truth_table(truth_table)
+    return len(list(truth_table.keys())[0])
+
+
+def truth_table_n_outputs(truth_table: TruthTable) -> int:
+    check_truth_table(truth_table)
+    return len(list(truth_table.values())[0])
 
 
 class GateEvaluation(BaseModel):
@@ -188,5 +198,11 @@ def infer_gate_visual_type(
         return "nand"
     if truth_table == ADD_TABLE:
         return "+"
+
+    if (
+        truth_table_n_inputs(truth_table) == 0
+        or truth_table_n_outputs(truth_table) == 0
+    ):
+        return "constant"
 
     return "default"  # unknown
