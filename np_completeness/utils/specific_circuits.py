@@ -384,7 +384,8 @@ def make_multiplication_circuit_constraints(
     add_snake_wire(circuit, "or_a", "and")
     add_snake_wire(circuit, "or_b", "and")
 
-    circuit.add_missing_inputs_and_outputs()
+    circuit.add_gate("output", Gate.make_knot((circuit.x_of("and"), -3), n_outputs=0))
+    circuit.add_wire("and", "output")
 
     return circuit
 

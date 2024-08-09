@@ -294,6 +294,11 @@ class GreaterThanOneConstraint(Scene):
         circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
 
         manim_circuit = ManimCircuit(circuit)
+
+        for manim_gate in manim_circuit.gates.values():
+            if manim_gate.gate.visual_type in ["not", "or", "and"]:
+                manim_gate.scale(2)
+
         self.add(manim_circuit)
         self.wait()
 
