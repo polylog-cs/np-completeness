@@ -357,8 +357,8 @@ class AdderCircuitScene(Scene):
 
         detailed_circuit = make_adder_circuit(inputs=[False, False, True])
         detailed_circuit.add_missing_inputs_and_outputs()
-        detailed_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
         detailed_manim_circuit = ManimCircuit(detailed_circuit)
+        detailed_manim_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
 
         self.play(
             cast(Animation, manim_circuit.animate.scale(30).fade(1)),

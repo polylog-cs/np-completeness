@@ -365,8 +365,8 @@ class Circuit:
     def scale(self, factor: float) -> Circuit:
         """Scale the positions of the gates in-place.
 
-        Manim's built-in scaling breaks when we animate the circuit, so this
-        is a workaround.
+        Similar to running .scale() on ManimCircuit(circuit), but the size of the gates
+        doesn't change - just the positions.
         """
         for gate in self.gates.values():
             gate.position *= factor
@@ -376,8 +376,7 @@ class Circuit:
     def shift(self, shift: InternalPoint3D) -> Circuit:
         """Shift the positions of the gates in-place.
 
-        Manim's built-in shifting breaks when we animate the circuit, so this
-        is a workaround.
+        Should be equivalent to running .shift() on ManimCircuit(circuit).
         """
         for gate in self.gates.values():
             gate.position += shift
