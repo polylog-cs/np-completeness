@@ -1,448 +1,231 @@
-from typing import Callable, cast
+from typing import Any
 
 from manim import *
+from manim.typing import InternalPoint3D
 
-from np_completeness.utils.coloring_circuits import (
-    get_example_graph,
-    make_coloring_circuit,
-)
-from np_completeness.utils.manim_circuit import ManimCircuit
-from np_completeness.utils.specific_circuits import (
-    make_adder_circuit,
-    make_adder_gate,
-    make_example_circuit,
-    make_multiplication_circuit,
-    to_binary,
-)
-
-# Imported for the side effect of changing the default colors
+from np_completeness.utils.circuit import Circuit
+from np_completeness.utils.gate import Gate
 from np_completeness.utils.util_general import (
-    BASE00,
-    BLUE,
-    MAGENTA,
-    RED,
+    BASE01,
+    BASE2,
+    GATE_HEIGHT,
+    GATE_TEXT_RATIO,
+    GATE_WIDTH,
     WIRE_WIDTH,
-    default,
-    disable_rich_logging,
     get_wire_color,
-    text_color,
 )
 
 
-def make_multiplication_by_hand(
-    rows: list[str],
-) -> tuple[VGroup, list[list[VMobject]], list[Line]]:
-    """Make a visualisation of the "school algorithm" for multiplying by hand."""
-    assert all(
-        len(row) == len(rows[0]) for row in rows
-    ), "All rows must have the same length"
+class ManimGate(VMobject):
+    def __init__(self, gate: Gate, value: bool | None = None, scale: float = 1):
+        super().__init__()
+        self.gate = gate
 
-    n_rows, n_cols = len(rows), len(rows[0])
+        fill_color = get_wire_color(value)
+        self._scale = scale  # don't conflict with the `scale()` method
 
-    # Manim refuses to render a single space to TeX, so use an empty object
-    numbers: list[list[VMobject]] = [
-        [Tex(c, color=BASE00) if c != " " else VGroup() for c in row] for row in rows
-    ]
+        if gate.visual_type == "invisible":
+            pass
+        elif gate.visual_type == "knot":
+            self.circle = Dot(
+                radius=0.028 * scale,
+                color=fill_color,
+            )
+            self.circle.move_to(gate.position)
 
-    # Fade out the helper zeroes in the intermediate results
-    for i in range(3, len(rows) - 1):
-        for j in range(n_cols - i + 2, n_cols):
-            assert (
-                rows[i][j] == "0"
-            ), f"Expected a zero, got {repr(rows[i][j])} at {i}, {j}"
-            numbers[i][j].fade(0.5)
+            self.add(self.circle)
+        elif gate.visual_type == "constant":
+            self.circle = Circle(
+                radius=GATE_HEIGHT * 0.3 * scale,
+                color=fill_color,
+                fill_color=fill_color,
+                fill_opacity=1.0,
+            )
+            self.circle.move_to(gate.position)
 
-    X_SHIFT = RIGHT * 0.45
-    Y_SHIFT = DOWN * 0.6
+            self.add(self.circle)
+        else:
+            self.rect = Rectangle(
+                height=GATE_HEIGHT * scale,
+                width=GATE_WIDTH * scale,
+                fill_opacity=1.0,
+                color=BASE01,
+                fill_color=fill_color,
+            )
+            self.rect.move_to(gate.position)
 
-    # There is also Group.arrange_in_grid() but it takes into account the sizes of the
-    # objects and that leads to wonky spacing because numbers have different widths.
-    for i, row in enumerate(numbers):
-        for j, number in enumerate(row):
-            number.move_to(
-                X_SHIFT * j + Y_SHIFT * i,
+            text = "?" if gate.visual_type == "default" else gate.visual_type.upper()
+
+            self.text = (
+                Text(text, color=BASE2)
+                .move_to(self.rect.get_center())
+                .scale_to_fit_height(GATE_HEIGHT * GATE_TEXT_RATIO * scale)
             )
 
-    group = VGroup()
-    for row in numbers:
-        group.add(*row)
+            self.add(self.rect, self.text)
 
-    lines = [
-        Line(
-            -X_SHIFT * 0.5 + Y_SHIFT * 1.5,
-            +X_SHIFT * (n_cols - 0.5) + Y_SHIFT * 1.5,
-            color=BASE00,
-        ),
-        Line(
-            -X_SHIFT * 0.5 + Y_SHIFT * (n_rows - 1.5),
-            +X_SHIFT * (n_cols - 0.5) + Y_SHIFT * (n_rows - 1.5),
-            color=BASE00,
-        ),
-    ]
-
-    group.add(*lines)
-
-    return (group, numbers, lines)
+    def animate_to_value(self, value: bool | None) -> Animation:
+        new_gate = ManimGate(self.gate, value, scale=self._scale)
+        # need to type: ignore because of Manim magic
+        return self.animate.become(new_gate)  # type: ignore[reportReturnType]
 
 
-def lagged_create(
-    objects: list[VMobject], lag_ratio: float = 0.1, anim: type[Animation] | None = None
-) -> AnimationGroup:
-    if anim is None:
-        anim = Create
-    return LaggedStart(*[anim(obj) for obj in objects], lag_ratio=lag_ratio)
+class ManimWire(VMobject):
+    def __init__(
+        self,
+        start: InternalPoint3D,
+        end: InternalPoint3D,
+        value: bool,
+        progress: float = 0,
+        scale: float = 1,
+    ):
+        super().__init__()
+        self.start_point: InternalPoint3D = start
+        self.end_point: InternalPoint3D = end
+        self.value = value
+        self.progress = progress
+        self._scale = scale  # don't conflict with the `scale()` method
 
-
-class MultiplicationByHand(Scene):
-    def construct(self):
-        disable_rich_logging()
-        default()
-
-        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,= ???$}}").scale(4)
-        self.play(
-            AnimationGroup(
-                *[Write(cast(VMobject, mult_tex[i])) for i in range(4)],
-                lag_ratio=0.5,
-            )
+        self.background_line = Line(
+            start, end, color=get_wire_color(None), stroke_width=WIRE_WIDTH * scale
         )
-        self.wait(1)
-        self.play(FadeOut(mult_tex))
-        self.wait()
-
-        grid = [
-            "  68",
-            "× 18",
-            " 544",
-            " 680",
-            "1224",
-        ]
-        group, _, _ = make_multiplication_by_hand(grid)
-        group.scale(2).to_edge(UP, buff=0.75)
-
-        self.play(FadeIn(group))
-        self.wait(2)
-        self.play(FadeOut(group))
-
-        grid = [
-            "   11",
-            "× 101",
-            "   11",
-            "    0",
-            " 1100",
-            " 1111",
-        ]
-        group, numbers, lines = make_multiplication_by_hand(grid)
-        group.scale(1.75).center().shift(LEFT * 2).to_edge(UP, buff=0.5)
-
-        base10_rows = [
-            Tex("{{=}}{{\\,3}}", color=MAGENTA),
-            Tex("{{=}}{{\\,5}}", color=MAGENTA),
-            VGroup(),
-            VGroup(),
-            VGroup(),
-            Tex("=\\,15", color=MAGENTA),
-        ]
-
-        for i, row in enumerate(base10_rows):
-            row.scale(2).next_to(
-                numbers[i][-1], direction=RIGHT, buff=1, aligned_edge=DOWN
-            )
-
-        # this is what it is in base10
-        for j in [1, 0]:
-            objects_to_animate = [
-                cast(VMobject, base10_rows[0][j]),
-                cast(VMobject, base10_rows[1][j]),
-            ]
-            self.play(lagged_create(objects_to_animate, anim=Write))
-            self.wait(0.5)
-
-        self.play(lagged_create(numbers[0] + numbers[1], anim=Write))
-        self.wait(1)
-
-        # intermediate results
-        self.play(
-            lagged_create([lines[0], *numbers[2], *numbers[3], *numbers[4]], anim=Write)
+        self.value_line = Line(
+            start,
+            interpolate(start, end, progress),
+            color=get_wire_color(value),
+            stroke_width=WIRE_WIDTH * scale,
         )
-        self.wait(1)
-        # final result, explanation in base10
-        self.play(lagged_create([lines[1], *numbers[5]], anim=Write))
-        self.wait(0.5)
-        self.play(lagged_create([base10_rows[5]], anim=Write))
-        self.wait(2)
 
+        self.add(self.background_line, self.value_line)
 
-class CircuitScene(Scene):
-    def construct(self):
-        disable_rich_logging()
-
-        a, b = 3, 5
-
-        circuit = make_multiplication_circuit(a=a, b=b)
-
-        # We want to leave a bit of room at the bottom because of subtitles
-        # TODO: is this enough?
-        circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
-
-        circuit.add_missing_inputs_and_outputs()
-        manim_circuit = ManimCircuit(circuit, with_evaluation=True)
-
-        self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
-        self.wait()
-
-        TEXT_SCALE = 1.4
-
-        # Add explanations to the inputs
-        for symbol, value in zip("ab", [a, b]):
-            binary_values = to_binary(value)
-            explanations = []
-            anims = []
-
-            for i, bit in enumerate(binary_values):
-                manim_gate = manim_circuit.gates[f"input_{symbol}_{i}"]
-
-                explanation = (
-                    Tex(str(int(bit)), color=BLUE)
-                    .scale(TEXT_SCALE)
-                    .move_to(
-                        manim_gate.get_center()
-                        + (
-                            np.array([-0.3, 0.3, 0])
-                            if symbol == "a"
-                            else np.array([-0.3, 0.1, 0])
-                        )
-                    )
-                )
-                explanations.append(explanation)
-
-                anims.append(manim_gate.animate_to_value(bit))
-                anims.append(Write(explanation))
-
-            decimal_explanation = (
-                Tex(f"=\\,{value}", color=MAGENTA)
-                .scale(TEXT_SCALE)
-                .move_to(
-                    np.array(
-                        [
-                            manim_circuit.gates[f"input_a_0"].get_center()[0] + 0.9,
-                            explanations[0].get_center()[1],
-                            0,
-                        ]
-                    )
-                )
-            )
-            anims.append(Write(decimal_explanation))
-
-            self.play(LaggedStart(*anims))
-            self.wait()
-
-        self.play(manim_circuit.animate_evaluation())
-        self.wait()
-
-        # Add explanations to the outputs
-        anims = []
-        explanations = []
-        for i, bit in enumerate(to_binary(a * b, n_digits=8)):
-            manim_gate = manim_circuit.gates[f"output_{i}"]
-
-            explanation = (
-                Tex(str(int(bit)), color=BLUE)
-                .scale(TEXT_SCALE)
-                .move_to(manim_gate.get_center() + np.array([-0.3, -0.3, 0]))
-            )
-            explanations.append(explanation)
-
-            anims.append(manim_gate.animate_to_value(bit))
-            anims.append(Write(explanation))
-
-        decimal_explanation = (
-            Tex(f"=\\,{a * b}", color=MAGENTA)
-            .scale(TEXT_SCALE)
-            .move_to(explanations[0].get_center() + RIGHT * 1.5)
+    def set_progress(self, progress: float):
+        new_wire = ManimWire(
+            self.start_point, self.end_point, self.value, progress, scale=self._scale
         )
-        anims.append(Write(decimal_explanation))
-
-        self.play(LaggedStart(*anims))
-        self.wait(2)
+        self.become(new_wire)
 
 
-class ExampleCircuitScene(Scene):
-    def construct(self):
-        circuit = make_example_circuit()
-        manim_circuit = ManimCircuit(circuit, scale=2)
-        self.add(manim_circuit)
-        self.wait()
+class FillWire(Animation):
+    def __init__(self, wire: ManimWire, **kwargs: Any) -> None:  # type: ignore[reportInconsistentConstructor]
+        super().__init__(wire, **kwargs)
 
-        # Create input labels
-        input_values = [0, 1, 1]  # Matching the out_value in make_example_circuit
-        input_labels = []
-        for i, value in enumerate(input_values):
-            color = get_wire_color(bool(value))
-            label = Tex(str(value), color=color).scale(1.5)
-
-            input_gate = manim_circuit.gates[f"input_{i}"]
-            label.next_to(input_gate, UP, buff=0.2)
-
-            input_labels.append(label)
-
-        internal_gates = [
-            gate
-            for name, gate in manim_circuit.gates.items()
-            if not name.startswith(("input_", "output_"))
-        ]
-
-        # highlight the wires
-        # TODO somehow this does not work
-        for sc in [10, 1]:
-            self.play(
-                *[
-                    wire.animate.set_stroke_width(WIRE_WIDTH * sc)
-                    for wire in manim_circuit.wires.values()
-                ],
-                run_time=0.5,
-            )
-            self.wait(0.5)
-
-        # highlight the gates
-        for sc in [1.5, 1 / 1.5]:
-            self.play(
-                *[cast(Animation, gate.animate.scale(sc)) for gate in internal_gates],
-                run_time=0.5,
-            )
-            self.wait(0.5)
-
-        # Animate the appearance of input labels
-        self.play(
-            AnimationGroup(
-                *[Write(label) for label in input_labels],
-                lag_ratio=0.5,
-            )
-        )
-        self.wait()
-
-        # Animate inputs
-        self.play(manim_circuit.animate_inputs())
-        self.wait()
-
-        # Simulate the circuit
-        self.play(manim_circuit.animate_evaluation())
-        self.wait(2)
+    def interpolate_mobject(self, alpha: float) -> None:
+        assert isinstance(self.mobject, ManimWire)
+        self.mobject.set_progress(alpha)
 
 
-class AdderCircuitScene(Scene):
-    def construct(self):
-        circuit = make_adder_gate(inputs=[True, False, True])
-        circuit.add_missing_inputs_and_outputs()
-        manim_circuit = ManimCircuit(circuit)
-        self.add(manim_circuit)
-        self.wait()
+class ManimCircuit(VGroup):
+    def __init__(
+        self, circuit: Circuit, scale: float = 1, with_evaluation: bool = True
+    ):
+        """A Manim representation of a circuit.
 
-        description_tex = Group(
-            *[
-                Tex(str, color=text_color)
-                for str in [
-                    r"In:",
-                    r"three bits",
-                    r"Out:",
-                    r"their sum in binary",
-                ]
-            ]
-        ).arrange_in_grid(rows=2, cell_alignment=LEFT)
-        description = Group(description_tex).to_corner(UR)
+        Args:
+            circuit: The circuit to visualize.
+            scale: The scale of the circuit. This doesn't scale the positions, just the
+                size of the gates and wires.
+            with_evaluation: Whether to evaluate the circuit to be able to show the
+                progress of the evaluation. (We could probably do this lazily only when
+                we need to and not in the constructor.)
+        """
+        super().__init__()
+        self.circuit = circuit
 
-        self.play(FadeIn(description))
-        self.wait()
-
-        detailed_circuit = make_adder_circuit(inputs=[False, False, True])
-        detailed_circuit.add_missing_inputs_and_outputs()
-        detailed_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
-        detailed_manim_circuit = ManimCircuit(detailed_circuit)
-
-        self.play(
-            cast(Animation, manim_circuit.animate.scale(30).fade(1)),
-            FadeIn(detailed_manim_circuit, scale=0.1),
-            run_time=2,
-        )
-        self.wait()
-
-        self.play(detailed_manim_circuit.animate_evaluation())
-
-        self.wait(1)
-
-
-class ColoringCircuitScene(Scene):
-    def construct(self):
-        graph, coloring = get_example_graph(good_coloring=False)
-
-        self.play(Create(graph, lag_ratio=0.1))
-
-        circuit = make_coloring_circuit(graph, coloring)
-        circuit.add_missing_inputs_and_outputs(visible=False)
-        manim_circuit = ManimCircuit(circuit)
-
-        self.wait(1)
-
-        self.play(
-            Create(manim_circuit, lag_ratio=0.002),
-            LaggedStart(
-                *[
-                    cast(Animation, v.animate.fade(0.5).scale(5))
-                    for v in graph.vertices.values()
-                ]
-            ),
-            *[FadeOut(e) for e in graph.edges.values()],
-            run_time=3,
-        )
-        self.wait(2)
-
-        # The idea is that you have one variable per vertex and color
-        self.play(manim_circuit.animate_inputs())
-        self.wait()
-
-        def make_highlight_rectangles(
-            condition: Callable[[str], bool],
-        ) -> None:
+        if with_evaluation:
             evaluation = circuit.evaluate()
+        else:
+            evaluation = None
 
-            selected_gates = [
-                name for name in evaluation.gate_evaluations if condition(name)
-            ]
-            rectangles = VGroup(
-                *[
-                    SurroundingRectangle(manim_circuit.gates[gate], color=RED)
-                    for gate in selected_gates
-                ]
+        self.gates = {
+            name: ManimGate(gate, scale=scale)
+            for name, gate in self.circuit.gates.items()
+        }
+        self.wires = {
+            (wire_start, wire_end): ManimWire(
+                self.circuit.gates[wire_start].position,
+                self.circuit.gates[wire_end].position,
+                evaluation.get_wire_value(wire_start, wire_end)
+                if evaluation
+                else False,
+                scale=scale,
             )
-            self.play(Create(rectangles, lag_ratio=0.05))
-            self.wait()
-            self.play(Uncreate(rectangles, lag_ratio=0.05))
-            self.wait()
+            for wire_start, wire_end in self.circuit.wires
+        }
 
-        make_highlight_rectangles(
-            lambda name: name.startswith("vertex_") and not "value" in name
+        # TODO(vv): some knots appear before AND gates and this `bg_gates` doesn't
+        #   seem to help. Why?
+        bg_gates = ["knot", "invisible"]
+        self.add(
+            # Add wires first so they are behind the gates
+            *self.wires.values(),
+            *[g for g in self.gates.values() if g.gate.visual_type in bg_gates],
+            *[g for g in self.gates.values() if g.gate.visual_type not in bg_gates],
         )
 
-        make_highlight_rectangles(lambda name: name.startswith("edge_"))
+    def animate_inputs(self) -> AnimationGroup:
+        """Animate the input nodes filling with their given color."""
+        anims = []
+        for manim_gate in self.gates.values():
+            if manim_gate.gate.n_inputs == 0:
+                value = manim_gate.gate.truth_table[()][0]
+                anims.append(manim_gate.animate_to_value(value))
 
-        self.play(manim_circuit.animate_evaluation())
+        return LaggedStart(*anims)
 
-        self.wait()
+    def animate_evaluation(
+        self, reversed: bool = False, speed: float = 1
+    ) -> AnimationGroup:
+        """Animate the color flowing through the wires to evaluate the circuit."""
+        evaluation = self.circuit.evaluate()
+        animations = []
 
-        evaluation = circuit.evaluate()
-        make_highlight_rectangles(
-            lambda name: "nand" in name
-            and not name.startswith("output_")  # auto-generated hidden output nodes
-            and not evaluation.get_gate_outputs(name)[0]
-        )
+        speed *= 3  # make it faster while keeping the default speed at 0
 
-        self.wait()
+        MIN_DURATION = 0.01  # Prevent divison by 0
 
+        for (wire_start, wire_end), manim_wire in self.wires.items():
+            start_time = (
+                evaluation.gate_evaluations[wire_start].reach_time
+                + self.circuit.gates[wire_start].length
+            ) / speed
+            duration = (
+                max(self.circuit.get_wire_length(wire_start, wire_end), MIN_DURATION)
+                / speed
+            )
 
-if __name__ == "__main__":
-    graph, coloring = get_example_graph(good_coloring=False)
-    circuit = make_coloring_circuit(graph, coloring)
+            # A complicated Manim construction that says "wait for start_time seconds,
+            # start filling the wire and end at end_time seconds"
+            animations.append(
+                AnimationGroup(
+                    *[
+                        Wait(start_time),
+                        FillWire(manim_wire, run_time=duration),
+                    ],
+                    lag_ratio=1.0,
+                    run_time=start_time + duration,
+                )
+            )
 
-    with_evaluation = False
-    if with_evaluation:
-        circuit.add_missing_inputs_and_outputs()
-    circuit.display_graph(with_evaluation=with_evaluation)
+        for gate_name, manim_gate in self.gates.items():
+            gate_evaluation = evaluation.gate_evaluations[gate_name]
+            start_time = gate_evaluation.reach_time / speed
+            duration = max(self.circuit.gates[gate_name].length, MIN_DURATION) / speed
+
+            animations.append(
+                AnimationGroup(
+                    *[
+                        Wait(start_time),
+                        manim_gate.animate_to_value(
+                            evaluation.get_simplified_value(
+                                gate_name, reversed=reversed
+                            )
+                        ),
+                    ],
+                    lag_ratio=1.0,
+                    run_time=start_time + duration,
+                )
+            )
+
+        # These all get played "simultaneously" but there are delays internal to the
+        # individual animations
+        return AnimationGroup(*animations)
