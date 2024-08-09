@@ -175,6 +175,60 @@ class MultiplicationByHand(Scene):
         self.wait(2)
 
 
+def make_multiplication_explanation_texts(
+    manim_circuit: ManimCircuit, a: int, b: int, text_scale: float
+) -> tuple[list[list[VMobject]], list[list[Animation]]]:
+    """Create texts next to the multiplication inputs explaining the binary."""
+    # Add explanations to the inputs
+    all_explanations, all_anims = [], []
+
+    for symbol, value in zip("ab", [a, b]):
+        binary_values = to_binary(value)
+        explanations = []
+        anims = []
+
+        for i, bit in enumerate(binary_values):
+            manim_gate = manim_circuit.gates[f"input_{symbol}_{i}"]
+
+            explanation = (
+                Tex(str(int(bit)), color=BLUE)
+                .scale(text_scale)
+                .move_to(
+                    manim_gate.get_center()
+                    + (
+                        np.array([-0.3, 0.3, 0])
+                        if symbol == "a"
+                        else np.array([-0.3, 0.1, 0])
+                    )
+                )
+            )
+            explanations.append(explanation)
+
+            anims.append(manim_gate.animate_to_value(bit))
+            anims.append(Write(explanation))
+
+        decimal_explanation = (
+            Tex(f"=\\,{value}", color=MAGENTA)
+            .scale(text_scale)
+            .move_to(
+                np.array(
+                    [
+                        manim_circuit.gates[f"input_a_0"].get_center()[0] + 0.9,
+                        explanations[0].get_center()[1],
+                        0,
+                    ]
+                )
+            )
+        )
+        explanations.append(decimal_explanation)
+        anims.append(Write(decimal_explanation))
+
+        all_explanations.append(explanations)
+        all_anims.append(anims)
+
+    return all_explanations, all_anims
+
+
 class MultiplicationCircuitScene(Scene):
     def construct(self):
         disable_rich_logging()
@@ -194,50 +248,12 @@ class MultiplicationCircuitScene(Scene):
         self.wait()
 
         TEXT_SCALE = 1.4
+        _all_explanations, all_anims = make_multiplication_explanation_texts(
+            manim_circuit, a, b, text_scale=TEXT_SCALE
+        )
 
-        # Add explanations to the inputs
-        for symbol, value in zip("ab", [a, b]):
-            binary_values = to_binary(value)
-            explanations = []
-            anims = []
-
-            for i, bit in enumerate(binary_values):
-                manim_gate = manim_circuit.gates[f"input_{symbol}_{i}"]
-
-                explanation = (
-                    Tex(str(int(bit)), color=BLUE)
-                    .scale(TEXT_SCALE)
-                    .move_to(
-                        manim_gate.get_center()
-                        + (
-                            np.array([-0.3, 0.3, 0])
-                            if symbol == "a"
-                            else np.array([-0.3, 0.1, 0])
-                        )
-                    )
-                )
-                explanations.append(explanation)
-
-                anims.append(manim_gate.animate_to_value(bit))
-                anims.append(Write(explanation))
-
-            decimal_explanation = (
-                Tex(f"=\\,{value}", color=MAGENTA)
-                .scale(TEXT_SCALE)
-                .move_to(
-                    np.array(
-                        [
-                            manim_circuit.gates[f"input_a_0"].get_center()[0] + 0.9,
-                            explanations[0].get_center()[1],
-                            0,
-                        ]
-                    )
-                )
-            )
-            anims.append(Write(decimal_explanation))
-
-            self.play(LaggedStart(*anims))
-            self.wait()
+        for i in range(2):
+            self.play(LaggedStart(*all_anims[i]))
 
         self.play(manim_circuit.animate_evaluation())
         self.wait()
@@ -269,13 +285,31 @@ class MultiplicationCircuitScene(Scene):
         self.wait(2)
 
 
-class FactoringConstraint(Scene):
+class GreaterThanOneConstraint(Scene):
     def construct(self):
-        circuit = make_multiplication_circuit_constraints(3, 5)
+        a, b = 1, 15
+        circuit = make_multiplication_circuit_constraints(a, b)
         circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
 
         manim_circuit = ManimCircuit(circuit)
         self.add(manim_circuit)
+        self.wait()
+
+        TEXT_SCALE = 1.4
+        all_explanations, all_anims = make_multiplication_explanation_texts(
+            manim_circuit, a, b, text_scale=TEXT_SCALE
+        )
+
+        for i in range(2):
+            self.play(LaggedStart(*all_anims[i]))
+
+        self.wait()
+        self.play(manim_circuit.animate_evaluation())
+        self.wait()
+        self.play(
+            Create(SurroundingRectangle(all_explanations[0][-1], color=RED)),
+            Create(SurroundingRectangle(manim_circuit.gates["or_a"], color=RED)),
+        )
         self.wait()
 
 

@@ -11,6 +11,7 @@ from np_completeness.utils.gate import (
     OR3_TABLE,
     OR_TABLE,
     Gate,
+    all_inputs,
 )
 from np_completeness.utils.util_general import (
     GATE_X_SPACING,
@@ -342,7 +343,8 @@ def make_multiplication_circuit_constraints(
                 if symbol == "a"
                 else (-GATE_X_SPACING * j + 5)
             )
-            circuit.add_knot((x, 1), name=f"knot_{symbol}_{j}")
+            y = 1 if j == 0 else 0
+            circuit.add_knot((x, y), name=f"knot_{symbol}_{j}")
             add_snake_wire(
                 circuit,
                 f"input_{symbol}_{j}",
@@ -355,8 +357,35 @@ def make_multiplication_circuit_constraints(
         circuit.add_gate(
             f"not_{symbol}", Gate(NOT_TABLE, (circuit.x_of(f"knot_{symbol}_0"), 0))
         )
+        circuit.add_wire(f"knot_{symbol}_0", f"not_{symbol}")
+
+        circuit.add_gate(
+            f"or_{symbol}",
+            Gate(
+                {inputs: (any(inputs),) for inputs in all_inputs(n)},
+                position=(
+                    (
+                        circuit.x_of(f"not_{symbol}")
+                        + circuit.x_of(f"knot_{symbol}_{n-1}")
+                    )
+                    / 2,
+                    -1,
+                ),
+                visual_type="or",
+            ),
+        )
+        for j in range(n):
+            in_name = f"not_{symbol}" if j == 0 else f"knot_{symbol}_{j}"
+            circuit.add_wire(in_name, f"or_{symbol}")
+
+    circuit.add_gate(
+        "and", Gate(AND_TABLE, ((circuit.x_of("or_a") + circuit.x_of("or_b")) / 2, -2))
+    )
+    add_snake_wire(circuit, "or_a", "and")
+    add_snake_wire(circuit, "or_b", "and")
 
     circuit.add_missing_inputs_and_outputs()
+
     return circuit
 
 
