@@ -591,21 +591,23 @@ class NP3(MovingCameraScene):
 class NP4(MovingCameraScene):
     def construct(self):
         default()
-        (self.camera.frame.move_to(ORIGIN).set(width=14),)
+        self.camera.frame.move_to(ORIGIN).set(width=14)
 
         big_sc = 3
-        central_sat = Tex("SATISFIABILITY", color=text_color).scale(big_sc)
+        central_sat = Tex("SATISFIABILITY", color=text_color)
         central_rect = SurroundingRectangle(
             central_sat, color=text_color, fill_color=BACKGROUND_COLOR, fill_opacity=1
         )
-        central_problem = Group(central_rect, central_sat).set_z_index(10)
+        central_problem = VGroup(central_rect, central_sat).set_z_index(10)
         crown = (
             SVGMobject("img/crown.svg")
-            .scale(CROWN_SCALE * big_sc)
+            .scale(CROWN_SCALE)
             .set_color(text_color)
-            .next_to(central_problem, UP, buff=CROWN_BUFF * big_sc)
+            .next_to(central_problem, UP, buff=CROWN_BUFF)
         )
         self.add(central_problem, crown)
+
+        VGroup(central_problem, crown).scale(big_sc)
 
         self.play(Group(central_problem, crown).animate.scale(1 / big_sc).shift(1 * UP))
         self.wait()
@@ -614,7 +616,7 @@ class NP4(MovingCameraScene):
             "MULTIPLICATION",
             "SORTING",
             "FACTORING",
-            "FINDING WINNING STRATEGY",
+            "FINDING A WINNING STRATEGY",
         ]
         problem_texs = [Tex(problem) for problem in problem_names]
         problems = Group(
@@ -632,9 +634,9 @@ class NP4(MovingCameraScene):
             ]
         )
 
-        for rect, tex in problems:
-            rect.set_z_index(10)
-            tex.set_z_index(20)
+        for i, (rect, tex) in enumerate(problems):
+            rect.set_z_index(10 + 2 * i)
+            tex.set_z_index(10 + 2 * i + 1)
 
         problems[0].move_to(2 * DOWN + 1 * LEFT)
         problems[1].move_to(1 * DOWN + 1 * RIGHT)
@@ -650,7 +652,7 @@ class NP4(MovingCameraScene):
         self.wait()
 
         p_box = SurroundingRectangle(
-            problems[:2], color=text_color, fill_opacity=0.5, fill_color=BOX_COLOR
+            problems[:2], color=text_color, fill_opacity=0.5, fill_color=GREEN
         )
         p_tex = (
             Tex(
@@ -714,14 +716,6 @@ class NP4(MovingCameraScene):
         )
         self.wait()
 
-        self.play(
-            Create(p_box),
-        )
-        self.wait()
-
-        self.play(
-            Create(central_rect),
-        )
         self.wait()
 
         # sat goes down
@@ -743,7 +737,7 @@ class NP4(MovingCameraScene):
                     Group(problems[0], problems[1], sat.target),
                     color=text_color,
                     fill_opacity=0.5,
-                    fill_color=BOX_COLOR,
+                    fill_color=GREEN,
                 ),
             ),
         )
@@ -757,15 +751,15 @@ class NP4(MovingCameraScene):
                     Group(problems[0], problems[1]),
                     color=text_color,
                     fill_opacity=0.5,
-                    fill_color=BOX_COLOR,
+                    fill_color=GREEN,
                 ),
             ),
         )
         self.wait()
 
         np_box = SurroundingRectangle(
-            Group(sat, p_box), color=text_color, fill_opacity=0.5, fill_color=BOX_COLOR
-        )
+            Group(sat, p_box), color=text_color, fill_opacity=0.5, fill_color=RED
+        ).set_z_index(-1)
         np_tex = (
             Tex(r"{{\raggedright NP}}", color=text_color)
             .next_to(np_box, RIGHT)
@@ -790,7 +784,7 @@ class NP4(MovingCameraScene):
                         Group(problems[0], problems[1], sat.target),
                         color=text_color,
                         fill_opacity=0.5,
-                        fill_color=BOX_COLOR,
+                        fill_color=GREEN,
                     ),
                 )
                 for box in [p_box, np_box]
