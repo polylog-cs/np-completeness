@@ -202,9 +202,9 @@ def make_multiplication_explanation_texts(
                 .move_to(
                     manim_gate.get_center()
                     + (
-                        np.array([-0.3, 0.3, 0])
+                        np.array([0.1, 0.35, 0])
                         if symbol == "a"
-                        else np.array([-0.3, 0.1, 0])
+                        else np.array([0.1, 0.35, 0])
                     )
                 )
             )
@@ -254,10 +254,13 @@ class MultiplicationCircuitScene(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
         self.wait()
 
-        rect = SurroundingRectangle(Group(
-            *[manim_circuit.gates[f"input_a_{i}"] for i in range(4)],
-            *[manim_circuit.gates[f"input_b_{i}"] for i in range(4)]
-            ), color=RED)
+        rect = SurroundingRectangle(
+            Group(
+                *[manim_circuit.gates[f"input_a_{i}"] for i in range(4)],
+                *[manim_circuit.gates[f"input_b_{i}"] for i in range(4)],
+            ),
+            color=RED,
+        )
         self.play(Create(rect))
         self.play(FadeOut(rect))
         self.wait()
@@ -282,7 +285,7 @@ class MultiplicationCircuitScene(Scene):
             explanation = (
                 Tex(str(int(bit)), color=BLUE)
                 .scale(TEXT_SCALE)
-                .move_to(manim_gate.get_center() + np.array([-0.3, -0.3, 0]))
+                .move_to(manim_gate.get_center() + np.array([00, -0.45, 0]))
             )
             explanations.append(explanation)
 

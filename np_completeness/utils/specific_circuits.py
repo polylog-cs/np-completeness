@@ -171,7 +171,7 @@ def _add_multiplication_inputs(circuit: Circuit, a: list[bool], b: list[bool]) -
             else:
                 x = _multiplication_and_gate_position(0, j)[0] - 0.2
 
-            input_pos = np.array([x, 3.5 - t * 0.5])
+            input_pos = np.array([x, 3.8 - t * 0.9])
 
             circuit.add_gate(
                 input_name,
@@ -266,7 +266,7 @@ def make_multiplication_circuit(a: list[bool] | int, b: list[bool] | int) -> Cir
         gate_name = f"output_{i}"
         position = (
             (5 - i) * GATE_X_SPACING,
-            (-3) * GATE_Y_SPACING,
+            (-2.8) * GATE_Y_SPACING,
         )
 
         circuit.add_gate(gate_name, Gate.make_knot(position, n_inputs=1, n_outputs=0))
