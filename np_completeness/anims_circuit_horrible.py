@@ -7,7 +7,8 @@ from np_completeness.utils.specific_circuits import *
 from np_completeness.utils.util_general import *
 
 FINAL_VIDEO = False
-
+CIRCUIT_LABEL_SCALE = 0.8
+TBL_SCALE = 0.6
 
 # class AdderCircuitScene(Scene):
 #     def construct(self):
@@ -121,7 +122,7 @@ class ShowConstraints(Scene):
     def construct(self):
         default()
 
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
 
         circuits = []
         manim_circuits = []
@@ -195,8 +196,6 @@ class ShowConstraints(Scene):
         )
         self.wait()
 
-        self.play(FadeOut(surrounding_rectangle))
-
         radius = 1
         angles = np.linspace(0, 2 * np.pi, len(clause_texts), endpoint=False)
         rrr = 5*RIGHT
@@ -209,6 +208,7 @@ class ShowConstraints(Scene):
             positions.append(new_pos)
 
         self.play(
+            FadeOut(surrounding_rectangle),
             AnimationGroup(
                 *[
                     animate(clause).move_to(new_pos).shift(rrr)# .fade(0.5)
@@ -225,7 +225,7 @@ class ShowConstraints(Scene):
             circuit_logic_text,buff = 0,z_index=5
         )
         new_rectangle = Rectangle(
-            width=new_rectangle.width,
+            width=new_rectangle.width*1.08,
             height=new_rectangle.height,
             color=text_color,
             fill_opacity=1.0,
@@ -249,7 +249,7 @@ class ShowConstraints(Scene):
             end=logic_group.get_bottom() + 1 * LEFT + 1.5 * DOWN,
             buff=0.1,
         ).shift(0.8*DOWN)
-        sat_solver_text = Tex("SAT-solver").next_to(arrow, RIGHT)
+        sat_solver_text = Tex("SAT solver").next_to(arrow, RIGHT)
         running_text = (
             Tex(r"\raggedright running the circuit \\ on some input")
             .next_to(arrow.get_end(), DOWN, buff = 1)
@@ -322,8 +322,8 @@ class ShowConstraints(Scene):
         ):
             for i in range(4):
                 col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
-                st = r"$x_{" + str((i if c == a else i + 4)) + r"}$"
-                eqst = r"{{$x_{" + str((i if c == a else i + 4)) + r"} = $}}"
+                st = r"$x_{" + str((i+1 if c == a else i + 5)) + r"}$"
+                eqst = r"{{$x_{" + str((i+1 if c == a else i + 5)) + r"} = $}}"
                 if (c & (1 << i)) == 0:
                     st = r"NOT " + st
                     eqst = eqst + r"{{$\,0$}}"
@@ -371,7 +371,7 @@ class ShowConstraints(Scene):
         for eqs in [eqs_a, eqs_b]:
             for eq in eqs:
                 target = eq.generate_target()
-                target.scale(0.5)
+                target.scale(TBL_SCALE)
                 if eqs == eqs_a:
                     new_eqs_a.append(target)
                 else:
@@ -522,7 +522,7 @@ class ShowConstraints(Scene):
         new_eqs_c = []
         for eq in eqs_c:
             target = eq.generate_target()
-            target = target.scale(0.5)
+            target = target.scale(TBL_SCALE)
             new_eqs_c.append(target)
 
         new_eqs_c = Group(*new_eqs_c).arrange_in_grid(rows=2)
@@ -550,6 +550,7 @@ class ShowConstraints(Scene):
         self.play(
             *[
                 animate(inp)
+                .scale(CIRCUIT_LABEL_SCALE / TBL_SCALE)
                 .move_to(manim_circuit.gates[f"output_{i}"])
                 .shift(0.25 * UL)
                 for i, inp in enumerate(inp_c)
@@ -559,10 +560,10 @@ class ShowConstraints(Scene):
 
         # show questionmarks next to inputs
         questionmarks = Group(*[
-            Tex("?", color=text_color).move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25 * UL)
+            Tex("?", color=text_color).scale(CIRCUIT_LABEL_SCALE).move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25 * UL)
             for i in range(4)],
         *[
-            Tex("?", color=text_color).move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25 * UL)
+            Tex("?", color=text_color).scale(CIRCUIT_LABEL_SCALE).move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25 * UL)
             for i in range(4)
         ])
 
@@ -586,15 +587,15 @@ class ShowConstraints(Scene):
         binary_b = format(b, '04b')  # 4-bit binary representation of b
 
         # Create Tex objects for the binary digits of a and b with correct indices
-        bit_texts_a = [Tex(f"{bit}", color= (WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)) for bit in binary_a]
-        bit_texts_b = [Tex(f"{bit}", color= (WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)) for bit in binary_b]
+        bit_texts_a = [Tex(f"{bit}", color= (WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)).scale(CIRCUIT_LABEL_SCALE) for bit in binary_a]
+        bit_texts_b = [Tex(f"{bit}", color= (WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)).scale(CIRCUIT_LABEL_SCALE) for bit in binary_b]
         
         # Arrange the bits next to the input gates
         for i, bit_text in enumerate(bit_texts_a):
-            bit_text.next_to(manim_circuit.gates[f"input_a_{i}"], LEFT, buff=0.1)
+            bit_text.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25 * UL)
         
         for i, bit_text in enumerate(bit_texts_b):
-            bit_text.next_to(manim_circuit.gates[f"input_b_{i}"], LEFT, buff=0.1)
+            bit_text.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25 * UL)
         
         # Group the bits for a and b
         bits_group_a = VGroup(*bit_texts_a)
@@ -607,8 +608,8 @@ class ShowConstraints(Scene):
         self.play(*anims)
         self.wait()
 
-        a_tex = Tex(f"={a}", color=text_color).next_to(bits_group_a, RIGHT, buff=1)
-        b_tex = Tex(f"={b}", color=text_color).next_to(bits_group_b, RIGHT, buff=1).align_to(a_tex, LEFT)
+        a_tex = Tex(f"={a}", color=text_color).scale(CIRCUIT_LABEL_SCALE).next_to(bits_group_a, RIGHT, buff=1)
+        b_tex = Tex(f"={b}", color=text_color).scale(CIRCUIT_LABEL_SCALE).next_to(bits_group_b, RIGHT, buff=1).align_to(a_tex, LEFT)
 
         self.play(Write(a_tex), Write(b_tex))
         self.wait()
@@ -679,8 +680,8 @@ class ShowConstraints(Scene):
         number_c = (
             Tex(f"{c}", color=text_color)
             .scale(1.4)
-            .next_to(logic_group, DOWN, buff=0.5)
-            .align_to(logic_group, LEFT).shift(1*RIGHT)
+            .next_to(eqs_c, DOWN, buff=0.5)
+            .align_to(eqs_c, LEFT)
         )
 
         self.play(Write(number_c))
@@ -706,12 +707,19 @@ class ShowConstraints(Scene):
         # Create animations to move each bit from binary_c to the corresponding position in eqs_c
         bit_animations = []
         for i in range(8):
-            bit_animations.append(
-                ReplacementTransform(binary_c[8 - i], eqs_c[i][1])
-            )
+            if i != 1:
+                bit_animations.append(
+                    ReplacementTransform(binary_c[8 - i], eqs_c[i][1])
+                )
+            else:
+                bit_animations += [
+                    binary_c[8 - i].animate.scale(TBL_SCALE).move_to(eqs_c[i][1]),
+                    Transform(eqs_c[i], Tex(r"{{$x_{75}=\,$}}{{0}}", color = WIRE_COLOR_FALSE).scale(TBL_SCALE).move_to(eqs_c[i]))
+                ]
 
         # Play the animations
-        self.play(*bit_animations)
+        self.play(*bit_animations, FadeOut(number_c), FadeOut(binary_c[0]))
+        self.remove(binary_c[7])
         self.wait()
 
         # Create and display the SAT group
@@ -727,7 +735,7 @@ class ShowConstraints(Scene):
         self.wait()
 
         # Add a large red tick mark
-        tick_mark = Text("×", color=RED).scale_to_fit_height(2).next_to(factoring_tex, RIGHT, buff=0.5)
+        tick_mark = Text("×", color=RED).scale_to_fit_height(1).next_to(factoring_tex, RIGHT, buff=0.25)
         self.play(Write(tick_mark))
         self.wait()
 
