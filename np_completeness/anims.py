@@ -45,16 +45,46 @@ class Polylogo(Scene):
         self.wait()
 
 
+_Tex = Tex
+
+
 class IntroSAT(Scene):
     def construct(self):
         default()
 
+        # The story of P vs NP is the story of the satisfiability problem, also known as SAT. In this problem, we are given an input that looks like this.
+        eq_str = r"{{$\,=\,$}}"
+        not_str = r"{{NOT\;}}"
+        and_str = r"{{\;AND\;}}"
+        or_str = r"{{\;OR\;}}"
+        left_str = r"{{$($}}"
+        right_str = r"{{$)$}}"
+        x1_str = r"{{$x_1$}}"
+        x2_str = r"{{$x_2$}}"
+        x3_str = r"{{$x_3$}}"
+        x4_str = r"{{$x_4$}}"
+        true_str = r"{{1}}"
+        false_str = r"{{0}}"
+
+        def coltex(s):
+            d = {
+                not_str: RED,
+                or_str: BLUE,
+                and_str: ORANGE,
+                true_str: WIRE_COLOR_TRUE,
+                false_str: WIRE_COLOR_FALSE,
+            }
+            tex = _Tex(s)
+            for subtex in tex:
+                color = d.get("{{" + subtex.get_tex_string() + "}}", GRAY)
+                subtex.set_color(color)
+            return tex
+
+        Tex = coltex
+
         header_tex = Tex(r"Satisfiability (SAT)").scale(1.5).to_edge(UP)
         self.play(Write(header_tex))
         self.wait()
-
-        # The story of P vs NP is the story of the satisfiability problem, also known as SAT. In this problem, we are given an input that looks like this.
-
 
         variables = Group(
             Tex(r"Variables:"),
