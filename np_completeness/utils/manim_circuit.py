@@ -70,10 +70,10 @@ class ManimGate(VMobject):
             if not isinstance(mobject, Text):
                 mobject.set_fill(get_wire_color(value))
 
-    def animate_to_value(self, value: bool | None) -> Animation:
+    def animate_to_value(self, value: bool | None, **kwargs) -> Animation:
         """Animate the setting of the value of this gate."""
         # cast needed because of weird type annotation for self.animate
-        return cast(Animation, self.animate.set_value(value))
+        return cast(Animation, self.animate(**kwargs).set_value(value))
 
 
 class ManimWire(VMobject):
@@ -227,7 +227,8 @@ class ManimCircuit(VGroup):
                         manim_gate.animate_to_value(
                             evaluation.get_simplified_value(
                                 gate_name, reversed=reversed
-                            )
+                            ),
+                            run_time=duration,
                         ),
                     ],
                     lag_ratio=1.0,

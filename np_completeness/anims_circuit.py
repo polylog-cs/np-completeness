@@ -374,7 +374,11 @@ class ExampleCircuitScene(Scene):
         # highlight the gates
         for sc in [1.5, 1 / 1.5]:
             self.play(
-                *[cast(Animation, gate.animate.scale(sc)) for gate in internal_gates],
+                *[
+                    cast(Animation, gate.animate.scale(sc))
+                    for gate in internal_gates
+                    if gate.gate.visual_type != "knot"
+                ],
                 run_time=0.5,
             )
             self.wait(0.5)
