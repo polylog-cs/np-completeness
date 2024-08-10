@@ -1181,8 +1181,8 @@ class CPUScene(Scene):
         self.play(
             Succession(
                 Create(arrow),
-                Indicate(input_tex, color = text_color),
-                Indicate(output_tex, color = text_color),
+                Indicate(input_tex, color=text_color),
+                Indicate(output_tex, color=text_color),
             )
         )
         self.wait()
@@ -1190,8 +1190,8 @@ class CPUScene(Scene):
         self.play(
             Succession(
                 Rotate(arrow, angle=PI, about_point=arrow.get_center()),
-                Indicate(output_tex, color = text_color),
-                Indicate(input_tex, color = text_color),
+                Indicate(output_tex, color=text_color),
+                Indicate(input_tex, color=text_color),
             )
         )
         self.wait()
