@@ -17,7 +17,13 @@ from np_completeness.utils.util_general import (
 
 
 class ManimGate(VMobject):
-    def __init__(self, gate: Gate, value: bool | None = None, scale: float = 1):
+    def __init__(
+        self,
+        gate: Gate,
+        value: bool | None = None,
+        scale: float = 1,
+        wire_scale: float = 1,
+    ):
         super().__init__()
         self.gate = gate
 
@@ -28,7 +34,7 @@ class ManimGate(VMobject):
             pass
         elif gate.visual_type == "knot":
             self.circle = Dot(
-                radius=0.026 * scale,
+                radius=0.026 * wire_scale,
                 color=fill_color,
             )
             self.circle.move_to(gate.position)
@@ -94,7 +100,7 @@ class ManimWire(VMobject):
         self.background_line = Line(
             start, end, color=get_wire_color(None), stroke_width=WIRE_WIDTH * scale
         )
-        progress_end = interpolate(start, end, max(progress, 0.01))
+        progress_end = interpolate(start, end, max(progress, 0.00001))
         self.value_line = Line(
             start,
             progress_end,
@@ -109,7 +115,7 @@ class ManimWire(VMobject):
         end = self.background_line.get_all_points()[-1]
         if not np.array_equal(start, end):
             self.value_line.put_start_and_end_on(
-                start, interpolate(start, end, max(progress, 0.01))
+                start, interpolate(start, end, max(progress, 0.00001))
             )
 
 
@@ -124,7 +130,11 @@ class FillWire(Animation):
 
 class ManimCircuit(VGroup):
     def __init__(
-        self, circuit: Circuit, scale: float = 1, with_evaluation: bool = True
+        self,
+        circuit: Circuit,
+        scale: float = 1,
+        with_evaluation: bool = True,
+        wire_scale: float | None = None,
     ):
         """A Manim representation of a circuit.
 
@@ -144,8 +154,10 @@ class ManimCircuit(VGroup):
         else:
             evaluation = None
 
+        if wire_scale is None:
+            wire_scale = scale
         self.gates = {
-            name: ManimGate(gate, scale=scale)
+            name: ManimGate(gate, scale=scale, wire_scale=wire_scale)
             for name, gate in self.circuit.gates.items()
         }
         self.wires = {
@@ -155,7 +167,7 @@ class ManimCircuit(VGroup):
                 evaluation.get_wire_value(wire_start, wire_end)
                 if evaluation
                 else False,
-                scale=scale,
+                scale=wire_scale,
             )
             for wire_start, wire_end in self.circuit.wires
         }
@@ -238,3 +250,8 @@ class ManimCircuit(VGroup):
         # These all get played "simultaneously" but there are delays internal to the
         # individual animations
         return AnimationGroup(*animations)
+
+    def set_stroke_width(self, scale: float):
+        for wire in self.wires.values():
+            wire.background_line.set_stroke_width(scale * WIRE_WIDTH)
+            wire.value_line.set_stroke_width(scale * WIRE_WIDTH)

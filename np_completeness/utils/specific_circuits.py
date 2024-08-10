@@ -616,7 +616,13 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
                 position=(-1 + i * 1, 1, 0),
             ),
         )
-        circuit.add_wire(input_name, "adder")
+        add_snake_wire(
+            circuit,
+            input_name,
+            "adder",
+            y_start_offset=-0.3,
+            x_end_offset=3.5 * WIRE_TIGHT_SPACING,
+        )
 
     # Add output gates
     for i in range(2):
@@ -629,7 +635,9 @@ def make_adder_gate(inputs: list[bool]) -> Circuit:
                 n_outputs=0,
             ),
         )
-        circuit.add_wire("adder", output_name)
+        add_snake_wire(
+            circuit, "adder", output_name, x_end_offset=3 * WIRE_TIGHT_SPACING
+        )
 
     return circuit
 

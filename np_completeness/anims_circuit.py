@@ -408,21 +408,14 @@ class AdderCircuitScene(Scene):
     def construct(self):
         circuit = make_adder_gate(inputs=[True, False, True])
         circuit.add_missing_inputs_and_outputs()
-        manim_circuit = ManimCircuit(circuit)
+        manim_circuit = ManimCircuit(circuit, scale=2, wire_scale=1)
         self.add(manim_circuit)
         self.wait()
 
-        description_tex = Group(
-            *[
-                Tex(str, color=text_color)
-                for str in [
-                    r"In:",
-                    r"three bits",
-                    r"Out:",
-                    r"their sum in binary",
-                ]
-            ]
-        ).arrange_in_grid(rows=2, cell_alignment=LEFT)
+        description_tex = Tex(
+            r"\hbox{\hbox to 9mm{In:\hss}three bits}\hbox{\hbox to 9mm{Out:\hss}their sum in binary}",
+            color=text_color,
+        )
         description = Group(description_tex).to_corner(UR)
 
         self.play(FadeIn(description))
@@ -434,7 +427,10 @@ class AdderCircuitScene(Scene):
         detailed_manim_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
 
         self.play(
-            cast(Animation, manim_circuit.animate.scale(30).fade(1)),
+            cast(
+                Animation,
+                manim_circuit.animate.scale(15).set_stroke_width(15).fade(1),
+            ),
             FadeIn(detailed_manim_circuit, scale=0.1),
             run_time=2,
         )
