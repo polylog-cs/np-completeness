@@ -262,7 +262,10 @@ class IntroSAT(Scene):
         self.wait()
         self.play(Transform(rec, SurroundingRectangle(constraints[3][7:], color=RED)))
         self.wait()
-        self.play(FadeOut(rec), constraints[3].animate.restore())
+        rec_faded = SurroundingRectangle(
+            constraints[3].saved_state[7:], color=RED
+        ).fade(1)
+        self.play(rec.animate.become(rec_faded), constraints[3].animate.restore())
         self.wait()
 
         # for i, str in enumerate([true_str, false_str, false_str, true_str]):
