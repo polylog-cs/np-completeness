@@ -740,7 +740,6 @@ class ShowConstraints(Scene):
         self.wait()
 
 
-
 class CircuitConversionScene(Scene):
     def construct(self):
         default()
@@ -895,4 +894,89 @@ class CircuitConversionScene(Scene):
             FadeIn(or_texs),
             FadeIn(not_texs),
             )
+        self.wait()
+
+
+class InversionScene(Scene):
+    def construct(self):
+        default()
+        self.next_section(skip_animations=False)
+
+        circuit = make_multiplication_circuit(a=6, b=3).reverse()
+        circuit.add_missing_inputs_and_outputs()
+        manim_circuit = ManimCircuit(circuit, with_evaluation=True).scale(0.9)
+
+        self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
+        self.wait()
+
+        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.wait()
+
+        self.play(FadeOut(manim_circuit))
+        self.wait()
+        self.next_section(skip_animations=False)
+
+        DOT_DISTANCE = 0.7
+        left_dots = Group(*[
+            Dot(color = text_color)
+            for _ in range(5)
+        ]).arrange(DOWN, buff = DOT_DISTANCE)
+        right_dots = Group(*[
+            Dot(color = text_color)
+            for _ in range(4)
+        ]).arrange(DOWN, buff = DOT_DISTANCE)
+        fun_group = Group(
+            Tex(r"In:", color = text_color),
+            Tex(r"Out:", color = text_color),
+            left_dots,
+            right_dots, 
+        ).arrange_in_grid(cols = 2, buff = 0.5, col_widths = [3, 3]).to_edge(UP, buff = 1)
+
+        for i in range(2):
+            self.play(
+                Write(fun_group[i]),
+                AnimationGroup(
+                    *[GrowFromCenter(dot) for dot in fun_group[i+2]],
+                    lag_ratio=0.5,
+                )
+            )
+            self.wait()
+
+        forward_arrows = Group(*[
+            Arrow(
+                start = left_dots[i].get_center(),
+                end = right_dots[j].get_center(),
+                color = BLUE,
+            )
+            for i, j in [(0, 3), (1, 0), (2, 3), (3, 2), (4, 3)]
+        ])
+
+        self.play(
+            AnimationGroup(
+                *[Create(arrow) for arrow in forward_arrows],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
+
+        backward_arrows = Group(*[
+            Arrow(
+                start = right_dots[i].get_center(),
+                end = left_dots[j].get_center(),
+                color = RED,
+            ).shift(0.1*UP)
+            for i, j in [(0, 1), (2, 3), (3, 2)]
+        ])
+
+        self.play(Create(backward_arrows[0]))
+        tick_mark = Text("×", color=RED).scale_to_fit_height(0.25).move_to(right_dots[1])
+        self.play(Write(tick_mark))
+        self.play(Create(backward_arrows[1]))
+        self.wait()
+
+        circ = Circle(radius = 0.25, color = RED).move_to(right_dots[3].get_center())
+        self.play(Create(circ))
+        self.wait()
+        self.play(FadeOut(circ))
+        self.play(Create(backward_arrows[2]))
         self.wait()
