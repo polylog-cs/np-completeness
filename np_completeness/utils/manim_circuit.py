@@ -28,18 +28,16 @@ class ManimGate(VMobject):
             pass
         elif gate.visual_type == "knot":
             self.circle = Dot(
-                radius=0.028 * scale,
+                radius=0.026 * scale,
                 color=fill_color,
             )
             self.circle.move_to(gate.position)
 
             self.add(self.circle)
         elif gate.visual_type == "constant":
-            self.circle = Circle(
+            self.circle = Dot(
                 radius=GATE_HEIGHT * 0.3 * scale,
                 color=fill_color,
-                fill_color=fill_color,
-                fill_opacity=1.0,
             )
             self.circle.move_to(gate.position)
 
@@ -50,6 +48,7 @@ class ManimGate(VMobject):
                 width=GATE_WIDTH * scale,
                 fill_opacity=1.0,
                 color=BASE01,
+                stroke_opacity=0,
                 fill_color=fill_color,
             )
             self.rect.move_to(gate.position)

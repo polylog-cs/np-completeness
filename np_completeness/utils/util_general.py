@@ -233,3 +233,20 @@ true_str = r"{{TRUE}}"
 false_str = r"{{FALSE}}"
 one_str = r"{{1}}"
 zero_str = r"{{0}}"
+
+
+def coltex(s, color=GRAY, **kwargs):
+    d = {
+        not_str: RED,
+        or_str: BLUE,
+        and_str: ORANGE,
+        true_str: WIRE_COLOR_TRUE,
+        false_str: WIRE_COLOR_FALSE,
+        one_str: WIRE_COLOR_TRUE,
+        zero_str: WIRE_COLOR_FALSE,
+    }
+    tex = Tex(s, **kwargs)
+    for subtex in tex:
+        new_color = d.get("{{" + subtex.get_tex_string() + "}}", color)
+        subtex.set_color(new_color)
+    return tex

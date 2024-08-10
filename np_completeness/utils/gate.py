@@ -74,7 +74,9 @@ class Gate:
         )
 
     @staticmethod
-    def make_knot(position: AnyPoint, n_inputs: int = 1, n_outputs: int = 1):
+    def make_knot(
+        position: AnyPoint, n_inputs: int = 1, n_outputs: int = 1, length: float = 0.05
+    ):
         if n_inputs == 0:
             # For constants, always output False.
             truth_table = {(): tuple([False] * n_outputs)}
@@ -92,7 +94,7 @@ class Gate:
         return Gate(
             truth_table,
             position,
-            length=0,
+            length=length,
             visual_type="constant" if is_constant else "knot",
         )
 

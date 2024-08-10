@@ -79,6 +79,7 @@ def make_example_circuit() -> Circuit:
                 np.array([(i - 0.5) * GATE_X_SPACING * 2, -GATE_Y_SPACING * 2, 0]),
                 n_inputs=1,
                 n_outputs=0,
+                length=1,
             ),
         )
 
