@@ -980,3 +980,78 @@ class InversionScene(Scene):
         self.play(FadeOut(circ))
         self.play(Create(backward_arrows[2]))
         self.wait()
+
+
+class CPUScene(Scene):
+    def construct(self):
+        default()
+        algo_img = ImageMobject("img/example_code.png").scale_to_fit_width(4).to_edge(LEFT, buff = 1)
+        self.play(FadeIn(algo_img))
+        self.wait()
+
+        arrow = Arrow(
+            start = algo_img.get_right(),
+            end = algo_img.get_right() + 2*RIGHT,
+            color = text_color,
+        )
+        self.play(Create(arrow))
+        self.wait()
+
+        circuit = make_example_circuit()
+        manim_circuit = ManimCircuit(circuit, scale=2).next_to(arrow, RIGHT, buff = 0.5)
+        self.play(
+            Create(manim_circuit, lag_ratio=0.02), 
+            run_time=1
+        )
+        self.wait() 
+
+        cpu_img = ImageMobject("img/8008.jpg").scale_to_fit_width(config.frame_width)
+        self.play(FadeIn(cpu_img))
+        self.wait()
+        self.play(
+            *[FadeOut(mob) for mob in self.mobjects]
+        )
+        self.wait()
+
+        circuit = make_example_circuit()
+        manim_circuit = ManimCircuit(circuit, scale=2).shift(2*RIGHT)
+        self.play(
+            Create(manim_circuit, lag_ratio=0.02), 
+            run_time=1
+        )
+        self.wait()     
+
+        input_tex = Tex(r"Input", color = text_color).next_to(manim_circuit.gates["input_0"], LEFT, buff = 2)
+        output_tex = Tex(r"Output", color = text_color).next_to(manim_circuit.gates["output_0"], LEFT, buff = 2)
+        output_tex.shift((input_tex.get_center() - output_tex.get_center())[0]*RIGHT)
+        arrow = Arrow(
+            start = input_tex.get_bottom(),
+            end = output_tex.get_top(),
+            color = text_color,
+        )
+
+        self.play(
+            Succession(
+                Write(input_tex),
+                Write(output_tex),
+            ))
+        self.wait()
+
+        self.play(
+            Succession(
+                Indicate(input_tex, color = text_color),
+                Create(arrow),
+                Indicate(output_tex, color = text_color),
+            )
+        )
+        self.wait()
+        
+        self.play(
+            Succession(
+                Indicate(output_tex, color = text_color),
+                Rotate(arrow, angle=PI, about_point=arrow.get_center()),
+                Indicate(input_tex, color = text_color),
+            )
+        )
+        self.wait()
+        
