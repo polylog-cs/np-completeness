@@ -33,7 +33,7 @@ FINAL_VIDEO = False
 
 
 def make_multiplication_by_hand(
-    rows: list[str],
+    rows: list[str], color=False
 ) -> tuple[VGroup, list[list[VMobject]], list[Line]]:
     """Make a visualisation of the "school algorithm" for multiplying by hand."""
     assert all(
@@ -42,9 +42,15 @@ def make_multiplication_by_hand(
 
     n_rows, n_cols = len(rows), len(rows[0])
 
+    def coloring(c):
+        if color is False or c not in "01":
+            return BASE00
+        return get_wire_color(c == "1")
+
     # Manim refuses to render a single space to TeX, so use an empty object
     numbers: list[list[VMobject]] = [
-        [Tex(c, color=BASE00) if c != " " else VGroup() for c in row] for row in rows
+        [Tex(c, color=coloring(c)) if c != " " else VGroup() for c in row]
+        for row in rows
     ]
 
     # Fade out the helper zeroes in the intermediate results
@@ -53,7 +59,7 @@ def make_multiplication_by_hand(
             assert (
                 rows[i][j] == "0"
             ), f"Expected a zero, got {repr(rows[i][j])} at {i}, {j}"
-            numbers[i][j].fade(0.5)
+            numbers[i][j].fade(0.6)
 
     X_SHIFT = RIGHT * 0.45
     Y_SHIFT = DOWN * 0.6
@@ -134,7 +140,7 @@ class MultiplicationByHand(Scene):
             " 1100",
             " 1111",
         ]
-        group, numbers, lines = make_multiplication_by_hand(grid)
+        group, numbers, lines = make_multiplication_by_hand(grid, color=True)
         group.scale(1.75).center().shift(LEFT * 2).to_edge(UP, buff=0.5)
 
         base10_rows = [
