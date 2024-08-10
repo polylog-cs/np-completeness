@@ -806,27 +806,15 @@ class NP4(MovingCameraScene):
 
 class SATJoke(Scene):
     def construct(self):
-        main_text = (
-            Tex(
-                r"{{Description of brute force SAT solving strategies \\ }}{{\text{from [Jagger, Richards, et al.; published in Out of Our Heads, 1965, available online]} }}",
-                color=text_color,
-            )
-            .scale(0.7)
-            .shift(3 * UP)
-        )
-        main_text[1].scale(0.7).align_to(main_text[0], LEFT)
-        main_text.move_to([0, main_text.get_center()[1], 0])
-        self.play(Write(main_text))
-
+        default()
         # Quote
         quote = (
             Text(
                 "I can't get no satisfaction\n'Cause I try\nand I try\nand I try\nand I try",
-                color=text_color,
                 slant=ITALIC,
             )
             .scale(0.8)
-            .next_to(main_text, DOWN, buff=1)
+            .shift(0.5 * UP + 2 * LEFT)
         )
         # quote = Tex(r"{{I can't get no satisfaction\\}}{{'Cause I try\\}}{{and I try\\}}{{and I try\\}}{{and I try}}",
         #             color=text_color, slant=ITALIC).scale(0.8).next_to(main_text, DOWN, buff=0.5)
@@ -838,15 +826,29 @@ class SATJoke(Scene):
         images = (
             Group(jagger_img, richards_img)
             .arrange(RIGHT, buff=0.2)
-            .to_edge(RIGHT)
-            .shift(1 * DOWN)
+            .next_to(quote, buff=1)
         )
+
+        Group(quote, images).move_to(ORIGIN + UP)
+
+        main_text = (
+            Tex(
+                r"{{---Description of brute force SAT solving strategies \\ }}{{\text{from [Jagger, Richards, et al.; published in Out of Our Heads, 1965, available online]} }}",
+            )
+            .scale(0.7)
+            .shift(3 * UP)
+            .next_to(quote, DOWN, buff=1)
+        )
+        main_text[1].scale(0.7).align_to(main_text[0], LEFT)
+        main_text.move_to([0, main_text.get_center()[1], 0])
 
         self.play(
             Write(quote),
             FadeIn(images),
             run_time=3,
         )
+
+        self.play(Write(main_text))
 
         self.wait(3)
 
@@ -913,7 +915,7 @@ class SHA(Scene):
         )
         sha_img = (
             ImageMobject("img/sha.png")
-            .scale_to_fit_height(config.frame_height)
+            .scale_to_fit_height(config.frame_height * 0.9)
             .to_edge(RIGHT)
         )
 
