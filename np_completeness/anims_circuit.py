@@ -248,6 +248,14 @@ class MultiplicationCircuitScene(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
         self.wait()
 
+        rect = SurroundingRectangle(Group(
+            *[manim_circuit.gates[f"input_a_{i}"] for i in range(4)],
+            *[manim_circuit.gates[f"input_b_{i}"] for i in range(4)]
+            ), color=RED)
+        self.play(Create(rect))
+        self.play(FadeOut(rect))
+        self.wait()
+
         TEXT_SCALE = 1.4
         _all_explanations, all_anims = make_multiplication_explanation_texts(
             manim_circuit, a, b, text_scale=TEXT_SCALE
@@ -328,7 +336,7 @@ class ExampleCircuitScene(Scene):
         self.wait()
 
         # Create input labels
-        input_values = [0, 1, 1]  # Matching the out_value in make_example_circuit
+        input_values = [1, 1, 0]  # Matching the out_value in make_example_circuit
         input_labels = []
         for i, value in enumerate(input_values):
             color = get_wire_color(bool(value))
@@ -407,7 +415,7 @@ class AdderCircuitScene(Scene):
         self.play(FadeIn(description))
         self.wait()
 
-        detailed_circuit = make_adder_circuit(inputs=[False, False, True])
+        detailed_circuit = make_adder_circuit(inputs=[True, False, True])
         detailed_circuit.add_missing_inputs_and_outputs()
         detailed_manim_circuit = ManimCircuit(detailed_circuit)
         detailed_manim_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)

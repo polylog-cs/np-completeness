@@ -215,3 +215,21 @@ def normalize_position(position: AnyPoint) -> InternalPoint3D:
 def animate(mobject: Mobject) -> Any:
     """A hack to work around the fact that Manim's typing for .animate sucks."""
     return mobject.animate
+
+
+eq_str = r"{{$\,=\,$}}"
+not_str = r"{{NOT\;}}"
+and_str = r"{{\;AND\;}}"
+or_str = r"{{\;OR\;}}"
+left_str = r"{{$($}}"
+right_str = r"{{$)$}}"
+x1_str = r"{{$x_1$}}"
+x2_str = r"{{$x_2$}}"
+x3_str = r"{{$x_3$}}"
+x4_str = r"{{$x_4$}}"
+x5_str = r"{{$x_5$}}"
+x6_str = r"{{$x_6$}}"
+true_str = r"{{TRUE}}"
+false_str = r"{{FALSE}}"
+one_str = r"{{1}}"
+zero_str = r"{{0}}"

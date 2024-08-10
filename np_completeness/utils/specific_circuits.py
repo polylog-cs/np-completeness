@@ -24,7 +24,7 @@ def make_example_circuit() -> Circuit:
     """Make a simple example circuit."""
     circuit = Circuit()
 
-    for i, out_value in enumerate([False, True, True]):
+    for i, out_value in enumerate([True, True, False]):
         circuit.add_gate(
             f"input_{i}",
             Gate(
@@ -51,7 +51,7 @@ def make_example_circuit() -> Circuit:
         "or_gate",
         Gate(
             truth_table=OR_TABLE,
-            position=np.array([circuit.x_of("input_1") + GATE_X_SPACING, 0, 0]),
+            position=np.array([circuit.x_of("input_1") - GATE_X_SPACING, 0, 0]),
         ),
     )
     circuit.add_gate(
@@ -59,7 +59,7 @@ def make_example_circuit() -> Circuit:
         Gate(
             truth_table=AND_TABLE,
             position=np.array(
-                [circuit.x_of("input_1") - GATE_X_SPACING, -GATE_Y_SPACING, 0]
+                [circuit.x_of("input_1") + GATE_X_SPACING, -GATE_Y_SPACING, 0]
             ),
         ),
     )
@@ -82,14 +82,14 @@ def make_example_circuit() -> Circuit:
             ),
         )
 
-    add_snake_wire(circuit, "input_0", "and_gate")
+    add_snake_wire(circuit, "input_2", "and_gate")
     circuit.add_wire("input_1", "not_gate")
-    add_snake_wire(circuit, "input_2", "or_gate")
+    add_snake_wire(circuit, "input_0", "or_gate")
     add_snake_wire(circuit, "not_gate", "or_gate", y_start_offset=-0.5)
     circuit.add_wire("or_gate", "knot")
     add_snake_wire(circuit, "knot", "and_gate", y_start_offset=0)
-    circuit.add_wire("knot", "output_1")
-    circuit.add_wire("and_gate", "output_0")
+    circuit.add_wire("knot", "output_0")
+    circuit.add_wire("and_gate", "output_1")
 
     circuit.check()
     return circuit
