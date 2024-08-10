@@ -263,7 +263,7 @@ class NP3(MovingCameraScene):
             ),
             (
                 "TRAVELLING SALESMAN",
-                ("SATISFIABILITY", 2 * UR),
+                ("SATISFIABILITY", 2 * UR + 0.5 * UP),
                 "SATISFIABILITY",
                 UP,
                 DOWN,
@@ -346,7 +346,7 @@ class NP3(MovingCameraScene):
             ),
             (
                 "CANDYCRUSH",
-                ("SATISFIABILITY", 6 * RIGHT - 2 * UP),
+                ("SATISFIABILITY", 6.5 * RIGHT - 2.5 * UP),
                 "SATISFIABILITY",
                 RIGHT,
                 LEFT,
@@ -383,11 +383,11 @@ class NP3(MovingCameraScene):
             arrow_end,
             problem_type,
         ) in enumerate(problems_data):
-            tex = Tex(name, z_index=2)
+            tex = Tex(name).set_z_index(5)
             rect = SurroundingRectangle(
                 tex, color=text_color, fill_color=BACKGROUND_COLOR, z_index=1
             )
-            problem = Group(rect, tex)
+            problem = VGroup(rect, tex)
 
             if i == 0:
                 problem[1].scale(1.5)
@@ -400,7 +400,7 @@ class NP3(MovingCameraScene):
             crowns.append(
                 SVGMobject("img/crown.svg")
                 .scale(CROWN_SCALE)
-                .set_color(text_color)
+                .set_color(BASE01)
                 .next_to(problem, UP, buff=CROWN_BUFF)
             )
 
@@ -410,7 +410,7 @@ class NP3(MovingCameraScene):
                 )
                 start = from_problem[0].get_edge_center(arrow_start)
                 end = problem.get_edge_center(arrow_end)
-                arrows.append(Arrow(start=start, end=end, buff=0.1))
+                arrows.append(Arrow(start=start, end=end, buff=0.1, color=BASE1))
 
         # Animation code
         problems[0][1].move_to(thm_tex[0])
@@ -429,13 +429,14 @@ class NP3(MovingCameraScene):
                     for p in problems[1:num_karp_problems]
                 ],
                 lag_ratio=0.5,
-            )
+            ),
+            self.camera.frame.animate(run_time=6).move_to(ORIGIN).set(width=18),
         )
         self.wait()
 
         self.play(
             AnimationGroup(
-                *[FadeIn(c) for c in crowns[1:num_karp_problems]], lag_ratio=0.5
+                *[FadeIn(c) for c in crowns[1:num_karp_problems]], lag_ratio=0.3
             )
         )
         self.wait()
@@ -444,7 +445,6 @@ class NP3(MovingCameraScene):
             AnimationGroup(
                 *[GrowArrow(a) for a in arrows[: num_karp_problems - 1]], lag_ratio=0.5
             ),
-            self.camera.frame.animate.move_to(ORIGIN).set(width=20),
         )
         self.wait()
 
@@ -467,7 +467,9 @@ class NP3(MovingCameraScene):
                 ],
                 lag_ratio=0.5,
             ),
-            self.camera.frame.animate.move_to(ORIGIN).set(width=25),
+            self.camera.frame.animate(run_time=4)
+            .move_to(ORIGIN + 0.5 * DOWN)
+            .set(width=28),
         )
         self.wait()
 
@@ -485,13 +487,19 @@ class NP3(MovingCameraScene):
                 if t == type_index
             ]
 
+            for p in type_problems:
+                p[0].set_z_index(-5)
+                p.save_state()
+
             self.play(
-                *[p[0].animate.set_fill(RED, opacity=0.5) for p in type_problems],
+                *[p[0].animate.set_fill(BASE02, opacity=1) for p in type_problems],
+                *[p[1].animate.set_color(BASE3) for p in type_problems],
                 run_time=1,
             )
 
             type_text = (
-                Text(type_name, color=RED)
+                Tex(type_name, color=BASE02)
+                .scale(2)
                 .align_to(self.camera.frame.get_corner(UL), UL)
                 .shift(0.5 * DR)
             )
@@ -500,10 +508,7 @@ class NP3(MovingCameraScene):
             self.wait(2)
 
             self.play(
-                *[
-                    p[0].animate.set_fill(BACKGROUND_COLOR, opacity=1)
-                    for p in type_problems
-                ],
+                *[p.animate.restore() for p in type_problems],
                 FadeOut(type_text),
                 run_time=1,
             )
@@ -513,7 +518,7 @@ class NP3(MovingCameraScene):
         )
 
         polynomial_text = (
-            Text("polynomial", color=BLUE, font_size=24)
+            Tex("polynomial", color=BLUE)
             .next_to(minesweeper_problem, UP, buff=0.2)
             .align_to(minesweeper_problem, RIGHT)
         )
