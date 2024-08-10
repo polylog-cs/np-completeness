@@ -339,10 +339,14 @@ class BreakRSA(Scene):
         default()
         texts = [
             Tex(r"Breaking RSA \\ (factoring numbers of size $10^{500}$)"),
-            Tex(r"$\Downarrow$ our reduction"),
+            Tex(r"our reduction $\Downarrow$"),
+            Tex(r"$\Uparrow$ fast SAT solver", color = GREEN),
             Tex(r"Solving SAT with $\sim50$M variables"),
             # MathTex(r"\Rightarrow"),
         ]
-        g = Group(*texts).arrange(DOWN, buff=1)
-        self.play(LaggedStart(*[Write(t) for t in texts], lag_ratio=0.8))
-        self.wait()
+        ars = Group(texts[1], texts[2]).arrange(RIGHT, buff = 0.5)
+        g = Group(texts[0], ars, texts[3]).arrange(DOWN, buff=1)
+        
+        for t in [texts[0], texts[1], texts[3], texts[2]]:
+            self.play(Write(t))
+            self.wait()
