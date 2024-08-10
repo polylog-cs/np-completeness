@@ -43,6 +43,73 @@ class Polylogo(Scene):
         self.play(*[FadeOut(o) for o in self.mobjects])
         self.wait()
 
+class SATChecking(Scene):
+    def construct(self):
+        default()
+
+        # The story of P vs NP is the story of the satisfiability problem, also known as SAT. In this problem, we are given an input that looks like this.
+        Tex = coltex
+
+
+        variables = Group(
+            Tex(r"Variables:"),
+            *[
+                Tex(str)
+                for str in [
+                    x1_str + eq_str + one_str,
+                    x2_str + eq_str + zero_str,
+                    x3_str + eq_str + zero_str,
+                    x4_str + eq_str + one_str,
+                ]
+            ],
+        ).arrange_in_grid(cols=1, cell_alignment=LEFT)
+
+        constraints = Group(
+            Tex(r"Constraints:"),
+            *[
+                Tex(str)
+                for str in [
+                    x1_str + or_str + left_str + not_str + x3_str + right_str,
+                    not_str + x2_str,
+                    x2_str
+                    + or_str
+                    + left_str
+                    + not_str
+                    + x3_str
+                    + right_str
+                    + or_str
+                    + left_str
+                    + not_str
+                    + x4_str
+                    + right_str,
+                ]
+            ],
+        ).arrange_in_grid(cols=1, cell_alignment=LEFT)
+
+
+        vc = Group(variables, constraints).arrange_in_grid(
+            cols=2, cell_alignment=UL, buff=2
+        )
+        constraints[1:].shift(0.5 * DOWN)
+
+        self.add(constraints, *[v[0] for v in variables], variables[0])
+
+        self.play(AnimationGroup(*[Write(v[1:]) for v in variables[1:]], lag_ratio=0.5))
+        self.wait()
+
+        ticks = Group(*
+                      [Text("✓", color=GREEN).scale_to_fit_height(0.75).next_to(text, LEFT, buff = 0.5)
+                        for text in constraints[1:]]
+                      )
+        self.play(
+            AnimationGroup(
+                *[Write(tick) for tick in ticks],
+                lag_ratio=0.5
+            )
+        )
+        self.wait()
+
+
 
 class IntroSAT(Scene):
     def construct(self):

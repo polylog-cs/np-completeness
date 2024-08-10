@@ -1039,8 +1039,8 @@ class CPUScene(Scene):
 
         self.play(
             Succession(
-                Indicate(input_tex, color = text_color),
                 Create(arrow),
+                Indicate(input_tex, color = text_color),
                 Indicate(output_tex, color = text_color),
             )
         )
@@ -1048,8 +1048,8 @@ class CPUScene(Scene):
         
         self.play(
             Succession(
-                Indicate(output_tex, color = text_color),
                 Rotate(arrow, angle=PI, about_point=arrow.get_center()),
+                Indicate(output_tex, color = text_color),
                 Indicate(input_tex, color = text_color),
             )
         )
