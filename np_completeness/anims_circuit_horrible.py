@@ -739,7 +739,7 @@ class CircuitConversionScene(Scene):
         CONSTRAINT_SCALE = 0.8
 
         circuit = make_example_circuit()
-        manim_circuit = ManimCircuit(circuit, scale=2).to_edge(LEFT, buff = 0.25)
+        manim_circuit = ManimCircuit(circuit, scale=2).to_edge(LEFT, buff = 0.15)
         self.play(
             Create(manim_circuit, lag_ratio=0.02), 
             run_time=1
@@ -783,7 +783,33 @@ class CircuitConversionScene(Scene):
                 x5_str + or_str + left_str + not_str + x6_str + right_str,
                 r"$\# \text{AND}(\cdot ,0) = 0$",
             ])
-        ]).arrange_in_grid(cols = 2, cell_alignment=LEFT, buff=0.25).next_to(manim_circuit, RIGHT, buff=0.0).shift(1*DOWN)
+        ]).arrange_in_grid(cols = 2, cell_alignment=LEFT, buff=0.25)
+
+        or_texs = Group(*[
+            Tex(str, color=(text_color if i%2==0 else GREEN)).scale(CONSTRAINT_SCALE)
+            for i, str in enumerate([
+                x1_str + or_str + x4_str + or_str + left_str + not_str + x5_str + right_str,
+                r"$\# \text{OR}(0, 0) = 0$",
+                left_str + not_str + x1_str + right_str + or_str + x5_str,
+                r"$\# \text{OR}(1,\cdot) = 1$",
+                left_str + not_str + x4_str + right_str + or_str + x5_str,
+                r"$\# \text{OR}(\cdot ,1) = 1$",
+            ])
+        ]).arrange_in_grid(cols = 2, cell_alignment=LEFT, buff=0.25)
+
+        not_texs = Group(*[
+            Tex(str, color=(text_color if i%2==0 else GREEN)).scale(CONSTRAINT_SCALE)
+            for i, str in enumerate([
+                x2_str + or_str + x4_str,
+                r"$\# \text{NOT}(0) = 1$",
+                left_str + not_str + x2_str + right_str + or_str + left_str + not_str + x4_str + right_str,
+                r"$\# \text{NOT}(1) = 0$",
+            ])
+        ])
+
+        all_texs = Group(*not_texs, *or_texs, *and_texs).arrange_in_grid(cols = 2, cell_alignment=LEFT, buff=0.25).next_to(manim_circuit, RIGHT, buff=0.0).shift(0*DOWN + 0.2*RIGHT)
+        or_texs.shift(0.25*UP)
+        not_texs.shift(2*0.25*UP)
 
         self.play(
             AnimationGroup(
@@ -801,7 +827,7 @@ class CircuitConversionScene(Scene):
         self.wait()
 
         for j in [2, 7]:
-            new_tex = Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).move_to(and_texs[0][j].get_center())
+            new_tex = Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).move_to(and_texs[0][j].get_center()).shift(0.1*UP)
             self.play(
                 FadeOut(and_texs[0][j]),
                 FadeIn(new_tex),
@@ -824,10 +850,10 @@ class CircuitConversionScene(Scene):
         )
         self.wait()
         self.play(
-            Transform(new_tex1, Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).next_to(and_texs[0][4], LEFT, buff = 0.1)),
-            Transform(new_tex2, Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).next_to(and_texs[0][4], RIGHT, buff = 0.1)),
+            Transform(new_tex1, Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).next_to(and_texs[0][4], LEFT, buff = 0.15)),
+            Transform(new_tex2, Tex(zero_str, color = WIRE_COLOR_FALSE).scale(CONSTRAINT_SCALE*sc).next_to(and_texs[0][4], RIGHT, buff = 0.15)),
             FadeOut(and_texs[0][8]),
-            and_texs[0][9:].animate.next_to(and_texs[0][4], RIGHT, buff = 0.5),
+            and_texs[0][9:].animate.next_to(and_texs[0][4], RIGHT, buff = 0.55),
             *[FadeOut(and_texs[0][jj]) for jj in [0, 1, 3, 5, 6]],
         )
         self.wait()
@@ -848,6 +874,17 @@ class CircuitConversionScene(Scene):
         )
         self.wait()
 
+        self.play(
+            AnimationGroup(
+                *[Write(and_texs[2*i+1]) for i in range(1, 3)],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
 
-        self.play(FadeOut(rect))
+        self.play(
+            FadeOut(rect),
+            FadeIn(or_texs),
+            FadeIn(not_texs),
+            )
         self.wait()
