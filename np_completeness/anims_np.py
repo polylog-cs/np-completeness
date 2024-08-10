@@ -937,6 +937,7 @@ class SHA(Scene):
 
 class Outro(Scene):
     def construct(self):
+        default()
         pnp_tex = Tex(r"P $\stackrel{?}{=}$ NP", color=text_color).scale(2).to_edge(UP)
         intuition1 = (
             Tex("Can we invert algorithms?", color=text_color)
@@ -988,8 +989,8 @@ class Outro(Scene):
             .next_to(intuition1, DOWN, buff=1)
         )
         patrons_tex = (
-            VGroup(*[Tex(t, color=TEXT_COLOR).scale(0.8) for t in patrons_text])
-            .arrange_in_grid(cell_alignment=LEFT)
+            VGroup(*[Tex(t, color=TEXT_COLOR).scale(0.75) for t in patrons_text])
+            .arrange_in_grid(cell_alignment=LEFT + UP, buff=(0.5, 0.2))
             .next_to(patrons_thanks_tex, DOWN, buff=0.5)
         )
 
@@ -1004,7 +1005,7 @@ class Outro(Scene):
                 Create(line),
                 Write(patrons_thanks_tex),
                 *[Write(t) for t in patrons_tex],
-                lag_ratio=0.5,
+                lag_ratio=0.1,
             )
         )
 
