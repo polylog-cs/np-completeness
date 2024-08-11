@@ -807,7 +807,7 @@ class CircuitConversionScene(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.02), run_time=1)
         self.wait()
 
-        variables = Group(*[Tex(f"$x_{i+1}$", color=text_color) for i in range(6)])
+        variables = Group(*[Tex(f"${c}$", color=text_color) for c in "abcdef"])
         variables[0].move_to(manim_circuit.gates[f"input_{0}"]).shift(
             0.5 * DR + 0.1 * DOWN
         )
@@ -1178,6 +1178,17 @@ class CPUScene(Scene):
         )
         self.wait()
 
+        question_1 = (
+            Tex(
+                "``If I run the algorithm on a given input, what output do I get?''",
+                color=BLUE,
+            )
+            .shift(3 * UP)
+            .scale(0.8)
+        )
+
+        self.play(Write(question_1))
+
         self.play(
             Succession(
                 Create(arrow),
@@ -1187,11 +1198,21 @@ class CPUScene(Scene):
         )
         self.wait()
 
-        self.play(
-            Succession(
-                Rotate(arrow, angle=PI, about_point=list(arrow.get_center())),
-                Indicate(output_tex, color=text_color),
-                Indicate(input_tex, color=text_color),
+        question_2 = (
+            Tex(
+                "``If I want to arrive at a given output, "
+                "what input do I have to start with?''",
+                color=BLUE,
             )
+            .shift(3 * UP)
+            .scale(0.8)
         )
+
+        self.play(
+            Rotate(arrow, angle=PI, about_point=list(arrow.get_center())),
+            animate(question_1).become(question_2),
+        )
+        self.play(Indicate(output_tex, color=text_color))
+        self.play(Indicate(input_tex, color=text_color))
+
         self.wait()
