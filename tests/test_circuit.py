@@ -30,13 +30,13 @@ def make_circuit_fixture() -> Circuit:
         Gate(truth_table=OR_TABLE, position=np.array([0.5, 0, 0]), visual_type="or"),
     )
     circuit.add_gate(
-        "knot", Gate.make_knot(np.array([1, -1, 0]), n_inputs=1, n_outputs=2)
+        "knot", Gate.make_knot(np.array([1, -1, 0]), n_inputs=1, n_outputs=2, length=0)
     )
 
     for i in range(2):
         circuit.add_gate(
             f"output_{i}",
-            Gate.make_knot(np.array([i, -3, 0]), n_inputs=1, n_outputs=0),
+            Gate.make_knot(np.array([i, -3, 0]), n_inputs=1, n_outputs=0, length=0),
         )
 
     circuit.wires = [
