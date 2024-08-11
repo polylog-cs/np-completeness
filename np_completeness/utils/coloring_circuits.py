@@ -1,15 +1,21 @@
 from typing import Hashable, TypeAlias, cast
 
 from manim import *
+from manim.typing import InternalPoint3D
 
 from np_completeness.utils.circuit import Circuit
-from np_completeness.utils.gate import NAND_TABLE, OR3_TABLE, Gate
+from np_completeness.utils.gate import NAND_TABLE, OR3_TABLE, Gate, LazyTruthTable
 from np_completeness.utils.util_general import BASE00, CYAN, MAGENTA
 
 Coloring: TypeAlias = dict[int, int]
 
 
-def make_coloring_circuit(graph: Graph, coloring: Coloring) -> Circuit:
+def make_coloring_circuit(
+    graph: Graph, coloring: Coloring, output_position: InternalPoint3D | None = None
+) -> Circuit:
+    if output_position is None:
+        output_position = np.array([0, 0, 0])
+
     circuit = Circuit()
     n_colors = 3
 
@@ -76,6 +82,35 @@ def make_coloring_circuit(graph: Graph, coloring: Coloring) -> Circuit:
             circuit.add_wire(name_1, nand_gate)
             circuit.add_wire(name_2, nand_gate)
 
+    gates_to_connect = []
+    for gate in circuit.gates:
+        n_outputs = len([wire for wire in circuit.wires if wire[0] == gate])
+        if n_outputs == 0:
+            gates_to_connect.append(gate)
+
+    big_and_gate = circuit.add_gate(
+        "big_and",
+        Gate(
+            LazyTruthTable(
+                n_inputs=len(gates_to_connect),
+                n_outputs=1,
+                fn=lambda inputs: (all(inputs),),
+            ),
+            output_position,
+            visual_type="and",
+        ),
+    )
+    for gate in gates_to_connect:
+        circuit.add_wire(gate, big_and_gate)
+
+    output_gate = circuit.add_gate(
+        "output",
+        Gate.make_knot(
+            circuit.gates[big_and_gate].position + DOWN * 0.5, n_inputs=1, n_outputs=0
+        ),
+    )
+    circuit.add_wire(big_and_gate, output_gate)
+
     return circuit
 
 
@@ -95,10 +130,11 @@ def get_example_graph(*, good_coloring: bool) -> tuple[Graph, Coloring]:
         vertex_config={"fill_color": BASE00, "radius": 0.2},
         edge_config={"color": BASE00, "stroke_width": 10},
     )
-    if good_coloring:
-        raise NotImplementedError
 
     coloring = {1: 0, 2: 1, 3: 2, 4: 0, 5: 0, 6: 2}
+
+    if good_coloring:
+        coloring[4] = 1
 
     assert set(coloring.keys()) == set(graph.vertices.keys())
 

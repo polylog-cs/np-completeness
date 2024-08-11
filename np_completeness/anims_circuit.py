@@ -3,6 +3,7 @@ from typing import Callable, cast
 from manim import *
 
 from np_completeness.utils.coloring_circuits import (
+    GRAPH_COLORS,
     get_example_graph,
     make_coloring_circuit,
 )
@@ -441,12 +442,20 @@ class AdderCircuitScene(Scene):
 
 class ColoringCircuitScene(Scene):
     def construct(self):
-        graph, coloring = get_example_graph(good_coloring=False)
+        graph, coloring = get_example_graph(good_coloring=True)
 
         self.play(Create(graph, lag_ratio=0.1))
 
-        circuit = make_coloring_circuit(graph, coloring)
-        circuit.add_missing_inputs_and_outputs(visible=False)
+        self.wait()
+        rectangle = SurroundingRectangle(graph.vertices[4], color=RED)
+        self.play(Create(rectangle))
+        self.play(animate(graph.vertices[4]).set_color(GRAPH_COLORS[0]))
+        coloring[4] = 0
+        self.play(Uncreate(rectangle))
+
+        circuit = make_coloring_circuit(
+            graph, coloring, output_position=np.array([-4, -2.5, 0])
+        )
         manim_circuit = ManimCircuit(circuit)
 
         self.wait(1)
@@ -462,7 +471,15 @@ class ColoringCircuitScene(Scene):
             *[FadeOut(e) for e in graph.edges.values()],
             run_time=3,
         )
-        self.wait(2)
+        self.wait()
+
+        # Fade out the wires that lead to the output gate
+        anims = []
+        for (_wire_start, wire_end), manim_wire in manim_circuit.wires.items():
+            if wire_end == "big_and":
+                anims.append(animate(manim_wire).fade(0.9))
+        self.play(*anims)
+        self.wait()
 
         # The idea is that you have one variable per vertex and color
         self.play(manim_circuit.animate_inputs())
@@ -488,13 +505,14 @@ class ColoringCircuitScene(Scene):
             self.wait()
 
         make_highlight_rectangles(
-            lambda name: name.startswith("vertex_") and not "value" in name
+            lambda name: name.startswith("vertex_")
+            and not "value" in name
+            or name.startswith("edge_")
         )
 
-        make_highlight_rectangles(lambda name: name.startswith("edge_"))
+        make_highlight_rectangles(lambda name: name == "output")
 
         self.play(manim_circuit.animate_evaluation())
-
         self.wait()
 
         evaluation = circuit.evaluate()

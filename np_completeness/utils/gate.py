@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Literal, TypeAlias
+from typing import Callable, Literal, Mapping, TypeAlias
 
 from manim.typing import InternalPoint3D
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ from np_completeness.utils.util_general import (
 GateVisualType = Literal[
     "default", "constant", "knot", "invisible", "not", "and", "or", "nand", "+"
 ]
-TruthTable: TypeAlias = dict[tuple[bool, ...], tuple[bool, ...]]
+TruthTable: TypeAlias = Mapping[tuple[bool, ...], tuple[bool, ...]]
 
 
 class Gate:
@@ -100,6 +100,9 @@ class Gate:
 
 
 def check_truth_table(truth_table: TruthTable):
+    if isinstance(truth_table, LazyTruthTable):
+        return
+
     entries = list(truth_table.items())
 
     if not entries:
@@ -127,12 +130,20 @@ def check_truth_table(truth_table: TruthTable):
 
 def truth_table_n_inputs(truth_table: TruthTable) -> int:
     check_truth_table(truth_table)
-    return len(list(truth_table.keys())[0])
+
+    if isinstance(truth_table, LazyTruthTable):
+        return truth_table.n_inputs
+    else:
+        return len(list(truth_table.keys())[0])
 
 
 def truth_table_n_outputs(truth_table: TruthTable) -> int:
     check_truth_table(truth_table)
-    return len(list(truth_table.values())[0])
+
+    if isinstance(truth_table, LazyTruthTable):
+        return truth_table.n_outputs
+    else:
+        return len(list(truth_table.values())[0])
 
 
 class GateEvaluation(BaseModel):
@@ -187,9 +198,7 @@ ADD_TABLE = {
 }
 
 
-def infer_gate_visual_type(
-    truth_table: dict[tuple[bool, ...], tuple[bool, ...]],
-) -> GateVisualType:
+def infer_gate_visual_type(truth_table: TruthTable) -> GateVisualType:
     if truth_table == NOT_TABLE:
         return "not"
     if truth_table == AND_TABLE:
@@ -208,3 +217,29 @@ def infer_gate_visual_type(
         return "constant"
 
     return "default"  # unknown
+
+
+class LazyTruthTable(Mapping[tuple[bool, ...], tuple[bool, ...]]):
+    """A truth table that doesn't store all the values, but computes them on the fly.
+
+    For cases with many inputs when the truth table is too large to store in memory.
+    """
+
+    def __init__(
+        self,
+        n_inputs: int,
+        n_outputs: int,
+        fn: Callable[[tuple[bool, ...]], tuple[bool, ...]],
+    ):
+        self.n_inputs = n_inputs
+        self.n_outputs = n_outputs
+        self.fn = fn
+
+    def __getitem__(self, key: tuple[bool, ...]) -> tuple[bool, ...]:
+        return self.fn(key)
+
+    def __iter__(self):
+        raise NotImplementedError("LazyTruthTable is not iterable")
+
+    def __len__(self):
+        return 2**self.n_inputs
