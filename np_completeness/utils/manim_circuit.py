@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from manim import *
 from manim.typing import InternalPoint3D
@@ -75,10 +75,10 @@ class ManimGate(VMobject):
             if not isinstance(mobject, Text):
                 mobject.set_fill(get_wire_color(value))
 
-    def animate_to_value(self, value: bool | None, **kwargs) -> Animation:
+    def animate_to_value(self, value: bool | None, **kwargs: Any) -> Animation:
         """Animate the setting of the value of this gate."""
-        # cast needed because of weird type annotation for self.animate
-        return cast(Animation, self.animate(**kwargs).set_value(value))
+        # ignore typing because of weird type annotation for self.animate
+        return self.animate(**kwargs).set_value(value)  # type: ignore
 
 
 class ManimWire(VMobject):

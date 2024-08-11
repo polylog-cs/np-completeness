@@ -217,6 +217,20 @@ def animate(mobject: Mobject) -> Any:
     return mobject.animate
 
 
+def center_of(mobject: Mobject) -> InternalPoint3D:
+    """Another hack to work around Manim's typing.
+
+    It thinks get_center() might return a tuple of floats, but that never happens.
+    """
+    center = mobject.get_center()
+    assert isinstance(center, np.ndarray)
+    return center
+
+
+def submobjects_of(mobject: VMobject) -> list[VMobject]:
+    return mobject.submobjects
+
+
 eq_str = r"{{$\,=\,$}}"
 not_str = r"{{NOT\;}}"
 and_str = r"{{\;AND\;}}"
@@ -235,7 +249,7 @@ one_str = r"{{1}}"
 zero_str = r"{{0}}"
 
 
-def coltex(s, color=GRAY, **kwargs):
+def coltex(s: str, color: str = GRAY, **kwargs: Any) -> Tex:
     d = {
         not_str: RED,
         or_str: BLUE,

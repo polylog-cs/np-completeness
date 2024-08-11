@@ -23,6 +23,7 @@ from np_completeness.utils.util_general import (
     MAGENTA,
     RED,
     WIRE_WIDTH,
+    animate,
     default,
     disable_rich_logging,
     get_wire_color,
@@ -33,7 +34,7 @@ FINAL_VIDEO = False
 
 
 def make_multiplication_by_hand(
-    rows: list[str], color=False
+    rows: list[str], color: bool = False
 ) -> tuple[VGroup, list[list[VMobject]], list[Line]]:
     """Make a visualisation of the "school algorithm" for multiplying by hand."""
     assert all(
@@ -42,7 +43,7 @@ def make_multiplication_by_hand(
 
     n_rows, n_cols = len(rows), len(rows[0])
 
-    def coloring(c):
+    def coloring(c: str) -> str:
         if color is False or c not in "01":
             return BASE00
         return get_wire_color(c == "1")
@@ -427,10 +428,7 @@ class AdderCircuitScene(Scene):
         detailed_manim_circuit.shift(RIGHT * 0.5 + DOWN * 0.5)
 
         self.play(
-            cast(
-                Animation,
-                manim_circuit.animate.scale(15).set_stroke_width(15).fade(1),
-            ),
+            animate(manim_circuit).scale(15).set_stroke_width(15).fade(1),
             FadeIn(detailed_manim_circuit, scale=0.1),
             run_time=2,
         )
