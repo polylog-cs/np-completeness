@@ -269,7 +269,7 @@ class MultiplicationCircuitScene(Scene):
         for i in range(2):
             self.play(LaggedStart(*all_anims[i]))
 
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
 
         # Add explanations to the outputs
@@ -324,7 +324,7 @@ class GreaterThanOneConstraint(Scene):
             self.play(LaggedStart(*all_anims[i]))
 
         self.wait()
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
         self.play(
             Create(SurroundingRectangle(all_explanations[0][-1], color=RED)),
@@ -396,7 +396,7 @@ class ExampleCircuitScene(Scene):
         self.wait()
 
         # Simulate the circuit
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
 
         # add output labels
         output_labels = [
@@ -443,7 +443,7 @@ class AdderCircuitScene(Scene):
         )
         self.wait()
 
-        self.play(detailed_manim_circuit.animate_evaluation())
+        self.play(detailed_manim_circuit.animate_evaluation(scene=self))
 
         self.wait(1)
 
@@ -520,7 +520,7 @@ class ColoringCircuitScene(Scene):
 
         make_highlight_rectangles(lambda name: name == "output")
 
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
 
         evaluation = circuit.evaluate()

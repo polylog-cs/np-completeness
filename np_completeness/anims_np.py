@@ -1003,7 +1003,7 @@ class Outro(Scene):
         self.play(
             Create(manim_circuit, lag_ratio=0.02),
         )
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
 
         self.play(
@@ -1136,7 +1136,7 @@ class Intro(MovingCameraScene):
         manim_circuit = ManimCircuit(circuit, scale=1.5).to_edge(DOWN)
         self.play(Create(manim_circuit, lag_ratio=0.02))
         self.wait()
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
         self.play(
             FadeOut(manim_circuit),
@@ -1173,7 +1173,7 @@ def show_verification(scene: Scene, sc=1, shft=0) -> None:
     )
 
     scene.play(
-        manim_circuit.animate_evaluation(speed=1),
+        manim_circuit.animate_evaluation(scene=self, speed=1),
         Succession(
             Wait(3),
             AnimationGroup(

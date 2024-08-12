@@ -164,7 +164,7 @@ class ShowConstraints(Scene):
         self.play(Create(arrow), Write(sat_solver_text))
         self.wait()
         self.play(Write(running_text))
-        self.play(manim_circuit.animate_evaluation(speed=2))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=2))
         self.wait()
 
         self.wait()
@@ -326,7 +326,7 @@ class ShowConstraints(Scene):
         self.wait()
 
         self.play(
-            manim_circuits[1].animate_evaluation(speed=2),
+            manim_circuits[1].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -487,7 +487,7 @@ class ShowConstraints(Scene):
         self.wait()
 
         self.play(
-            manim_circuits[2].animate_evaluation(speed=2),
+            manim_circuits[2].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -555,7 +555,7 @@ class ShowConstraints(Scene):
         )
         self.wait()
         self.play(
-            manim_circuits[3].animate_evaluation(speed=2),
+            manim_circuits[3].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -959,7 +959,7 @@ class InversionScene(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
         self.wait()
 
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
 
         self.play(FadeOut(manim_circuit))

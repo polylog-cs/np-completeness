@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 from manim import *
@@ -193,15 +194,18 @@ class ManimCircuit(VGroup):
         return LaggedStart(*anims)
 
     def animate_evaluation(
-        self, reversed: bool = False, speed: float = 1
+        self,
+        scene: Scene,  # Hack: we need the scene in order to play sounds.
+        reversed: bool = False,
+        speed: float = 1,
     ) -> AnimationGroup:
         """Animate the color flowing through the wires to evaluate the circuit."""
         evaluation = self.circuit.evaluate()
         animations = []
 
         speed *= 3  # make it faster while keeping the default speed at 0
-
         MIN_DURATION = 0.01  # Prevent divison by 0
+        rng = np.random.default_rng(37)  # for sounds jitter
 
         for (wire_start, wire_end), manim_wire in self.wires.items():
             start_time = (
@@ -227,18 +231,28 @@ class ManimCircuit(VGroup):
             )
 
         for gate_name, manim_gate in self.gates.items():
+            gate = self.circuit.gates[gate_name]
             gate_evaluation = evaluation.gate_evaluations[gate_name]
-            start_time = gate_evaluation.reach_time / speed
-            duration = max(self.circuit.gates[gate_name].length, MIN_DURATION) / speed
+
+            start_time = gate_evaluation.reach_time
+            start_time = max(0, start_time + rng.normal(scale=0.1, loc=0.05))
+            start_time /= speed
+
+            duration = max(gate.length, MIN_DURATION) / speed
+
+            simplified_value = evaluation.get_simplified_value(
+                gate_name, reversed=reversed
+            )
+
+            # Jitter the start time for cases where there's a lot of gates going
+            # off at the same time
 
             animations.append(
                 AnimationGroup(
                     *[
                         Wait(start_time),
                         manim_gate.animate_to_value(
-                            evaluation.get_simplified_value(
-                                gate_name, reversed=reversed
-                            ),
+                            simplified_value,
                             run_time=duration,
                         ),
                     ],
@@ -246,6 +260,13 @@ class ManimCircuit(VGroup):
                     run_time=start_time + duration,
                 )
             )
+            if simplified_value is not None:
+                add_sound_for_gate(
+                    scene,
+                    manim_gate,
+                    simplified_value,
+                    start_time,
+                )
 
         # These all get played "simultaneously" but there are delays internal to the
         # individual animations
@@ -255,3 +276,22 @@ class ManimCircuit(VGroup):
         for wire in self.wires.values():
             wire.background_line.set_stroke_width(scale * WIRE_WIDTH)
             wire.value_line.set_stroke_width(scale * WIRE_WIDTH)
+
+
+def add_sound_for_gate(
+    scene: Scene, manim_gate: ManimGate, value: bool, time_offset: float
+):
+    gate = manim_gate.gate
+    if gate.visual_type in ["knot", "invisible"] or gate.n_inputs == 0:
+        return  # No sound for "utility gates" and inputs
+
+    if gate.n_outputs == 0:
+        sound_file = "click_2" if value else "click_1"
+    else:
+        sound_file = "click_0" if value else "click_3"
+
+    scene.add_sound(
+        str(Path(__file__).parents[1] / f"audio/click/{sound_file}.wav"),
+        time_offset=time_offset,
+        gain=-12.0,
+    )
