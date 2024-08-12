@@ -1,10 +1,9 @@
 # type: ignore[reportArgumentType]
+# vasek on windows: run     $env:PYTHONPATH = "C:\Users\admin\np-completeness" and ask VV how to fix this
 # manim -pql --disable_caching --fps 15 -r 290,180 anims.py Polylogo
 from manim import *
 
 from np_completeness.utils.util_general import *
-
-# from utils.util_general import *
 
 CROWN_BUFF = 0.1
 CROWN_SCALE = 0.25

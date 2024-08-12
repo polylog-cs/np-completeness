@@ -7,6 +7,7 @@ from np_completeness.utils.circuit import (
 from np_completeness.utils.gate import (
     ADD_TABLE,
     AND_TABLE,
+    AND_TABLE_3,
     NOT_TABLE,
     OR3_TABLE,
     OR_TABLE,
@@ -20,6 +21,158 @@ from np_completeness.utils.util_general import (
 )
 
 
+def make_verifier_circuit(xs=1, ys=1) -> Circuit:
+    """Make a simple example verifier circuit."""
+    circuit = Circuit()
+
+    for i, out_value in enumerate([True, True, False, False, True, False]):
+        circuit.add_gate(
+            f"input_{i}",
+            Gate(
+                truth_table={(): (out_value,)},
+                position=np.array(
+                    [
+                        (i - 2.5) * GATE_X_SPACING * xs * 1.0,
+                        GATE_Y_SPACING * ys * 2,
+                        0,
+                    ]
+                ),
+            ),
+        )
+
+    # layer 1
+    for i in range(2):
+        print(i)
+        circuit.add_gate(
+            "not_gate_" + str(i),
+            Gate(
+                truth_table=NOT_TABLE,
+                position=circuit.position_of("input_" + str(i + 3))
+                + DOWN * GATE_Y_SPACING * ys,
+            ),
+        )
+        print("input_" + str(i + 3), "not_gate_" + str(i))
+        add_snake_wire(circuit, "input_" + str(i + 3), "not_gate_" + str(i))
+
+        if i == 0:
+            circuit.add_gate(
+                "xknot_1",
+                Gate.make_knot(
+                    circuit.position_of("not_gate_0")
+                    + GATE_Y_SPACING * ys * 1.25 * DOWN,
+                    n_inputs=1,
+                    n_outputs=2,
+                ),
+            )
+            add_snake_wire(circuit, "not_gate_0", "xknot_1")
+
+    circuit.add_gate(
+        "or_gate_0",
+        Gate(
+            truth_table=OR_TABLE,
+            position=np.array(
+                (circuit.position_of("input_1") + circuit.position_of("input_2")) / 2.0
+            )
+            + DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "input_2", "or_gate_0")
+    add_snake_wire(circuit, "input_1", "or_gate_0")
+    circuit.add_gate(
+        "xknot_0",
+        Gate.make_knot(
+            circuit.position_of("or_gate_0") + GATE_Y_SPACING * ys * 0.25 * DOWN,
+            n_inputs=1,
+            n_outputs=2,
+        ),
+    )
+    add_snake_wire(circuit, "or_gate_0", "xknot_0")
+
+    # layer 2
+    circuit.add_gate(
+        "and_gate_0",
+        Gate(
+            truth_table=AND_TABLE,
+            position=(circuit.position_of("input_0") + circuit.position_of("input_1"))
+            / 2.0
+            + 2 * DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "input_0", "and_gate_0")
+    add_snake_wire(circuit, "xknot_0", "and_gate_0")
+
+    circuit.add_gate(
+        "and_gate_1",
+        Gate(
+            truth_table=AND_TABLE,
+            position=(circuit.position_of("input_4") + circuit.position_of("input_5"))
+            / 2.0
+            + 2 * DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "not_gate_1", "and_gate_1")
+    add_snake_wire(circuit, "input_5", "and_gate_1")
+
+    # layer 3
+    circuit.add_gate(
+        "not_gate_2",
+        Gate(
+            truth_table=NOT_TABLE,
+            position=circuit.position_of("and_gate_0") + DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "and_gate_0", "not_gate_2")
+
+    circuit.add_gate(
+        "or_gate_1",
+        Gate(
+            truth_table=OR_TABLE,
+            position=(circuit.position_of("input_2") + circuit.position_of("input_3"))
+            / 2.0
+            + 3 * DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "xknot_0", "or_gate_1")
+    add_snake_wire(circuit, "xknot_1", "or_gate_1")
+
+    circuit.add_gate(
+        "or_gate_2",
+        Gate(
+            truth_table=OR_TABLE,
+            position=circuit.position_of("input_4") + 3 * DOWN * GATE_Y_SPACING * ys,
+        ),
+    )
+    add_snake_wire(circuit, "xknot_1", "or_gate_2")
+    add_snake_wire(circuit, "and_gate_1", "or_gate_2")
+
+    # layer 4
+    circuit.add_gate(
+        "and_gate_2",
+        Gate(
+            truth_table=AND_TABLE_3,
+            position=circuit.position_of("or_gate_1") + 1 * DOWN * GATE_Y_SPACING * ys,
+            visual_type="and",
+        ),
+    )
+    add_snake_wire(circuit, "not_gate_2", "and_gate_2", y_start_offset=-0.5)
+    add_snake_wire(circuit, "or_gate_1", "and_gate_2")
+    add_snake_wire(circuit, "or_gate_2", "and_gate_2", y_start_offset=-0.5)
+
+    circuit.add_gate(
+        f"output",
+        Gate.make_knot(
+            circuit.position_of("and_gate_2") + DOWN * GATE_Y_SPACING * ys,
+            n_inputs=1,
+            n_outputs=0,
+            length=1,
+        ),
+    )
+    circuit.add_wire("and_gate_2", "output")
+
+    circuit.check()
+    return circuit
+
+
 def make_example_circuit() -> Circuit:
     """Make a simple example circuit."""
     circuit = Circuit()
@@ -31,7 +184,7 @@ def make_example_circuit() -> Circuit:
                 truth_table={(): (out_value,)},
                 position=np.array(
                     [
-                        (i - 1) * GATE_X_SPACING * 2,
+                        (i - 1) * GATE_X_SPACING * 1.0,
                         GATE_Y_SPACING * 2,
                         0,
                     ]

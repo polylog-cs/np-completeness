@@ -10,113 +10,6 @@ FINAL_VIDEO = False
 CIRCUIT_LABEL_SCALE = 0.8
 TBL_SCALE = 0.6
 
-# class AdderCircuitScene(Scene):
-#     def construct(self):
-#         default()
-
-#         # circuit = make_adder_gate(inputs=[True, False, True])
-#         # circuit.add_missing_inputs_and_outputs()
-#         # manim_circuit = ManimCircuit(circuit)
-#         # self.add(manim_circuit)
-#         # self.wait()
-
-#         small_gate_tex = Tex(r"$\;\;+\;\;$", color=BASE2).scale(1.5)
-#         small_gate_rec = Rectangle(width = GATE_WIDTH, height = GATE_HEIGHT, color=text_color, fill_opacity = 1.0, fill_color = WIRE_COLOR_NONE).scale(2)
-#         small_gate_ins = []
-#         for i in range(3):
-#             wire = Line(
-#                     start = small_gate_rec.get_top() + (small_gate_rec.get_width() * (i-1)/4) * RIGHT,
-#                     end = small_gate_rec.get_top() + (small_gate_rec.get_width() * (i-1)/4) * RIGHT + small_gate_rec.get_height() * UP,
-#                     color = text_color)
-#             ball = Dot(wire.get_end(), color = text_color)
-#             small_gate_ins.append(Group(wire, ball))
-#         small_gate_ins = Group(*small_gate_ins)
-
-#         small_gate_outs = []
-#         for i in range(2):
-#             wire = Line(
-#                     start = small_gate_rec.get_bottom() + (small_gate_rec.get_width() * (2*i-1)/6) * RIGHT,
-#                     end = small_gate_rec.get_bottom() + (small_gate_rec.get_width() * (2*i-1)/6) * RIGHT + small_gate_rec.get_height() * DOWN,
-#                     color = text_color)
-#             ball = Dot(wire.get_end(), color = text_color)
-#             small_gate_outs.append(Group(wire, ball))
-#         small_gate_outs = Group(*small_gate_outs)
-
-#         small_gate = Group(small_gate_rec, small_gate_tex, small_gate_ins, small_gate_outs)
-
-#         self.play(
-#             FadeIn(small_gate),
-#         )
-#         self.wait()
-
-#         description_tex = Group(
-#             *[
-#                 Tex(str, color=text_color)
-#                 for str in [
-#                     r"Input:",
-#                     r"three bits",
-#                     r"Output:",
-#                     r"their sum in binary",
-#                 ]
-#             ]
-#         ).arrange_in_grid(rows=2, cell_alignment=LEFT)
-#         rect = SurroundingRectangle(description_tex, color=text_color)
-#         description = Group(description_tex, rect).to_corner(UR, buff = 0.25)
-
-#         self.play(
-#             FadeIn(description),
-#         )
-#         self.wait()
-
-#         sc = 7
-#         op = 0.2
-#         small_gate_rec.generate_target()
-#         small_gate_rec.target.scale(sc).set_opacity(op).shift(1*DOWN)
-
-#         small_gate_tex.generate_target()
-#         small_gate_tex.target.scale(sc).set_opacity(op).shift(1*DOWN)
-
-#         for i, g in enumerate(small_gate_ins):
-#             g[0].generate_target()
-#             g[0].target = Line(
-#                     start = small_gate_rec.target.get_top() + (small_gate_rec.target.get_width() * (i-1)/4) * RIGHT,
-#                     end = small_gate_rec.target.get_top() + (small_gate_rec.target.get_width() * (i-1)/4) * RIGHT + small_gate_rec.target.get_height() * UP,
-#                     color = text_color,
-#                     ).set_stroke(opacity=0)
-
-#             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
-
-#         for i, g in enumerate(small_gate_outs):
-#             g[0].generate_target()
-#             g[0].target = Line(
-#                     start = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT,
-#                     end = small_gate_rec.target.get_bottom() + (small_gate_rec.target.get_width() * (2*i-1)/6) * RIGHT + small_gate_rec.target.get_height() * DOWN,
-#                     color = text_color,
-#                     ).set_stroke(opacity=0)
-#             g[1].generate_target().move_to(g[0].target.get_end()).set_opacity(0)
-
-#         self.play(
-#             MoveToTarget(small_gate_rec),
-#             MoveToTarget(small_gate_tex),
-#             *[MoveToTarget(g[0]) for g in small_gate_ins],
-#             *[MoveToTarget(g[1]) for g in small_gate_ins],
-#             *[MoveToTarget(g[0]) for g in small_gate_outs],
-#             *[MoveToTarget(g[1]) for g in small_gate_outs],
-#         )
-#         self.wait()
-
-
-#         circuit = make_adder_circuit(inputs=[False, False, True])
-#         circuit.add_missing_inputs_and_outputs()
-
-#         manim_circuit = ManimCircuit(circuit)
-#         self.add(manim_circuit)
-#         self.wait()
-
-#         self.play(manim_circuit.animate_evaluation())
-
-#         self.wait(1)
-
 
 class ShowConstraints(Scene):
     def construct(self):
@@ -795,6 +688,34 @@ class ShowConstraints(Scene):
         )
         self.play(Write(tick_mark))
         self.wait()
+
+
+class Test(Scene):
+    def construct(self):
+        default()
+
+        circuit = make_verifier_circuit()
+        manim_circuit = ManimCircuit(circuit, scale=2)
+        txt = Tex(r"Verifier", color=BLUE, z_index=20)
+        rect = SurroundingRectangle(
+            txt,
+            color=text_color,
+            fill_opacity=1,
+            fill_color=BACKGROUND_COLOR,
+            z_index=10,
+        )
+        self.bring_to_front(txt)
+
+        self.play(
+            Create(manim_circuit, lag_ratio=0.02),
+            Create(rect),
+            Write(txt),
+        )
+        self.wait()
+
+        self.play(manim_circuit.animate_evaluation(speed=2))
+
+        self.wait(5)
 
 
 class CircuitConversionScene(Scene):

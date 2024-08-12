@@ -2,9 +2,11 @@
 # manim -pql --disable_caching --fps 15 -r 290,180 anims.py Polylogo
 from manim import *
 
-from np_completeness.utils.util_general import *
-
-# from utils.util_general import *
+# from np_completeness.utils.util_general import *
+from utils.util_general import *
+from utils.specific_circuits import *
+from np_completeness.utils.coloring_circuits import *
+from np_completeness.utils.manim_circuit import ManimCircuit
 
 CROWN_BUFF = 0.1
 CROWN_SCALE = 0.25
@@ -943,7 +945,7 @@ class Outro(Scene):
         intuition1 = (
             Tex("Can we invert algorithms?", color=text_color)
             .scale(1)
-            .next_to(pnp_tex, DOWN, buff=1)
+            .next_to(pnp_tex, DOWN, buff=0.5)
         )
         intuition2 = (
             Tex("Can we solve problems if we can verify solutions?", color=text_color)
@@ -958,6 +960,45 @@ class Outro(Scene):
         self.play(
             Write(intuition2),
             FadeOut(intuition1),
+        )
+        self.wait()
+
+        sc = 0.7
+        circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
+        manim_circuit = ManimCircuit(circuit, scale=2 * sc)
+        txt = Tex(r"Verifier", color=BLUE, z_index=20).scale(sc)
+        rect = SurroundingRectangle(
+            txt,
+            color=text_color,
+            fill_opacity=1,
+            fill_color=BACKGROUND_COLOR,
+            z_index=10,
+        )
+        Group(manim_circuit, txt, rect).shift(1 * DOWN)
+
+        self.play(
+            Create(manim_circuit, lag_ratio=0.02),
+            Create(rect),
+            Write(txt),
+        )
+        self.wait()
+        tick = (
+            Text("✓", color=GREEN)
+            .scale(1)
+            .next_to(manim_circuit.gates["output"], RIGHT)
+        )
+        self.play(Write(tick))
+        self.play(manim_circuit.animate_evaluation(speed=1))
+        sol_tex = Tex(r"Solution").next_to(manim_circuit.gates["input_5"], RIGHT)
+        self.play(Write(sol_tex))
+        self.wait()
+
+        self.play(
+            FadeOut(manim_circuit),
+            FadeOut(txt),
+            FadeOut(rect),
+            FadeOut(tick),
+            FadeOut(sol_tex),
         )
         self.wait()
 
@@ -998,7 +1039,6 @@ class Outro(Scene):
         # a cut here, a head-scene follows, then what's below
         self.remove(intuition2)
         self.add(intuition1)
-        intuition1.shift(0.5 * UP)
 
         self.wait()
         self.play(
