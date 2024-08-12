@@ -399,6 +399,19 @@ class IntroSAT(Scene):
         self.wait()
 
 
+class SecurityRSA(Scene):
+    def construct(self):
+        default()
+
+        product_tex = Tex(
+            r"{{$308649719645509$ }}{{$\;\;=\;\; 54658423 \;\;\times\;\; 5646883$}}"
+        ).scale(1.25)
+        self.play(Write(product_tex[0]))
+        self.wait()
+        self.play(Write(product_tex[1]))
+        self.wait()
+
+
 class BreakRSA(Scene):
     def construct(self):
         default()
