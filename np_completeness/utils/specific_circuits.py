@@ -21,7 +21,7 @@ from np_completeness.utils.util_general import (
 )
 
 
-def make_verifier_circuit(xs=1, ys=1) -> Circuit:
+def make_verifier_circuit(xs: float = 1, ys: float = 1) -> Circuit:
     """Make a simple example verifier circuit."""
     circuit = Circuit()
 
@@ -173,7 +173,7 @@ def make_verifier_circuit(xs=1, ys=1) -> Circuit:
     return circuit
 
 
-def make_example_circuit(sc=1) -> Circuit:
+def make_example_circuit(sc: float = 1) -> Circuit:
     """Make a simple example circuit."""
     circuit = Circuit()
 
