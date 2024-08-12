@@ -13,6 +13,134 @@ CROWN_SCALE = 0.25
 BOX_COLOR = BASE3
 
 
+problems_data = [
+    ("SATISFIABILITY", ("SATISFIABILITY", ORIGIN), None, None, None, -1),
+    (
+        "COLORING",
+        ("SATISFIABILITY", 2 * UL + 0 * DOWN + 1.5 * LEFT),
+        "SATISFIABILITY",
+        UP,
+        DOWN,
+        0,
+    ),
+    (
+        "TRAVELLING SALESMAN",
+        ("SATISFIABILITY", 2 * UR + 0.5 * UP),
+        "SATISFIABILITY",
+        UP,
+        DOWN,
+        1,
+    ),
+    (
+        "MAX CLIQUE",
+        ("SATISFIABILITY", 2 * DR + 1 * RIGHT + 1 * DOWN + 1 * LEFT),
+        "SATISFIABILITY",
+        DOWN,
+        UP,
+        0,
+    ),
+    (
+        "INTEGER PROGRAMMING",
+        ("SATISFIABILITY", 2 * DL + 1 * LEFT),
+        "SATISFIABILITY",
+        DOWN,
+        UP,
+        1,
+    ),
+    ("MAX CUT", ("SATISFIABILITY", 5 * LEFT + 4 * UP), "COLORING", UP, DOWN, 0),
+    (
+        "KNAPSACK",
+        ("SATISFIABILITY", 1 * LEFT + 4 * UP),
+        "COLORING",
+        UP,
+        DOWN,
+        1,
+    ),
+    (
+        "VERTEX COVER",
+        ("MAX CLIQUE", 5 * LEFT + 0.5 * DOWN),
+        "MAX CLIQUE",
+        LEFT,
+        RIGHT,
+        0,
+    ),
+    ("k-MEANS", ("COLORING", 4 * LEFT + 1 * DOWN), "COLORING", LEFT, RIGHT, 2),
+    (
+        "JOB SCHEDULING",
+        ("COLORING", 1 * UP + 5 * LEFT),
+        "COLORING",
+        LEFT,
+        RIGHT,
+        1,
+    ),
+    (
+        "MINESWEEPER",
+        ("KNAPSACK", 1.5 * UP + 1 * RIGHT),
+        "KNAPSACK",
+        UP,
+        DOWN,
+        4,
+    ),
+    (
+        "VEHICLE ROUTING",
+        ("TRAVELLING SALESMAN", 5 * RIGHT + 2 * UP),
+        "TRAVELLING SALESMAN",
+        UP,
+        DOWN,
+        1,
+    ),
+    (
+        "PROTEIN FOLDING",
+        ("SATISFIABILITY", 8 * RIGHT + 2 * UP),
+        "SATISFIABILITY",
+        RIGHT,
+        LEFT,
+        3,
+    ),
+    (
+        "MULTI-COMMODITY FLOW",
+        ("SATISFIABILITY", 9 * RIGHT + 0.5 * UP),
+        "SATISFIABILITY",
+        RIGHT,
+        LEFT,
+        1,
+    ),
+    (
+        "TETRIS",
+        ("SATISFIABILITY", 7 * RIGHT - 1 * UP),
+        "SATISFIABILITY",
+        RIGHT,
+        LEFT,
+        4,
+    ),
+    (
+        "CANDYCRUSH",
+        ("SATISFIABILITY", 8 * RIGHT + 3 * DOWN),
+        "SATISFIABILITY",
+        RIGHT,
+        LEFT,
+        4,
+    ),
+    ("TRAINING SVM", ("MAX CLIQUE", 2 * DOWN), "MAX CLIQUE", DOWN, UP, 2),
+    (
+        "TRAINING NEURAL NETS",
+        ("SATISFIABILITY", 7 * LEFT + 0.5 * DOWN),
+        "SATISFIABILITY",
+        LEFT,
+        RIGHT,
+        2,
+    ),
+    (
+        "MULTIPLE SEQUENCE ALIGNMENT",
+        ("VERTEX COVER", 4 * LEFT + 2 * DOWN),
+        "VERTEX COVER",
+        DOWN,
+        UP,
+        3,
+    ),
+]
+
+
 class Intro(Scene):
     def construct(self):
         default()
@@ -268,132 +396,6 @@ class NP3(MovingCameraScene):
         self.wait()
 
         num_karp_problems = 8
-        problems_data = [
-            ("SATISFIABILITY", ("SATISFIABILITY", ORIGIN), None, None, None, -1),
-            (
-                "COLORING",
-                ("SATISFIABILITY", 2 * UL + 0 * DOWN + 1.5 * LEFT),
-                "SATISFIABILITY",
-                UP,
-                DOWN,
-                0,
-            ),
-            (
-                "TRAVELLING SALESMAN",
-                ("SATISFIABILITY", 2 * UR + 0.5 * UP),
-                "SATISFIABILITY",
-                UP,
-                DOWN,
-                1,
-            ),
-            (
-                "MAX CLIQUE",
-                ("SATISFIABILITY", 2 * DR + 1 * RIGHT + 1 * DOWN + 1 * LEFT),
-                "SATISFIABILITY",
-                DOWN,
-                UP,
-                0,
-            ),
-            (
-                "INTEGER PROGRAMMING",
-                ("SATISFIABILITY", 2 * DL + 1 * LEFT),
-                "SATISFIABILITY",
-                DOWN,
-                UP,
-                1,
-            ),
-            ("MAX CUT", ("SATISFIABILITY", 5 * LEFT + 4 * UP), "COLORING", UP, DOWN, 0),
-            (
-                "KNAPSACK",
-                ("SATISFIABILITY", 1 * LEFT + 4 * UP),
-                "COLORING",
-                UP,
-                DOWN,
-                1,
-            ),
-            (
-                "VERTEX COVER",
-                ("MAX CLIQUE", 5 * LEFT + 0.5 * DOWN),
-                "MAX CLIQUE",
-                LEFT,
-                RIGHT,
-                0,
-            ),
-            ("k-MEANS", ("COLORING", 4 * LEFT + 1 * DOWN), "COLORING", LEFT, RIGHT, 2),
-            (
-                "JOB SCHEDULING",
-                ("COLORING", 1 * UP + 5 * LEFT),
-                "COLORING",
-                LEFT,
-                RIGHT,
-                1,
-            ),
-            (
-                "MINESWEEPER",
-                ("KNAPSACK", 1.5 * UP + 1 * RIGHT),
-                "KNAPSACK",
-                UP,
-                DOWN,
-                4,
-            ),
-            (
-                "VEHICLE ROUTING",
-                ("TRAVELLING SALESMAN", 5 * RIGHT + 2 * UP),
-                "TRAVELLING SALESMAN",
-                UP,
-                DOWN,
-                1,
-            ),
-            (
-                "PROTEIN FOLDING",
-                ("SATISFIABILITY", 8 * RIGHT + 2 * UP),
-                "SATISFIABILITY",
-                RIGHT,
-                LEFT,
-                3,
-            ),
-            (
-                "MULTI-COMMODITY FLOW",
-                ("SATISFIABILITY", 9 * RIGHT + 0.5 * UP),
-                "SATISFIABILITY",
-                RIGHT,
-                LEFT,
-                1,
-            ),
-            (
-                "TETRIS",
-                ("SATISFIABILITY", 7 * RIGHT - 1 * UP),
-                "SATISFIABILITY",
-                RIGHT,
-                LEFT,
-                4,
-            ),
-            (
-                "CANDYCRUSH",
-                ("SATISFIABILITY", 8 * RIGHT + 3 * DOWN),
-                "SATISFIABILITY",
-                RIGHT,
-                LEFT,
-                4,
-            ),
-            ("TRAINING SVM", ("MAX CLIQUE", 2 * DOWN), "MAX CLIQUE", DOWN, UP, 2),
-            (
-                "TRAINING NEURAL NETS",
-                ("SATISFIABILITY", 7 * LEFT + 0.5 * DOWN),
-                "SATISFIABILITY",
-                LEFT,
-                RIGHT,
-                2,
-            ),
-            (
-                "MULTIPLE SEQUENCE ALIGNMENT",
-                ("VERTEX COVER", 4 * LEFT + 2 * DOWN),
-                "VERTEX COVER",
-                DOWN,
-                UP,
-                3,
-            ),
-        ]
 
         problems = []
         crowns = []
@@ -994,43 +996,7 @@ class Outro(Scene):
         self.wait()
 
         sc = 0.7
-        circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
-        manim_circuit = ManimCircuit(circuit, scale=2 * sc)
-        txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc)
-        rect = SurroundingRectangle(
-            txt,
-            color=text_color,
-            fill_opacity=1,
-            fill_color=BACKGROUND_COLOR,
-            z_index=10,
-        )
-        Group(manim_circuit, txt, rect).shift(0.5 * DOWN)
-
-        self.play(
-            Create(manim_circuit, lag_ratio=0.02),
-            Create(rect),
-            Write(txt),
-        )
-        self.wait()
-        tick = (
-            Text("✓", color=GREEN)
-            .scale(1)
-            .next_to(manim_circuit.gates["output"], RIGHT)
-        )
-        self.play(Write(tick))
-        self.play(manim_circuit.animate_evaluation(speed=1))
-        sol_tex = Tex(r"Solution").next_to(manim_circuit.gates["input_5"], RIGHT)
-        self.play(Write(sol_tex))
-        self.wait()
-
-        self.play(
-            FadeOut(manim_circuit),
-            FadeOut(txt),
-            FadeOut(rect),
-            FadeOut(tick),
-            FadeOut(sol_tex),
-        )
-        self.wait()
+        show_verification(self, sc=sc, 1*DOWN)
 
         # thanks part
         patrons_thanks_text = "Our amazing Patrons:"
@@ -1083,3 +1049,128 @@ class Outro(Scene):
         )
 
         self.wait(5)
+
+
+class Intro(MovingCameraScene):
+    def construct(self):
+        default()
+        self.camera.frame.save_state()
+
+        problems = []
+        arrows = []
+        # show problems from problems_data
+        for i, (
+            name,
+            (ref_problem, position),
+            arrow_from,
+            arrow_start,
+            arrow_end,
+            problem_type,
+        ) in enumerate(problems_data):
+            tex = Tex(name).set_z_index(5)
+            rect = SurroundingRectangle(
+                tex, color=text_color, fill_color=BACKGROUND_COLOR, z_index=1
+            )
+            problem = VGroup(rect, tex)
+
+            if i == 0:
+                problem.move_to(position)
+            else:
+                ref = next(p for p in problems if p[1].tex_string == ref_problem)
+                problem.move_to(ref.get_center() + position)
+
+            problems.append(problem)
+            if arrow_from:
+                from_problem = next(
+                    p for p in problems if p[1].tex_string == arrow_from
+                )
+                start = from_problem[0].get_edge_center(arrow_start)
+                end = problem.get_edge_center(arrow_end)
+                arrows.append(Arrow(start=start, end=end, buff=0.1, color=BASE1))
+
+        self.play(FadeIn(problems[0]))
+        self.wait()
+
+        self.play(
+            AnimationGroup(
+                *[
+                    AnimationGroup(
+                        FadeIn(problems[i]),
+                        GrowArrow(arrows[i - 1]),
+                    )
+                    for i in range(1, len(problems))
+                ],
+                lag_ratio=0.2,
+            ),
+            AnimationGroup(
+                self.camera.frame.animate.move_to(ORIGIN).set(width=28), run_time=5
+            ),
+        )
+        self.wait()
+
+        self.play(
+            *[FadeOut(o) for o in self.mobjects],
+        )
+        self.camera.frame.restore()
+        self.wait()
+
+        circuit = make_multiplication_circuit(3, 5).reverse()
+        manim_circuit = ManimCircuit(circuit, scale=1.5).to_edge(DOWN)
+        self.play(Create(manim_circuit, lag_ratio=0.02))
+        self.wait()
+        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.wait()
+        self.play(
+            FadeOut(manim_circuit),
+        )
+        self.wait()
+
+        show_verification(self)
+
+
+def show_verification(scene: Scene, sc=1, shft = 0) -> None:
+    circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
+    manim_circuit = ManimCircuit(circuit, scale=2 * sc)
+    txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc * 1.3)
+    rect = SurroundingRectangle(
+        txt,
+        color=text_color,
+        fill_opacity=1,
+        fill_color=BACKGROUND_COLOR,
+        z_index=10,
+    )
+    Group(manim_circuit, txt, rect).to_edge(DOWN, buff=1.5).shift(shft)
+
+    scene.play(
+        Create(manim_circuit, lag_ratio=0.02),
+        Create(rect),
+        Write(txt),
+    )
+    scene.wait()
+    tick = Text("✓", color=GREEN).scale(1).next_to(manim_circuit.gates["output"], RIGHT)
+    scene.play(Write(tick))
+    sol_tex = Tex(r"{{S}}{{o}}{{l}}{{u}}{{t}}{{i}}{{o}}{{n}}").next_to(
+        Group(manim_circuit.gates["input_0"], manim_circuit.gates["input_5"]), UP
+    )
+    scene.play(
+        manim_circuit.animate_evaluation(speed=1),
+        Succession(
+            Wait(3),
+            AnimationGroup(
+                *[
+                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.5 * sc * RIGHT))
+                    for i in range(8)
+                ],
+                lag_ratio=0.0,
+            ),
+        ),
+    )
+    scene.wait()
+    scene.play(
+        FadeOut(manim_circuit),
+        FadeOut(txt),
+        FadeOut(rect),
+        FadeOut(tick),
+        FadeOut(sol_tex),
+    )
+    scene.wait()
