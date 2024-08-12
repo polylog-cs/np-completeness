@@ -51,7 +51,12 @@ def make_multiplication_by_hand(
 
     # Manim refuses to render a single space to TeX, so use an empty object
     numbers: list[list[VMobject]] = [
-        [Tex(c, color=coloring(c)) if c != " " else VGroup() for c in row]
+        [
+            Text(c, color=coloring(c))
+            if c == "×"
+            else (Tex(c, color=coloring(c)) if c != " " else VGroup())
+            for c in row
+        ]
         for row in rows
     ]
 
@@ -403,7 +408,21 @@ class ExampleCircuitScene(Scene):
 
         # Simulate the circuit
         self.play(manim_circuit.animate_evaluation())
-        self.wait(2)
+
+        # add output labels
+        output_labels = [
+            Tex(str(val), color=get_wire_color(True if val == 1 else False))
+            .scale(1.5)
+            .next_to(manim_circuit.gates["output_" + str(i)], dir)
+            for val, i, dir in [(1, 0, LEFT), (0, 1, RIGHT)]
+        ]
+        self.play(
+            AnimationGroup(
+                *[Write(label) for label in output_labels],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
 
 
 class AdderCircuitScene(Scene):
