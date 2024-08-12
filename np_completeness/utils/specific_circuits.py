@@ -25,7 +25,7 @@ def make_verifier_circuit(xs=1, ys=1) -> Circuit:
     """Make a simple example verifier circuit."""
     circuit = Circuit()
 
-    for i, out_value in enumerate([True, True, False, False, True, False]):
+    for i, out_value in enumerate([False, True, False, False, True, False]):
         circuit.add_gate(
             f"input_{i}",
             Gate(
