@@ -14,7 +14,7 @@ class Polylogo(Scene):
     def construct(self):
         default()
         authors = Tex(
-            r"\textbf{Richard Hladík, Filip Hlásek, Václav Rozhoň, Václav Volhejn}",
+            r"\textbf{Richard Hladík, Gabor Hollbeck, Václav Rozhoň, Václav Volhejn}",
             color=text_color,
             font_size=40,
         ).shift(3 * DOWN + 0 * LEFT)

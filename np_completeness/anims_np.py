@@ -996,7 +996,7 @@ class Outro(Scene):
         self.wait()
 
         sc = 0.7
-        show_verification(self, sc=sc, 1*DOWN)
+        show_verification(self, sc=sc, shft=1 * DOWN)
 
         # thanks part
         patrons_thanks_text = "Our amazing Patrons:"
@@ -1128,10 +1128,10 @@ class Intro(MovingCameraScene):
         show_verification(self)
 
 
-def show_verification(scene: Scene, sc=1, shft = 0) -> None:
+def show_verification(scene: Scene, sc=1, shft=0) -> None:
     circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
     manim_circuit = ManimCircuit(circuit, scale=2 * sc)
-    txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc * 1.3)
+    txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc * 1.4)
     rect = SurroundingRectangle(
         txt,
         color=text_color,

@@ -721,16 +721,19 @@ class CircuitConversionScene(Scene):
 
         variables = Group(*[Tex(f"${c}$", color=text_color) for c in "abcdef"])
         variables[0].move_to(manim_circuit.gates[f"input_{0}"]).shift(
-            0.5 * DR + 0.1 * DOWN
+            0.5 * DR + 0.1 * DOWN + 0.2 * LEFT
         )
-        variables[1].move_to(manim_circuit.gates[f"input_{1}"]).shift(0.35 * DR)
+        variables[1].move_to(manim_circuit.gates[f"input_{1}"]).shift(
+            0.3 * RIGHT + 0.4 * DOWN
+        )
         variables[2].move_to(manim_circuit.gates[f"input_{2}"]).shift(
-            0.5 * DL + 1.75 * DOWN
+            0.3 * RIGHT + 2.3 * DOWN
         )
 
         variables[3].move_to(manim_circuit.gates[f"not_gate"]).shift(
             0.8 * DOWN + 0.25 * LEFT
         )
+
         variables[4].move_to(manim_circuit.gates[f"not_gate"]).shift(1.8 * DOWN)
         variables[5].move_to(manim_circuit.gates[f"output_{1}"]).shift(
             0.5 * UR + 0.1 * DOWN
@@ -812,7 +815,7 @@ class CircuitConversionScene(Scene):
                 for i, str in enumerate(
                     [
                         x2_str + or_str + x4_str,
-                        r"$\# \text{NOT}(0) = 1$",
+                        r"$\#\  \text{NOT}(0) = 1$",
                         left_str
                         + not_str
                         + x2_str
@@ -822,7 +825,7 @@ class CircuitConversionScene(Scene):
                         + not_str
                         + x4_str
                         + right_str,
-                        r"$\# \text{NOT}(1) = 0$",
+                        r"$\#\  \text{NOT}(1) = 0$",
                     ]
                 )
             ]
@@ -830,8 +833,8 @@ class CircuitConversionScene(Scene):
 
         _all_texs = (
             VGroup(*not_texs, *or_texs, *and_texs)
-            .arrange_in_grid(cols=2, cell_alignment=LEFT, buff=0.25)
-            .next_to(manim_circuit, RIGHT, buff=0.0)
+            .arrange_in_grid(cols=2, cell_alignment=LEFT, buff=(0.5, 0.05))
+            .next_to(manim_circuit, RIGHT, buff=1)
             .shift(0 * DOWN + 0.2 * RIGHT)
         )
         or_texs.shift(0.25 * UP)
@@ -850,12 +853,13 @@ class CircuitConversionScene(Scene):
         self.play(animate(and_texs[0]).scale(sc).shift(1 * UP + 2 * RIGHT))
         self.wait()
 
+        shft = 0.05
         for j in [2, 7]:
             new_tex = (
                 Tex(zero_str, color=WIRE_COLOR_FALSE)
                 .scale(CONSTRAINT_SCALE * sc)
                 .move_to(and_texs[0][j].get_center())
-                .shift(0.1 * UP)
+                .shift(shft * UP)
             )
             self.play(
                 FadeOut(and_texs[0][j]),
@@ -873,13 +877,13 @@ class CircuitConversionScene(Scene):
             Tex(one_str, color=WIRE_COLOR_TRUE)
             .scale(CONSTRAINT_SCALE * sc)
             .move_to(and_texs[0][j1].get_center())
-            .shift(0.1 * UP)
+            .shift(shft * UP)
         )
         new_tex2 = (
             Tex(one_str, color=WIRE_COLOR_TRUE)
             .scale(CONSTRAINT_SCALE * sc)
             .move_to(and_texs[0][j2].get_center())
-            .shift(0.1 * UP)
+            .shift(shft * UP)
         )
         self.play(
             FadeOut(and_texs[0][j1]),
