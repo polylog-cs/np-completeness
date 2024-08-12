@@ -103,7 +103,7 @@ class MultiplicationByHand(Scene):
         disable_rich_logging()
         default()
 
-        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,= ???$}}").scale(4)
+        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,=\,???$}}").scale(4)
         self.play(
             AnimationGroup(
                 *[Write(cast(VMobject, mult_tex[i])) for i in range(4)],
