@@ -1062,7 +1062,7 @@ class Outro(Scene):
                 Create(line),
                 Write(patrons_thanks_tex),
                 *[Write(t) for t in patrons_tex],
-                lag_ratio=0.1,
+                lag_ratio=0.05,
             )
         )
 
@@ -1149,34 +1149,36 @@ class Intro(MovingCameraScene):
 def show_verification(scene: Scene, sc=1, shft=0) -> None:
     circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
     manim_circuit = ManimCircuit(circuit, scale=2 * sc)
-    txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc * 1.4)
-    rect = SurroundingRectangle(
-        txt,
-        color=text_color,
-        fill_opacity=1,
-        fill_color=BACKGROUND_COLOR,
-        z_index=10,
+    txt = (
+        BraceLabel(manim_circuit, r"\text{Verifier}", RIGHT)
+        .set_z_index(20)
+        .scale(sc * 1.4)
+        .set_color(BLUE)
     )
-    Group(manim_circuit, txt, rect).to_edge(DOWN, buff=1.5).shift(shft)
+    Group(manim_circuit, txt).to_edge(DOWN, buff=1.5).shift(shft)
 
     scene.play(
         Create(manim_circuit, lag_ratio=0.02),
-        Create(rect),
         Write(txt),
     )
     scene.wait()
     tick = Text("✓", color=GREEN).scale(1).next_to(manim_circuit.gates["output"], RIGHT)
     scene.play(Write(tick))
-    sol_tex = Tex(r"{{S}}{{o}}{{l}}{{u}}{{t}}{{i}}{{o}}{{n}}").next_to(
-        Group(manim_circuit.gates["input_0"], manim_circuit.gates["input_5"]), UP
+    sol_tex = (
+        Tex(r"{{S}}{{O}}{{L}}{{U}}{{T}}{{I}}{{O}}{{N}}")
+        .next_to(
+            Group(manim_circuit.gates["input_0"], manim_circuit.gates["input_5"]), UP
+        )
+        .set_color(MAGENTA)
     )
+
     scene.play(
         manim_circuit.animate_evaluation(speed=1),
         Succession(
             Wait(3),
             AnimationGroup(
                 *[
-                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.5 * sc * RIGHT))
+                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.4 * sc * RIGHT))
                     for i in range(8)
                 ],
                 lag_ratio=0.0,
@@ -1187,7 +1189,6 @@ def show_verification(scene: Scene, sc=1, shft=0) -> None:
     scene.play(
         FadeOut(manim_circuit),
         FadeOut(txt),
-        FadeOut(rect),
         FadeOut(tick),
         FadeOut(sol_tex),
     )
