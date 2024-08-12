@@ -102,7 +102,7 @@ class SATChecking(Scene):
                 for text in constraints[1:]
             ]
         )
-        self.play(AnimationGroup(*[Write(tick) for tick in ticks], lag_ratio=0.5))
+        self.play(AnimationGroup(*[Write(tick) for tick in ticks], lag_ratio=0.99))
         self.wait()
 
 

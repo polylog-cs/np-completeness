@@ -694,8 +694,6 @@ class Test(Scene):
     def construct(self):
         default()
 
-        circuit = make_verifier_circuit()
-        manim_circuit = ManimCircuit(circuit, scale=2)
         txt = Tex(r"Verifier", color=BLUE, z_index=20)
         rect = SurroundingRectangle(
             txt,
@@ -707,15 +705,10 @@ class Test(Scene):
         self.bring_to_front(txt)
 
         self.play(
-            Create(manim_circuit, lag_ratio=0.02),
             Create(rect),
             Write(txt),
         )
         self.wait()
-
-        self.play(manim_circuit.animate_evaluation(speed=2))
-
-        self.wait(5)
 
 
 class CircuitConversionScene(Scene):

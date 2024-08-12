@@ -13,9 +13,24 @@ CROWN_SCALE = 0.25
 BOX_COLOR = BASE3
 
 
+class Intro(Scene):
+    def construct(self):
+        default()
+
+
 class NP(Scene):
     def construct(self):
         default()
+
+        pnp_tex = (
+            Tex(r"P $\stackrel{?}{=}$ NP", color=text_color)
+            .scale(3)
+            .to_edge(UP, buff=2)
+        )
+        self.play(Write(pnp_tex))
+        self.wait()
+        self.play(FadeOut(pnp_tex))
+        self.wait()
 
         # The theoretical definition of a fast algorithm is that its time complexity is a polynomial function.
         fast_text = Tex("fast")
@@ -307,13 +322,20 @@ class NP3(MovingCameraScene):
             ("k-MEANS", ("COLORING", 4 * LEFT + 1 * DOWN), "COLORING", LEFT, RIGHT, 2),
             (
                 "JOB SCHEDULING",
-                ("KNAPSACK", 2 * UP + 1 * LEFT),
+                ("COLORING", 1 * UP + 5 * LEFT),
+                "COLORING",
+                LEFT,
+                RIGHT,
+                1,
+            ),
+            (
+                "MINESWEEPER",
+                ("KNAPSACK", 1.5 * UP + 1 * RIGHT),
                 "KNAPSACK",
                 UP,
                 DOWN,
-                1,
+                4,
             ),
-            ("MINESWEEPER", ("KNAPSACK", 2 * UP + 6 * RIGHT), "KNAPSACK", UP, DOWN, 4),
             (
                 "VEHICLE ROUTING",
                 ("TRAVELLING SALESMAN", 5 * RIGHT + 2 * UP),
@@ -332,7 +354,7 @@ class NP3(MovingCameraScene):
             ),
             (
                 "MULTI-COMMODITY FLOW",
-                ("SATISFIABILITY", 7 * RIGHT + 0.5 * UP),
+                ("SATISFIABILITY", 9 * RIGHT + 0.5 * UP),
                 "SATISFIABILITY",
                 RIGHT,
                 LEFT,
@@ -348,7 +370,7 @@ class NP3(MovingCameraScene):
             ),
             (
                 "CANDYCRUSH",
-                ("SATISFIABILITY", 6.5 * RIGHT - 2.5 * UP),
+                ("SATISFIABILITY", 8 * RIGHT + 3 * DOWN),
                 "SATISFIABILITY",
                 RIGHT,
                 LEFT,
@@ -357,7 +379,7 @@ class NP3(MovingCameraScene):
             ("TRAINING SVM", ("MAX CLIQUE", 2 * DOWN), "MAX CLIQUE", DOWN, UP, 2),
             (
                 "TRAINING NEURAL NETS",
-                ("SATISFIABILITY", 7 * LEFT + 1 * DOWN),
+                ("SATISFIABILITY", 7 * LEFT + 0.5 * DOWN),
                 "SATISFIABILITY",
                 LEFT,
                 RIGHT,
@@ -365,7 +387,7 @@ class NP3(MovingCameraScene):
             ),
             (
                 "MULTIPLE SEQUENCE ALIGNMENT",
-                ("VERTEX COVER", 3 * LEFT + 2 * DOWN),
+                ("VERTEX COVER", 4 * LEFT + 2 * DOWN),
                 "VERTEX COVER",
                 DOWN,
                 UP,
@@ -588,9 +610,7 @@ class NP3(MovingCameraScene):
             Write(central_problem[1]),
         )
 
-        self.play(
-            *[FadeOut(problem) for problem in problems],
-        )
+        self.play(*[FadeOut(problem) for problem in problems], run_time=3)
 
         self.wait(2)
 
