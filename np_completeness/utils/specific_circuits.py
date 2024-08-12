@@ -173,7 +173,7 @@ def make_verifier_circuit(xs=1, ys=1) -> Circuit:
     return circuit
 
 
-def make_example_circuit() -> Circuit:
+def make_example_circuit(sc=1) -> Circuit:
     """Make a simple example circuit."""
     circuit = Circuit()
 
@@ -184,8 +184,8 @@ def make_example_circuit() -> Circuit:
                 truth_table={(): (out_value,)},
                 position=np.array(
                     [
-                        (i - 1) * GATE_X_SPACING * 1.0,
-                        GATE_Y_SPACING * 2,
+                        (i - 1) * GATE_X_SPACING * sc * 1.0,
+                        GATE_Y_SPACING * sc * 2,
                         0,
                     ]
                 ),
@@ -196,7 +196,7 @@ def make_example_circuit() -> Circuit:
         "not_gate",
         Gate(
             truth_table=NOT_TABLE,
-            position=circuit.position_of("input_1") + DOWN * GATE_Y_SPACING,
+            position=circuit.position_of("input_1") + DOWN * GATE_Y_SPACING * sc,
         ),
     )
 
@@ -204,7 +204,7 @@ def make_example_circuit() -> Circuit:
         "or_gate",
         Gate(
             truth_table=OR_TABLE,
-            position=np.array([circuit.x_of("input_1") - GATE_X_SPACING, 0, 0]),
+            position=np.array([circuit.x_of("input_1") - GATE_X_SPACING * sc, 0, 0]),
         ),
     )
     circuit.add_gate(
@@ -212,14 +212,14 @@ def make_example_circuit() -> Circuit:
         Gate(
             truth_table=AND_TABLE,
             position=np.array(
-                [circuit.x_of("input_1") + GATE_X_SPACING, -GATE_Y_SPACING, 0]
+                [circuit.x_of("input_1") + GATE_X_SPACING * sc, -GATE_Y_SPACING * sc, 0]
             ),
         ),
     )
     circuit.add_gate(
         "knot",
         Gate.make_knot(
-            np.array([circuit.x_of("or_gate"), -GATE_Y_SPACING / 2, 0]),
+            np.array([circuit.x_of("or_gate"), -GATE_Y_SPACING * sc / 2, 0]),
             n_inputs=1,
             n_outputs=2,
         ),
@@ -229,7 +229,9 @@ def make_example_circuit() -> Circuit:
         circuit.add_gate(
             f"output_{i}",
             Gate.make_knot(
-                np.array([(i - 0.5) * GATE_X_SPACING * 2, -GATE_Y_SPACING * 2, 0]),
+                np.array(
+                    [(i - 0.5) * GATE_X_SPACING * sc * 2, -GATE_Y_SPACING * sc * 2, 0]
+                ),
                 n_inputs=1,
                 n_outputs=0,
                 length=1,

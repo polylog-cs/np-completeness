@@ -943,7 +943,7 @@ class Outro(Scene):
         default()
         pnp_tex = Tex(r"P $\stackrel{?}{=}$ NP", color=text_color).scale(2).to_edge(UP)
         intuition1 = (
-            Tex("Can we invert algorithms?", color=text_color)
+            Tex("Can we efficiently invert algorithms?", color=text_color)
             .scale(1)
             .next_to(pnp_tex, DOWN, buff=0.5)
         )
@@ -955,17 +955,27 @@ class Outro(Scene):
 
         for t in [pnp_tex, intuition1]:
             self.play(Write(t))
-            self.wait()
+            self.wait(1)
+
+        sc = 0.7
+        circuit = make_example_circuit(sc=sc).reverse()
+        manim_circuit = ManimCircuit(circuit, scale=2 * sc).to_edge(DOWN, buff=1.5)
+        self.play(
+            Create(manim_circuit, lag_ratio=0.02),
+        )
+        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.wait()
 
         self.play(
             Write(intuition2),
             FadeOut(intuition1),
+            FadeOut(manim_circuit),
         )
         self.wait()
 
         sc = 0.7
         circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
-        manim_circuit = ManimCircuit(circuit, scale=2 * sc)
+        manim_circuit = ManimCircuit(circuit, scale=2 * sc).shift(0.5 * UP)
         txt = Tex(r"Verifier", color=BLUE, z_index=20).scale(sc)
         rect = SurroundingRectangle(
             txt,
@@ -1023,24 +1033,26 @@ class Outro(Scene):
         ]
 
         line = Line(10 * LEFT, 10 * RIGHT, color=text_color).next_to(
-            intuition1, DOWN, buff=0.3
+            intuition1, DOWN, buff=1
         )
         patrons_thanks_tex = (
             Tex(patrons_thanks_text, color=TEXT_COLOR)
-            .scale(0.8)
-            .next_to(intuition1, DOWN, buff=1)
+            .scale(0.7)
+            .next_to(intuition1, DOWN, buff=1.5)
         )
         patrons_tex = (
-            VGroup(*[Tex(t, color=TEXT_COLOR).scale(0.75) for t in patrons_text])
+            VGroup(*[Tex(t, color=TEXT_COLOR).scale(0.6) for t in patrons_text])
             .arrange_in_grid(cell_alignment=LEFT + UP, buff=(0.5, 0.2))
             .next_to(patrons_thanks_tex, DOWN, buff=0.5)
         )
 
         # a cut here, a head-scene follows, then what's below
-        self.remove(intuition2)
-        self.add(intuition1)
 
         self.wait()
+        self.remove(intuition2)
+        self.add(intuition1)
+        self.wait()
+
         self.play(
             AnimationGroup(
                 Create(line),
