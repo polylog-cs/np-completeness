@@ -18,18 +18,7 @@ from np_completeness.utils.specific_circuits import (
 )
 
 # Imported for the side effect of changing the default colors
-from np_completeness.utils.util_general import (
-    BASE00,
-    BLUE,
-    MAGENTA,
-    RED,
-    WIRE_WIDTH,
-    animate,
-    default,
-    disable_rich_logging,
-    get_wire_color,
-    text_color,
-)
+from np_completeness.utils.util_general import *
 
 FINAL_VIDEO = False
 
