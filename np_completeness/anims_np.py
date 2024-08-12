@@ -995,8 +995,8 @@ class Outro(Scene):
 
         sc = 0.7
         circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
-        manim_circuit = ManimCircuit(circuit, scale=2 * sc).shift(0.5 * UP)
-        txt = Tex(r"Verifier", color=BLUE, z_index=20).scale(sc)
+        manim_circuit = ManimCircuit(circuit, scale=2 * sc)
+        txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc)
         rect = SurroundingRectangle(
             txt,
             color=text_color,
@@ -1004,7 +1004,7 @@ class Outro(Scene):
             fill_color=BACKGROUND_COLOR,
             z_index=10,
         )
-        Group(manim_circuit, txt, rect).shift(1 * DOWN)
+        Group(manim_circuit, txt, rect).shift(0.5 * DOWN)
 
         self.play(
             Create(manim_circuit, lag_ratio=0.02),

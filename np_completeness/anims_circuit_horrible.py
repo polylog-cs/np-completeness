@@ -694,15 +694,13 @@ class Test(Scene):
     def construct(self):
         default()
 
-        txt = Tex(r"Verifier", color=BLUE, z_index=20)
+        txt = Tex(r"Verifier", color=BLUE).set_z_index(20)
         rect = SurroundingRectangle(
             txt,
             color=text_color,
             fill_opacity=1,
             fill_color=BACKGROUND_COLOR,
-            z_index=10,
-        )
-        self.bring_to_front(txt)
+        ).set_z_index(10)
 
         self.play(
             Create(rect),
