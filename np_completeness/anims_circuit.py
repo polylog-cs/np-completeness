@@ -408,6 +408,7 @@ class ExampleCircuitScene(Scene):
 
         # Simulate the circuit
         self.play(manim_circuit.animate_evaluation())
+        return
 
         # add output labels
         output_labels = [
