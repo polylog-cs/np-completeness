@@ -25,12 +25,19 @@ class ShowConstraints(Scene):
     def construct(self):
         default()
 
-        self.next_section(skip_animations=False)
+        # self.next_section(skip_animations=True)
 
         circuits = []
         manim_circuits = []
         for i, (a, b, rev) in enumerate(
-            [(7, 4, False), (5, 3, False), (1, 15, True), (3, 5, True), (13, 1, True)]
+            [
+                (7, 4, False),
+                (5, 3, False),
+                (1, 15, True),
+                (3, 5, True),
+                (13, 1, True),
+                (2, 7, False),
+            ]
         ):
             circuit = make_multiplication_circuit(a=a, b=b)
             circuit.scale(0.8).shift(LEFT * 0.4 + UP * 0.2)
@@ -171,17 +178,25 @@ class ShowConstraints(Scene):
         )
         sat_group = VGroup(arrow, sat_solver_text)
 
+        self.next_section(skip_animations=False)
+
         self.play(Create(arrow), Write(sat_solver_text))
         self.wait()
         self.play(Write(running_text))
         self.play(manim_circuit.animate_evaluation(scene=self, speed=2))
         self.wait()
 
+        self.play(
+            FadeOut(manim_circuit),
+            FadeIn(manim_circuits[-1]),
+        )
+        self.play(manim_circuits[-1].animate_evaluation(scene=self, speed=2))
         self.wait()
+
         self.play(
             FadeOut(sat_group),
             FadeOut(running_text),
-            FadeOut(manim_circuit),
+            FadeOut(manim_circuits[-1]),
             FadeIn(manim_circuits[1]),
         )
         self.wait()

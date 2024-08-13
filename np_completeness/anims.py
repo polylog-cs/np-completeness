@@ -428,3 +428,11 @@ class BreakRSA(Scene):
         for t in [texts[0], texts[1], texts[3], texts[2]]:
             self.play(Write(t))
             self.wait()
+
+
+class TitleGeneral(Scene):
+    def construct(self):
+        default()
+        title = Tex("General Reductions", color=text_color).scale(3)
+        self.play(Write(title))
+        self.wait()

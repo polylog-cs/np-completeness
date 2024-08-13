@@ -155,11 +155,7 @@ class NP(Scene):
     def construct(self):
         default()
 
-        pnp_tex = (
-            Tex(r"P $\stackrel{?}{=}$ NP", color=text_color)
-            .scale(3)
-            .to_edge(UP, buff=2)
-        )
+        pnp_tex = Tex(r"P $\stackrel{?}{=}$ NP", color=text_color).scale(3)
         self.play(Write(pnp_tex))
         self.wait()
         self.play(FadeOut(pnp_tex))
