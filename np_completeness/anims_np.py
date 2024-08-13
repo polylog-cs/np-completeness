@@ -3,14 +3,19 @@
 from manim import *
 
 # from np_completeness.utils.util_general import *
-from utils.util_general import *
 from utils.specific_circuits import *
+
 from np_completeness.utils.coloring_circuits import *
 from np_completeness.utils.manim_circuit import ManimCircuit
+from np_completeness.utils.util_general import *
 
 CROWN_BUFF = 0.1
 CROWN_SCALE = 0.25
 BOX_COLOR = BASE3
+
+
+def mkcrown():
+    return SVGMobject("img/crown.svg").scale(CROWN_SCALE).set_color(BASE01)
 
 
 problems_data = [
@@ -161,24 +166,17 @@ class NP(Scene):
         self.wait()
 
         # The theoretical definition of a fast algorithm is that its time complexity is a polynomial function.
-        fast_text = Tex("fast")
-        equals = Tex("=")
-        polynomial_time = Tex("polynomial-time")
+        fast_def = Tex("{{fast}}{{ = }}{{polynomial-time}}")
 
-        fast_def = VGroup(fast_text, equals, polynomial_time).arrange(RIGHT)
-
-        self.play(Write(fast_text))
-        self.wait()
-        self.play(Write(equals))
-        self.wait()
-        self.play(Write(polynomial_time))
-        self.wait()
+        for i in range(3):
+            self.play(Write(fast_def[i]))
+            self.wait()
 
         self.play(FadeOut(fast_def))
 
         # The class of all problems where you can verify proposed solutions in polynomial time is called NP and it contains most important computer science problems including coloring, factoring, or much simpler problems like multiplying two numbers.
         np_rect = Rectangle(
-            width=7, height=5, color=text_color, fill_opacity=0.5, fill_color=BOX_COLOR
+            width=7, height=5, color=text_color, fill_opacity=0.8, fill_color=BASE1
         ).to_edge(LEFT, buff=2)
         np_label = (
             Tex(r"\raggedright NP = verification \\ in polynomial time")
@@ -188,9 +186,9 @@ class NP(Scene):
 
         problems = ["SATISFIABILITY", "COLORING", "FACTORING", "MULTIPLICATION"]
         problem_texs = [Tex(problem) for problem in problems]
-        problem_rects = Group(
+        problem_rects = VGroup(
             *[
-                Group(
+                VGroup(
                     SurroundingRectangle(
                         tex,
                         color=text_color,
@@ -235,25 +233,28 @@ class NP(Scene):
         self.wait()
 
         # This means that a SAT solver that runs in polynomial time would imply polynomial-time solution for *any* problem in NP.
-        poly_labels = VGroup(
-            *[
-                Tex("polynomial", color=BLUE, font_size=30)
-                .next_to(rect, UP, buff=0.1)
-                .align_to(rect, RIGHT)
-                for rect in problem_rects
-            ]
+        poly_label = (
+            Tex("polynomial", color=GREEN).scale(1.2).next_to(problem_rects[0], RIGHT)
         )
-        self.play(Write(poly_labels[0]))
+        for rect in problem_rects:
+            rect.save_state()
         self.play(
-            *[
-                ReplacementTransform(poly_labels[0].copy(), label)
-                for label in poly_labels[1:]
-            ]
+            Write(poly_label),
+            problem_rects[0][0].animate.set_fill(GREEN),
+            problem_rects[0][1].animate.set_color(BASE3),
+        )
+        self.play(
+            *(
+                AnimationGroup(
+                    rect[0].animate.set_fill(GREEN), rect[1].animate.set_color(BASE3)
+                )
+                for rect in problem_rects[1:]
+            )
         )
         self.wait()
 
         self.play(
-            *[FadeOut(obj) for obj in poly_labels],
+            *(rect.animate.restore() for rect in problem_rects), FadeOut(poly_label)
         )
         self.wait()
 
@@ -272,12 +273,7 @@ class NP(Scene):
         )
         self.wait()
 
-        crown = (
-            SVGMobject("img/crown.svg")
-            .scale(CROWN_SCALE)
-            .next_to(problem_rects[0], UP, buff=CROWN_BUFF)
-            .set_color(text_color)
-        )
+        crown = mkcrown().next_to(problem_rects[0], UP, buff=CROWN_BUFF)
 
         self.play(FadeIn(crown))
         self.wait()
@@ -288,14 +284,10 @@ class NP2(Scene):
         default()
 
         npc_tex = Tex(
-            r"{{\raggedright A problem is }}{{NP-complete}}{{ if: \\}}{{ 1. It is in NP.  \\}}{{ 2. Every problem in NP is reducible to it \\ \;\;\;\; in polynomial time. (=NP-hard) }}"
+            r"{{A problem is }}{{NP-complete}}{{ if: \\}}{{\hbox to 5mm{1.\hss}It is in NP.  \\}}{{\hbox to 5mm{2.\hss}Every problem in NP is reducible to it \\\hbox to 5mm{\hss}in polynomial time. (=\,NP-hard) }}",
+            tex_environment=None,
         )
-        crown = (
-            SVGMobject("img/crown.svg")
-            .scale(CROWN_SCALE)
-            .set_color(text_color)
-            .next_to(npc_tex[1], UP, buff=CROWN_BUFF)
-        )
+        crown = mkcrown().next_to(npc_tex[1], UP, buff=CROWN_BUFF)
         self.play(
             AnimationGroup(
                 Write(npc_tex[0:3]),
@@ -320,12 +312,7 @@ class NP2(Scene):
             .scale(1.5)
             .to_edge(UP, buff=1)
         )
-        crown = (
-            SVGMobject("img/crown.svg")
-            .scale(CROWN_SCALE * 1.5)
-            .set_color(text_color)
-            .next_to(thm_tex[2], UP, buff=CROWN_BUFF * 1.5)
-        )
+        crown = mkcrown().scale(1.5).next_to(thm_tex[2], UP, buff=CROWN_BUFF * 1.5)
         self.play(
             AnimationGroup(
                 Write(thm_tex),
@@ -334,6 +321,10 @@ class NP2(Scene):
             )
         )
         self.wait()
+
+        thumb = ImageMobject("img/thumbnail2.png").scale_to_fit_width(4).to_edge(RIGHT)
+        rec = SurroundingRectangle(thumb, color=text_color)
+        thumb = Group(thumb, rec)
 
         images = (
             Group(
@@ -346,18 +337,15 @@ class NP2(Scene):
                         ("img/levin.jpeg", "Leonid Levin"),
                     ]
                 ]
+                + [thumb]
             )
             .arrange(RIGHT, buff=1, aligned_edge=UP)
-            .shift(0.5 * DOWN + 1.5 * LEFT)
+            .shift(0.5 * DOWN)
         )
 
         self.play(FadeIn(images[0]))
         self.play(FadeIn(images[1]))
         self.wait()
-
-        thumb = ImageMobject("img/thumbnail2.png").scale_to_fit_width(4).to_edge(RIGHT)
-        rec = SurroundingRectangle(thumb, color=text_color)
-        thumb = Group(thumb, rec)
 
         self.play(FadeIn(thumb))
         self.wait()
@@ -376,6 +364,7 @@ class NP3(MovingCameraScene):
         default()
         self.camera.frame.save_state()
 
+        self.next_section(skip_animations=False)
         thm_tex = (
             Tex(r"{{SATISFIABILITY}}{{ is NP-complete. }}", z_index=100)
             .scale(1.5)
@@ -423,12 +412,7 @@ class NP3(MovingCameraScene):
                 problem.move_to(ref.get_center() + position)
 
             problems.append(problem)
-            crowns.append(
-                SVGMobject("img/crown.svg")
-                .scale(CROWN_SCALE)
-                .set_color(BASE01)
-                .next_to(problem, UP, buff=CROWN_BUFF)
-            )
+            crowns.append(mkcrown().next_to(problem, UP, buff=CROWN_BUFF))
 
             if arrow_from:
                 from_problem = next(
@@ -436,7 +420,9 @@ class NP3(MovingCameraScene):
                 )
                 start = from_problem[0].get_edge_center(arrow_start)
                 end = problem.get_edge_center(arrow_end)
-                arrows.append(Arrow(start=start, end=end, buff=0.1, color=BASE1))
+                arrows.append(
+                    Arrow(start=start, end=end, buff=0.1, color=BASE1).set_z_index(20)
+                )
 
         # Animation code
         problems[0][1].move_to(thm_tex[0])
@@ -543,36 +529,71 @@ class NP3(MovingCameraScene):
             p for p in problems if p[1].tex_string == "MINESWEEPER"
         )
 
+        self.next_section(skip_animations=False)
+
+        occlusion = (
+            Square(stroke_width=0, fill_opacity=0.5, fill_color=BACKGROUND_COLOR)
+            .scale(20)
+            .set_z_index(99)
+        )
+        minesweeper_problem.save_state()
+        minesweeper_problem_copy = minesweeper_problem.copy()
+        minesweeper_problem.set_z_index(100)
+        minesweeper_problem[0].set_fill(BACKGROUND_COLOR, opacity=1)
+        minesweeper_problem.saved_state[0].set_fill(GREEN, opacity=1)
+        minesweeper_problem.saved_state[1].set_color(BASE3)
+
+        self.play(
+            minesweeper_problem.animate.scale(4).move_to(ORIGIN), FadeIn(occlusion)
+        )
         polynomial_text = (
-            Tex("polynomial", color=BLUE)
+            Tex("polynomial", color=GREEN)
+            .scale(4)
             .next_to(minesweeper_problem, UP, buff=0.2)
             .align_to(minesweeper_problem, RIGHT)
-        )
+        ).set_z_index(99)
 
-        polynomial_text.save_state()
-        polynomial_text.scale(4).align_to(self.camera.frame.get_corner(UR), UR).shift(
-            0.5 * DL
+        self.wait()
+        self.play(
+            FadeIn(polynomial_text),
+            minesweeper_problem[0].animate.set_fill(GREEN, opacity=1),
+            minesweeper_problem[1].animate.set_color(BASE3),
         )
-
-        self.play(polynomial_text.animate.restore())
         self.wait(1)
+        self.play(
+            minesweeper_problem.animate.restore(),
+            FadeOut(occlusion),
+            FadeOut(polynomial_text),
+        )
 
+        anims = []
         polynomial_copies = []
         for problem in problems:
-            if problem != minesweeper_problem:
-                copy = polynomial_text.copy()
-                copy.next_to(problem, UP, buff=0.2).align_to(problem, RIGHT)
-                polynomial_copies.append(copy)
+            if problem == minesweeper_problem:
+                continue
 
-        self.play(
-            *[TransformFromCopy(polynomial_text, copy) for copy in polynomial_copies],
-            run_time=2,
-        )
+            dx = minesweeper_problem.get_x() - problem.get_x()
+            dy = minesweeper_problem.get_y() - problem.get_y()
+            dist = (dx**2 + dy**2) ** 0.5
+            wait_time = dist * 0.15
+            problem.save_state()
+            anims.append(
+                Succession(
+                    Wait(wait_time),
+                    AnimationGroup(
+                        problem[0].animate.set_fill(GREEN, opacity=1),
+                        problem[1].animate.set_color(BASE3),
+                    ),
+                )
+            )
+
+        self.play(*anims)
+
         self.wait()
 
+        minesweeper_problem.saved_state = minesweeper_problem_copy
         self.play(
-            FadeOut(polynomial_text),
-            *[FadeOut(copy) for copy in polynomial_copies],
+            *(problem.animate.restore() for problem in problems),
             run_time=1,
         )
 
@@ -586,20 +607,25 @@ class NP3(MovingCameraScene):
 
         # Create new central SATISFIABILITY box
         big_sc = 3
-        central_sat = Tex("SATISFIABILITY", color=text_color).scale(big_sc)
+        central_sat = Tex("SATISFIABILITY", color=text_color)
         central_rect = SurroundingRectangle(
             central_sat, color=text_color, fill_color=BACKGROUND_COLOR, fill_opacity=1
         )
-        central_problem = Group(central_rect, central_sat).set_z_index(10)
+        central_problem = VGroup(central_rect, central_sat)
+        crown = (
+            crowns[0]
+            .copy()
+            .set_z_index(19)
+            .next_to(central_problem, buff=CROWN_BUFF, direction=UP)
+        )
+        VGroup(central_problem, crown).set_z_index(100).move_to(ORIGIN).scale(big_sc)
 
+        self.next_section(skip_animations=False)
         self.play(
             *[FadeOut(arrow) for arrow in arrows],
-            *[FadeOut(crown) for crown in crowns[1:]],
-            crowns[0]
-            .animate.scale(big_sc)
-            .next_to(central_problem, buff=CROWN_BUFF * big_sc, direction=UP),
+            *[FadeOut(crown) for crown in crowns],
             *[
-                problem.animate.move_to(pos)
+                problem.animate.move_to(pos).fade(0.5)
                 for problem, pos in zip(problems, target_positions)
             ],
             # self.camera.frame.animate.scale(0.6).move_to(ORIGIN),  # Zoom in
@@ -607,10 +633,7 @@ class NP3(MovingCameraScene):
             run_time=2,
         )
 
-        self.play(
-            FadeIn(central_problem[0]),
-            Write(central_problem[1]),
-        )
+        self.play(FadeIn(central_problem[0]), Write(central_problem[1]), FadeIn(crown))
 
         self.play(*[FadeOut(problem) for problem in problems], run_time=3)
 
@@ -628,15 +651,10 @@ class NP4(MovingCameraScene):
             central_sat, color=text_color, fill_color=BACKGROUND_COLOR, fill_opacity=1
         )
         central_problem = VGroup(central_rect, central_sat).set_z_index(10)
-        crown = (
-            SVGMobject("img/crown.svg")
-            .scale(CROWN_SCALE)
-            .set_color(text_color)
-            .next_to(central_problem, UP, buff=CROWN_BUFF)
-        )
+        crown = mkcrown().next_to(central_problem, UP, buff=CROWN_BUFF)
         self.add(central_problem, crown)
 
-        VGroup(central_problem, crown).scale(big_sc)
+        VGroup(central_problem, crown).move_to(ORIGIN).scale(big_sc)
 
         self.play(Group(central_problem, crown).animate.scale(1 / big_sc).shift(1 * UP))
         self.wait()
@@ -985,7 +1003,7 @@ class Outro(Scene):
         self.play(
             Create(manim_circuit, lag_ratio=0.02),
         )
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
 
         self.play(
@@ -1044,7 +1062,7 @@ class Outro(Scene):
                 Create(line),
                 Write(patrons_thanks_tex),
                 *[Write(t) for t in patrons_tex],
-                lag_ratio=0.1,
+                lag_ratio=0.05,
             )
         )
 
@@ -1118,7 +1136,7 @@ class Intro(MovingCameraScene):
         manim_circuit = ManimCircuit(circuit, scale=1.5).to_edge(DOWN)
         self.play(Create(manim_circuit, lag_ratio=0.02))
         self.wait()
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
         self.play(
             FadeOut(manim_circuit),
@@ -1131,34 +1149,36 @@ class Intro(MovingCameraScene):
 def show_verification(scene: Scene, sc=1, shft=0) -> None:
     circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
     manim_circuit = ManimCircuit(circuit, scale=2 * sc)
-    txt = Tex(r"Verifier", color=BLUE).set_z_index(20).scale(sc * 1.4)
-    rect = SurroundingRectangle(
-        txt,
-        color=text_color,
-        fill_opacity=1,
-        fill_color=BACKGROUND_COLOR,
-        z_index=10,
+    txt = (
+        BraceLabel(manim_circuit, r"\text{Verifier}", RIGHT)
+        .set_z_index(20)
+        .scale(sc * 1.4)
+        .set_color(BLUE)
     )
-    Group(manim_circuit, txt, rect).to_edge(DOWN, buff=1.5).shift(shft)
+    Group(manim_circuit, txt).to_edge(DOWN, buff=1.5).shift(shft)
 
     scene.play(
         Create(manim_circuit, lag_ratio=0.02),
-        Create(rect),
         Write(txt),
     )
     scene.wait()
     tick = Text("✓", color=GREEN).scale(1).next_to(manim_circuit.gates["output"], RIGHT)
     scene.play(Write(tick))
-    sol_tex = Tex(r"{{S}}{{o}}{{l}}{{u}}{{t}}{{i}}{{o}}{{n}}").next_to(
-        Group(manim_circuit.gates["input_0"], manim_circuit.gates["input_5"]), UP
+    sol_tex = (
+        Tex(r"{{S}}{{O}}{{L}}{{U}}{{T}}{{I}}{{O}}{{N}}")
+        .next_to(
+            Group(manim_circuit.gates["input_0"], manim_circuit.gates["input_5"]), UP
+        )
+        .set_color(MAGENTA)
     )
+
     scene.play(
-        manim_circuit.animate_evaluation(speed=1),
+        manim_circuit.animate_evaluation(scene=self, speed=1),
         Succession(
             Wait(3),
             AnimationGroup(
                 *[
-                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.5 * sc * RIGHT))
+                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.4 * sc * RIGHT))
                     for i in range(8)
                 ],
                 lag_ratio=0.0,
@@ -1169,7 +1189,6 @@ def show_verification(scene: Scene, sc=1, shft=0) -> None:
     scene.play(
         FadeOut(manim_circuit),
         FadeOut(txt),
-        FadeOut(rect),
         FadeOut(tick),
         FadeOut(sol_tex),
     )

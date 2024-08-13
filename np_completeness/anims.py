@@ -65,9 +65,7 @@ class SATChecking(Scene):
         constraints = Group(
             coltex(r"Constraints:"),
             *[
-                # Note(vv): Disabled "syntax highlighting" here to be consistent with
-                #   other places.
-                Tex(str)
+                coltex(str)
                 for str in [
                     x1_str + or_str + left_str + not_str + x3_str + right_str,
                     not_str + x2_str,

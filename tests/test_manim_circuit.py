@@ -18,7 +18,7 @@ def test_animation_after_shift():
 
     positions_1 = [m.get_center() for m in manim_circuit.submobjects]
     scene.wait()
-    scene.play(manim_circuit.animate_evaluation(speed=5))
+    scene.play(manim_circuit.animate_evaluation(scene=scene, speed=5))
     scene.wait()
     positions_2 = [m.get_center() for m in manim_circuit.submobjects]
 

@@ -18,18 +18,7 @@ from np_completeness.utils.specific_circuits import (
 )
 
 # Imported for the side effect of changing the default colors
-from np_completeness.utils.util_general import (
-    BASE00,
-    BLUE,
-    MAGENTA,
-    RED,
-    WIRE_WIDTH,
-    animate,
-    default,
-    disable_rich_logging,
-    get_wire_color,
-    text_color,
-)
+from np_completeness.utils.util_general import *
 
 FINAL_VIDEO = False
 
@@ -114,7 +103,7 @@ class MultiplicationByHand(Scene):
         disable_rich_logging()
         default()
 
-        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,= ???$}}").scale(4)
+        mult_tex = Tex(r"{{$3$}}{{$\,\times\,$}}{{$5$}}{{$\,=\,???$}}").scale(4)
         self.play(
             AnimationGroup(
                 *[Write(cast(VMobject, mult_tex[i])) for i in range(4)],
@@ -280,7 +269,7 @@ class MultiplicationCircuitScene(Scene):
         for i in range(2):
             self.play(LaggedStart(*all_anims[i]))
 
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
 
         # Add explanations to the outputs
@@ -335,7 +324,7 @@ class GreaterThanOneConstraint(Scene):
             self.play(LaggedStart(*all_anims[i]))
 
         self.wait()
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
         self.play(
             Create(SurroundingRectangle(all_explanations[0][-1], color=RED)),
@@ -407,8 +396,7 @@ class ExampleCircuitScene(Scene):
         self.wait()
 
         # Simulate the circuit
-        self.play(manim_circuit.animate_evaluation())
-        return
+        self.play(manim_circuit.animate_evaluation(scene=self))
 
         # add output labels
         output_labels = [
@@ -455,7 +443,7 @@ class AdderCircuitScene(Scene):
         )
         self.wait()
 
-        self.play(detailed_manim_circuit.animate_evaluation())
+        self.play(detailed_manim_circuit.animate_evaluation(scene=self))
 
         self.wait(1)
 
@@ -532,7 +520,7 @@ class ColoringCircuitScene(Scene):
 
         make_highlight_rectangles(lambda name: name == "output")
 
-        self.play(manim_circuit.animate_evaluation())
+        self.play(manim_circuit.animate_evaluation(scene=self))
         self.wait()
 
         evaluation = circuit.evaluate()

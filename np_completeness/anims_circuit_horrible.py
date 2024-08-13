@@ -38,7 +38,9 @@ class ShowConstraints(Scene):
             if rev:
                 circuit = circuit.reverse()
             manim_circuit = (
-                ManimCircuit(circuit, with_evaluation=True).scale(0.75).to_edge(LEFT)
+                ManimCircuit(circuit, with_evaluation=True, wire_scale=0.75)
+                .scale(0.75)
+                .to_edge(LEFT)
             )
 
             circuits.append(circuit)
@@ -172,7 +174,7 @@ class ShowConstraints(Scene):
         self.play(Create(arrow), Write(sat_solver_text))
         self.wait()
         self.play(Write(running_text))
-        self.play(manim_circuit.animate_evaluation(speed=2))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=2))
         self.wait()
 
         self.wait()
@@ -334,7 +336,7 @@ class ShowConstraints(Scene):
         self.wait()
 
         self.play(
-            manim_circuits[1].animate_evaluation(speed=2),
+            manim_circuits[1].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -495,7 +497,7 @@ class ShowConstraints(Scene):
         self.wait()
 
         self.play(
-            manim_circuits[2].animate_evaluation(speed=2),
+            manim_circuits[2].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -563,7 +565,7 @@ class ShowConstraints(Scene):
         )
         self.wait()
         self.play(
-            manim_circuits[3].animate_evaluation(speed=2),
+            manim_circuits[3].animate_evaluation(scene=self, speed=2),
             Write(mult_tex),
         )
         self.wait()
@@ -968,7 +970,7 @@ class InversionScene(Scene):
         self.play(Create(manim_circuit, lag_ratio=0.002), run_time=3)
         self.wait()
 
-        self.play(manim_circuit.animate_evaluation(speed=1))
+        self.play(manim_circuit.animate_evaluation(scene=self, speed=1))
         self.wait()
 
         self.play(FadeOut(manim_circuit))
@@ -1065,7 +1067,7 @@ class CPUScene(Scene):
             end=algo_img.get_right() + 2 * RIGHT,
             color=text_color,
         )
-        self.play(Create(arrow))
+        self.play(GrowArrow(arrow))
         self.wait()
 
         circuit = make_example_circuit()
@@ -1075,8 +1077,10 @@ class CPUScene(Scene):
 
         cpu_img = ImageMobject("img/8008.jpg").scale_to_fit_width(config.frame_width)
         self.play(FadeIn(cpu_img))
+        self.clear()
+        self.add(cpu_img)
         self.wait()
-        self.play(*[FadeOut(mob) for mob in self.mobjects])
+        self.play(FadeOut(cpu_img))
         self.wait()
 
         circuit = make_example_circuit()
@@ -1118,7 +1122,7 @@ class CPUScene(Scene):
 
         self.play(
             Succession(
-                Create(arrow),
+                GrowArrow(arrow),
                 Indicate(input_tex, color=text_color),
                 Indicate(output_tex, color=text_color),
             )
