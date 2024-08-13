@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.10,<3.13"
 manim = "^0.18.1"
 numpy = "^1.26"
-python-sat = {extras = ["aiger", "approxmc", "pblib"], version = "^1.8.dev13"}
+python-sat = {extras = ["aiger", "approxmc"], version = "^1.8.dev13"}
 pydantic = "^2.8.2"
 matplotlib = "^3.9.0"
 
@@ -22,6 +22,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
+
 
 
 ignore = [

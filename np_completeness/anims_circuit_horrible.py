@@ -6,6 +6,16 @@ from np_completeness.utils.manim_circuit import ManimCircuit
 from np_completeness.utils.specific_circuits import *
 from np_completeness.utils.util_general import *
 
+"""
+
+from utils.cnf_constraints import CNF_CONSTRAINTS
+from utils.coloring_circuits import *
+from utils.manim_circuit import ManimCircuit
+from utils.specific_circuits import *
+from utils.util_general import *
+"""
+
+
 FINAL_VIDEO = False
 CIRCUIT_LABEL_SCALE = 0.8
 TBL_SCALE = 0.6
@@ -712,6 +722,7 @@ class Test(Scene):
 class CircuitConversionScene(Scene):
     def construct(self):
         default()
+        Tex = coltex
         CONSTRAINT_SCALE = 0.8
 
         circuit = make_example_circuit()
