@@ -146,11 +146,6 @@ problems_data = [
 ]
 
 
-class Intro(Scene):
-    def construct(self):
-        default()
-
-
 class NP(Scene):
     def construct(self):
         default()
@@ -1139,7 +1134,7 @@ class Intro(MovingCameraScene):
         )
         self.wait()
 
-        show_verification(self)
+        show_verification(self, sc=0.95, shft=1 * DOWN)
 
 
 class GeneralInversion(Scene):
@@ -1149,7 +1144,7 @@ class GeneralInversion(Scene):
         show_verification(self, sc=0.9, shft=0, forward=True)
 
 
-def show_verification(scene: Scene, sc=1, shft=0, forward=False) -> None:
+def show_verification(scene: Scene, sc=1, shft=0 * DOWN, forward=False) -> None:
     circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
     manim_circuit = ManimCircuit(circuit, scale=2 * sc)
     txt = (
