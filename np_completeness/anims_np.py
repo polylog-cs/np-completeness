@@ -1146,7 +1146,14 @@ class Intro(MovingCameraScene):
         show_verification(self)
 
 
-def show_verification(scene: Scene, sc=1, shft=0) -> None:
+class GeneralInversion(Scene):
+    def construct(self):
+        default()
+
+        show_verification(self, sc=0.9, shft=0, forward=True)
+
+
+def show_verification(scene: Scene, sc=1, shft=0, forward=False) -> None:
     circuit = make_verifier_circuit(xs=sc, ys=sc).reverse()
     manim_circuit = ManimCircuit(circuit, scale=2 * sc)
     txt = (
@@ -1154,16 +1161,20 @@ def show_verification(scene: Scene, sc=1, shft=0) -> None:
         .set_z_index(20)
         .scale(sc * 1.4)
         .set_color(BLUE)
+        .shift(0.2 * RIGHT)
     )
     Group(manim_circuit, txt).to_edge(DOWN, buff=1.5).shift(shft)
+    if forward:
+        circuit2 = make_verifier_circuit(xs=sc, ys=sc)
+        manim_circuit2 = ManimCircuit(circuit2, scale=2 * sc).move_to(manim_circuit)
 
     scene.play(
         Create(manim_circuit, lag_ratio=0.02),
         Write(txt),
     )
     scene.wait()
+
     tick = Text("✓", color=GREEN).scale(1).next_to(manim_circuit.gates["output"], RIGHT)
-    scene.play(Write(tick))
     sol_tex = (
         Tex(r"{{S}}{{O}}{{L}}{{U}}{{T}}{{I}}{{O}}{{N}}")
         .next_to(
@@ -1171,16 +1182,32 @@ def show_verification(scene: Scene, sc=1, shft=0) -> None:
         )
         .set_color(MAGENTA)
     )
+    for i in range(len(sol_tex)):
+        sol_tex[i].shift((i - 3.5) * 0.4 * sc * RIGHT)
 
+    if forward:
+        scene.remove(manim_circuit)
+        scene.add(manim_circuit2)
+
+        scene.play(FadeIn(sol_tex))
+        scene.play(manim_circuit2.animate_evaluation(scene=scene, speed=1))
+        scene.play(Write(tick))
+        scene.wait()
+
+        scene.play(
+            FadeOut(manim_circuit2),
+            FadeIn(manim_circuit),
+            FadeOut(tick),
+            FadeOut(sol_tex),
+        )
+
+    scene.play(Write(tick))
     scene.play(
-        manim_circuit.animate_evaluation(scene=self, speed=1),
+        manim_circuit.animate_evaluation(scene=scene, speed=1),
         Succession(
             Wait(3),
             AnimationGroup(
-                *[
-                    FadeIn(sol_tex[i].shift((i - 3.5) * 0.4 * sc * RIGHT))
-                    for i in range(8)
-                ],
+                *[FadeIn(sol_tex[i]) for i in range(8)],
                 lag_ratio=0.0,
             ),
         ),

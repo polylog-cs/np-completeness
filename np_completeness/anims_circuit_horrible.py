@@ -274,22 +274,16 @@ class ShowConstraints(Scene):
         )
         self.wait()
 
-        self.play(
-            *[ReplacementTransform(constraint_a[i], eqs_a[i]) for i in range(4)],
-            *[ReplacementTransform(constraint_b[i], eqs_b[i]) for i in range(4)],
-        )
-        self.wait()
-
         # Scale down the equation text
         new_eqs_a, new_eqs_b = [], []
         for eqs in [eqs_a, eqs_b]:
             for eq in eqs:
-                target = eq.generate_target()
-                target.scale(TBL_SCALE)
+                # target = eq.generate_target()
+                eq.scale(TBL_SCALE)
                 if eqs == eqs_a:
-                    new_eqs_a.append(target)
+                    new_eqs_a.append(eq)
                 else:
-                    new_eqs_b.append(target)
+                    new_eqs_b.append(eq)
         new_eqs_a = Group(*new_eqs_a).arrange_in_grid(rows=1)
         new_eqs_b = (
             Group(*new_eqs_b).arrange_in_grid(rows=1).next_to(new_eqs_a, DOWN, buff=0.3)
@@ -305,8 +299,15 @@ class ShowConstraints(Scene):
         )
 
         self.play(
-            *[MoveToTarget(eq) for eq in eqs_a],
-            *[MoveToTarget(eq) for eq in eqs_b],
+            *[ReplacementTransform(constraint_a[i], eqs_a[i]) for i in range(4)],
+            *[ReplacementTransform(constraint_b[i], eqs_b[i]) for i in range(4)],
+        )
+        self.wait()
+
+        ############################################################################################################
+        self.play(
+            # *[MoveToTarget(eq) for eq in eqs_a],
+            # *[MoveToTarget(eq) for eq in eqs_b],
             Create(rec),
         )
         self.wait()
@@ -417,25 +418,12 @@ class ShowConstraints(Scene):
             .next_to(logic_group, DOWN, buff=0.5)
         )
 
-        # Change binary numbers to constraints
-        self.play(
-            *[ReplacementTransform(binary_c[i + 1], constraint_c[i]) for i in range(8)],
-            FadeOut(number_c),
-            FadeOut(binary_c[0]),
-        )
-        self.wait()
-
-        self.play(
-            *[ReplacementTransform(constraint_c[i], eqs_c[i]) for i in range(8)],
-        )
-        self.wait()
-
         # Scale down the equation text
         new_eqs_c = []
         for eq in eqs_c:
-            target = eq.generate_target()
-            target = target.scale(TBL_SCALE)
-            new_eqs_c.append(target)
+            # target = eq.generate_target()
+            eq.scale(TBL_SCALE)
+            new_eqs_c.append(eq)
 
         new_eqs_c = Group(*new_eqs_c).arrange_in_grid(rows=2)
         rec = Rectangle(
@@ -446,11 +434,28 @@ class ShowConstraints(Scene):
         ).move_to(new_eqs_c)
         input_group = Group(rec, new_eqs_c).next_to(logic_group, DOWN, buff=0.2)
 
+        # Change binary numbers to constraints
         self.play(
-            *[MoveToTarget(eq) for eq in eqs_c],
+            *[ReplacementTransform(binary_c[i + 1], eqs_c[i]) for i in range(8)],
+            FadeOut(number_c),
+            FadeOut(binary_c[0]),
             Create(rec),
         )
         self.wait()
+
+        """
+        self.play(
+            *[ReplacementTransform(constraint_c[i], eqs_c[i]) for i in range(8)],
+        )
+        self.wait()
+
+        self.play(
+            *[MoveToTarget(eq) for eq in eqs_c],
+            
+        )
+        self.wait()
+        """
+
         sat_group.next_to(input_group, DOWN, buff=0.5)
         self.play(FadeIn(sat_group))
         self.wait()

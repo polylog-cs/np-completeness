@@ -451,6 +451,7 @@ class AdderCircuitScene(Scene):
 class ColoringCircuitScene(Scene):
     def construct(self):
         graph, coloring = get_example_graph(good_coloring=True)
+        graph.shift(0.2 * UP)
 
         self.play(Create(graph, lag_ratio=0.1))
 
@@ -460,13 +461,20 @@ class ColoringCircuitScene(Scene):
         self.play(animate(graph.vertices[4]).set_color(GRAPH_COLORS[0]))
         coloring[4] = 0
         self.play(Uncreate(rectangle))
-
-        circuit = make_coloring_circuit(
-            graph, coloring, output_position=np.array([-4, -2.5, 0])
+        self.wait()
+        self.play(
+            Indicate(graph.vertices[4], scale_factor=1.5, color=GRAPH_COLORS[0]),
+            Indicate(graph.vertices[5], scale_factor=1.5, color=GRAPH_COLORS[0]),
         )
-        manim_circuit = ManimCircuit(circuit)
+        self.wait()
 
-        self.wait(1)
+        circuit, circuit2 = [
+            make_coloring_circuit(
+                graph, coloring, output_position=np.array([-4, -2.0, 0])
+            )
+            for _ in range(2)
+        ]
+        manim_circuit, manim_circuit2 = ManimCircuit(circuit), ManimCircuit(circuit2)
 
         self.play(
             Create(manim_circuit, lag_ratio=0.002),
@@ -530,6 +538,19 @@ class ColoringCircuitScene(Scene):
             and not evaluation.get_gate_outputs(name)[0]
         )
 
+        self.wait()
+        self.play(
+            FadeOut(manim_circuit),
+            FadeIn(manim_circuit2),
+        )
+        self.wait()
+
+        out_tex = (
+            Tex(r"$x_{\text{output}} = 1$", color=WIRE_COLOR_TRUE)
+            .scale(0.8)
+            .next_to(manim_circuit.gates["output"], LEFT)
+        )
+        self.play(Write(out_tex))
         self.wait()
 
 
