@@ -1,3 +1,5 @@
+import random
+
 from manim import *
 
 from np_completeness.utils.cnf_constraints import CNF_CONSTRAINTS
@@ -16,7 +18,7 @@ from utils.util_general import *
 """
 
 
-FINAL_VIDEO = False
+FINAL_VIDEO = True
 CIRCUIT_LABEL_SCALE = 0.8
 TBL_SCALE = 0.6
 
@@ -25,7 +27,7 @@ class ShowConstraints(Scene):
     def construct(self):
         default()
 
-        # self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
 
         circuits = []
         manim_circuits = []
@@ -69,22 +71,7 @@ class ShowConstraints(Scene):
         # Create Tex objects for each clause
         clause_texts = [
             Tex(clause_to_text(clause), font_size=20, color=text_color)
-            for clause in (CNF_CONSTRAINTS if FINAL_VIDEO else CNF_CONSTRAINTS[:100])
-        ]
-        clause_texts = [
-            Group(
-                SurroundingRectangle(
-                    clause,
-                    stroke_width=0,
-                    buff=0,
-                    fill_opacity=1.0,
-                    fill_color=BACKGROUND_COLOR,
-                )
-                .scale(0.95)
-                .shift(0.0 * UP),
-                clause,
-            )
-            for clause in clause_texts
+            for clause in CNF_CONSTRAINTS[: -1 if FINAL_VIDEO else 15]
         ]
         # Arrange clauses in a table
         table = Group(*clause_texts).arrange_in_grid(
@@ -116,8 +103,9 @@ class ShowConstraints(Scene):
 
         radius = 1
         angles = np.linspace(0, 2 * np.pi, len(clause_texts), endpoint=False)
-        rrr = 5 * RIGHT
+        rrr = 4.5 * RIGHT
         positions = []
+        np.random.seed(0)
         for _, angle in zip(clause_texts, angles):
             new_pos = (
                 np.random.rand() * radius * np.array([np.cos(angle), np.sin(angle), 0])
@@ -125,43 +113,50 @@ class ShowConstraints(Scene):
             new_pos[1] *= 0.5
             positions.append(new_pos)
 
+        random.seed(0)
+        vis = list(range(len(clause_texts)))
+        random.shuffle(vis)
+        vis = set(vis[:30])
+
         self.play(
             FadeOut(surrounding_rectangle),
             AnimationGroup(
                 *[
-                    animate(clause).move_to(new_pos).shift(rrr)  # .fade(0.5)
-                    for clause, new_pos in zip(clause_texts, positions)
+                    animate(clause).move_to(new_pos).shift(rrr).fade(int(i not in vis))
+                    for i, (clause, new_pos) in enumerate(zip(clause_texts, positions))
                 ]
             ),
         )
         self.wait()
+        new_clauses = []
+        for i, clause_text in enumerate(clause_texts):
+            if i not in vis:
+                self.remove(clause_texts[i])
+            else:
+                new_clauses.append(clause_text)
+        clause_texts = new_clauses
+        for clause in clause_texts:
+            clause.set_z_index(-10)
 
         circuit_logic_text = (
-            Tex(r"Circuit Logic", color=text_color, z_index=10).scale(1.25).shift(rrr)
-        )
-        new_rectangle = SurroundingRectangle(circuit_logic_text, buff=0, z_index=5)
-        new_rectangle = (
-            Rectangle(
-                width=new_rectangle.width * 1.08,
-                height=new_rectangle.height,
-                color=text_color,
-                fill_opacity=1.0,
-                fill_color=BACKGROUND_COLOR,
-                stroke_width=0,
-            )
-            .scale(0.9)
-            .move_to(circuit_logic_text)
-            .shift(0.05 * UP)
-        )  # .scale(0)
+            Tex(r"Circuit Logic", color=text_color, z_index=-5).scale(1.25).shift(rrr)
+        ).set_z_index(-5)
+        new_rectangle = SurroundingRectangle(
+            VGroup(circuit_logic_text, *clause_texts),
+            buff=0,
+            fill_opacity=0.7,
+            fill_color=BACKGROUND_COLOR,
+            stroke_width=0,
+        ).set_z_index(-8)
 
         self.play(
-            Create(new_rectangle),
+            FadeIn(new_rectangle),
             Write(circuit_logic_text),
             # *[FadeOut(clause) for clause in clause_texts],
         )
         self.wait()
         logic_group = Group(*clause_texts, circuit_logic_text, new_rectangle)
-        self.play(animate(logic_group).to_corner(UR, buff=0.0).shift(0.3 * DL))
+        self.play(animate(logic_group).move_to(3 * UP + 4.3 * RIGHT))
 
         self.wait(2)
 
@@ -221,7 +216,7 @@ class ShowConstraints(Scene):
                 color=text_color,
             )
             .scale(1.2)
-            .next_to(number_a, RIGHT, buff=0.1)
+            .next_to(number_a, RIGHT, buff=0.15)
         )
         binary_b = (
             Tex(
@@ -229,7 +224,7 @@ class ShowConstraints(Scene):
                 color=text_color,
             )
             .scale(1.2)
-            .next_to(number_b, RIGHT, buff=0.1)
+            .next_to(number_b, RIGHT, buff=0.15)
         )
 
         for i in range(4):
@@ -252,12 +247,12 @@ class ShowConstraints(Scene):
             for i in range(4):
                 col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
                 st = r"$x_{" + str((i + 1 if c == a else i + 5)) + r"}$"
-                eqst = r"{{$x_{" + str((i + 1 if c == a else i + 5)) + r"} = $}}"
+                eqst = r"{{$x_{" + str((i + 1 if c == a else i + 5)) + r"}=\,$}}"
                 if (c & (1 << i)) == 0:
                     st = r"NOT " + st
-                    eqst = eqst + r"{{$\,0$}}"
+                    eqst = eqst + r"{{$0$}}"
                 else:
-                    eqst = eqst + r"{{$\,1$}}"
+                    eqst = eqst + r"{{$1$}}"
                 constraint.append(Tex(st, color=col))
                 eqs.append(Tex(eqst, color=col))
 
@@ -339,13 +334,15 @@ class ShowConstraints(Scene):
             *[
                 animate(inp)
                 .move_to(manim_circuit.gates[f"input_a_{i}"])
-                .shift(0.25 * UL)
+                .scale(1.5)
+                .shift(0.3 * UP + 0.05 * RIGHT)
                 for i, inp in enumerate(inp_a)
             ],
             *[
                 animate(inp)
                 .move_to(manim_circuit.gates[f"input_b_{i}"])
-                .shift(0.25 * UL)
+                .scale(1.5)
+                .shift(0.3 * UP + 0.05 * RIGHT)
                 for i, inp in enumerate(inp_b)
             ],
         )
@@ -384,7 +381,6 @@ class ShowConstraints(Scene):
             .scale(1.4)
             .next_to(logic_group, DOWN, buff=0.5)
             .align_to(logic_group, LEFT)
-            .shift(1 * RIGHT)
         )
 
         self.play(Write(number_c))
@@ -396,7 +392,7 @@ class ShowConstraints(Scene):
                 color=text_color,
             )
             .scale(1.2)
-            .next_to(number_c, RIGHT, buff=0.1)
+            .next_to(number_c, RIGHT, buff=0.15)
         )
 
         for i in range(8):
@@ -466,7 +462,7 @@ class ShowConstraints(Scene):
 
         self.play(
             *[MoveToTarget(eq) for eq in eqs_c],
-            
+
         )
         self.wait()
         """
@@ -484,7 +480,7 @@ class ShowConstraints(Scene):
                 animate(inp)
                 .scale(CIRCUIT_LABEL_SCALE / TBL_SCALE)
                 .move_to(manim_circuit.gates[f"output_{i}"])
-                .shift(0.25 * UL)
+                .shift(0.3 * DOWN)
                 for i, inp in enumerate(inp_c)
             ],
         )
@@ -496,14 +492,14 @@ class ShowConstraints(Scene):
                 Tex("?", color=text_color)
                 .scale(CIRCUIT_LABEL_SCALE)
                 .move_to(manim_circuit.gates[f"input_a_{i}"])
-                .shift(0.25 * UL)
+                .shift(0.3 * UP + 0.05 * RIGHT)
                 for i in range(4)
             ],
             *[
                 Tex("?", color=text_color)
                 .scale(CIRCUIT_LABEL_SCALE)
                 .move_to(manim_circuit.gates[f"input_b_{i}"])
-                .shift(0.25 * UL)
+                .shift(0.3 * UP + 0.05 * RIGHT)
                 for i in range(4)
             ],
         )
@@ -543,10 +539,14 @@ class ShowConstraints(Scene):
 
         # Arrange the bits next to the input gates
         for i, bit_text in enumerate(bit_texts_a):
-            bit_text.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(0.25 * UL)
+            bit_text.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(
+                0.3 * UP + 0.05 * RIGHT
+            )
 
         for i, bit_text in enumerate(bit_texts_b):
-            bit_text.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(0.25 * UL)
+            bit_text.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(
+                0.3 * UP + 0.05 * RIGHT
+            )
 
         # Group the bits for a and b
         bits_group_a = VGroup(*bit_texts_a)
@@ -560,12 +560,12 @@ class ShowConstraints(Scene):
         self.wait()
 
         a_tex = (
-            Tex(f"={a}", color=text_color)
+            Tex(f"=\\,{a}", color=MAGENTA)
             .scale(CIRCUIT_LABEL_SCALE)
             .next_to(bits_group_a, RIGHT, buff=1)
         )
         b_tex = (
-            Tex(f"={b}", color=text_color)
+            Tex(f"=\\,{b}", color=MAGENTA)
             .scale(CIRCUIT_LABEL_SCALE)
             .next_to(bits_group_b, RIGHT, buff=1)
             .align_to(a_tex, LEFT)
@@ -611,10 +611,14 @@ class ShowConstraints(Scene):
 
         # Arrange the bits next to the input gates
         for i, bit_text in enumerate(bit_texts_a):
-            bit_text.next_to(manim_circuit.gates[f"input_a_{i}"], LEFT, buff=0.1)
+            bit_text.move_to(manim_circuit.gates[f"input_a_{i}"]).shift(
+                0.3 * UP + 0.05 * RIGHT
+            )
 
         for i, bit_text in enumerate(bit_texts_b):
-            bit_text.next_to(manim_circuit.gates[f"input_b_{i}"], LEFT, buff=0.1)
+            bit_text.move_to(manim_circuit.gates[f"input_b_{i}"]).shift(
+                0.3 * UP + 0.05 * RIGHT
+            )
 
         # Group the bits for a and b
         bits_group_a = VGroup(*bit_texts_a)
@@ -627,9 +631,9 @@ class ShowConstraints(Scene):
         self.play(*anims)
         self.wait()
 
-        a_tex = Tex(f"={a}", color=text_color).next_to(bits_group_a, RIGHT, buff=1)
+        a_tex = Tex(f"=\\,{a}", color=MAGENTA).next_to(bits_group_a, RIGHT, buff=1)
         b_tex = (
-            Tex(f"={b}", color=text_color)
+            Tex(f"=\\,{b}", color=MAGENTA)
             .next_to(bits_group_b, RIGHT, buff=1)
             .align_to(a_tex, LEFT)
         )
@@ -666,7 +670,7 @@ class ShowConstraints(Scene):
                 color=text_color,
             )
             .scale(1.2)
-            .next_to(number_c, RIGHT, buff=0.1)
+            .next_to(number_c, RIGHT, buff=0.15)
         )
 
         for i in range(8):
