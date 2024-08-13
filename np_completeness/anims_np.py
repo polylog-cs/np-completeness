@@ -634,6 +634,7 @@ class NP3(MovingCameraScene):
 class NP4(MovingCameraScene):
     def construct(self):
         default()
+
         self.camera.frame.move_to(ORIGIN).set(width=14)
 
         big_sc = 3
