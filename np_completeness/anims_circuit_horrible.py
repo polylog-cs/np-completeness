@@ -1044,7 +1044,7 @@ class InversionScene(Scene):
 
         self.play(
             AnimationGroup(
-                *[Create(arrow) for arrow in submobjects_of(forward_arrows)],
+                *[GrowArrow(arrow) for arrow in submobjects_of(forward_arrows)],
                 lag_ratio=0.5,
             )
         )
@@ -1061,19 +1061,19 @@ class InversionScene(Scene):
             ]
         )
 
-        self.play(Create(submobjects_of(backward_arrows)[0]))
+        self.play(GrowArrow(submobjects_of(backward_arrows)[0]))
         tick_mark = (
             Text("×", color=RED).scale_to_fit_height(0.25).move_to(right_dots[1])
         )
         self.play(Write(tick_mark))
-        self.play(Create(submobjects_of(backward_arrows)[1]))
+        self.play(GrowArrow(submobjects_of(backward_arrows)[1]))
         self.wait()
 
         circ = Circle(radius=0.25, color=RED).move_to(right_dots[3].get_center())
         self.play(Create(circ))
         self.wait()
         self.play(FadeOut(circ))
-        self.play(Create(submobjects_of(backward_arrows)[2]))
+        self.play(GrowArrow(submobjects_of(backward_arrows)[2]))
         self.wait()
 
 
