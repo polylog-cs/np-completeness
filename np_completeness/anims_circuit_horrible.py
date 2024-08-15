@@ -602,12 +602,14 @@ class ShowConstraints(Scene):
             )
             for bit in binary_a
         ]
+        bit_texts_a.reverse()
         bit_texts_b = [
             Tex(
                 f"{bit}", color=(WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)
             )
             for bit in binary_b
         ]
+        bit_texts_b.reverse()
 
         # Arrange the bits next to the input gates
         for i, bit_text in enumerate(bit_texts_a):

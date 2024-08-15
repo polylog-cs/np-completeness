@@ -117,7 +117,7 @@ def make_coloring_circuit(
 GRAPH_COLORS = [MAGENTA, CYAN, ORANGE]
 
 
-def get_example_graph(*, good_coloring: bool) -> tuple[Graph, Coloring]:
+def get_example_graph(*, good_coloring: bool, colored=True) -> tuple[Graph, Coloring]:
     """Create an example graph.
 
     It's a function and not a constant so that we don't modify it accidentally.
@@ -138,7 +138,8 @@ def get_example_graph(*, good_coloring: bool) -> tuple[Graph, Coloring]:
 
     assert set(coloring.keys()) == set(graph.vertices.keys())
 
-    for vertex in graph.vertices:
-        graph.vertices[vertex].fill_color = GRAPH_COLORS[coloring[vertex]]  # type: ignore
+    if colored:
+        for vertex in graph.vertices:
+            graph.vertices[vertex].fill_color = GRAPH_COLORS[coloring[vertex]]  # type: ignore
 
     return graph, coloring

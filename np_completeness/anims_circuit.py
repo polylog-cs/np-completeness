@@ -450,12 +450,25 @@ class AdderCircuitScene(Scene):
 
 class ColoringCircuitScene(Scene):
     def construct(self):
-        graph, coloring = get_example_graph(good_coloring=True)
+        graph, coloring = get_example_graph(good_coloring=True, colored=False)
         graph.shift(0.2 * UP)
 
         self.play(Create(graph, lag_ratio=0.1))
-
         self.wait()
+
+        self.play(
+            AnimationGroup(
+                *[
+                    graph.vertices[vertex].animate.set_fill_color(
+                        GRAPH_COLORS[coloring[vertex]]
+                    )
+                    for vertex in graph.vertices
+                ],
+                lag_ratio=0.75,
+            )
+        )
+        self.wait()
+
         rectangle = SurroundingRectangle(graph.vertices[4], color=RED)
         self.play(Create(rectangle))
         self.play(animate(graph.vertices[4]).set_color(GRAPH_COLORS[0]))
