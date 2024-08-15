@@ -837,6 +837,20 @@ class NP4(MovingCameraScene):
         self.wait()
 
 
+class BegsTheQuestion(Scene):
+    def construct(self):
+        text1 = Tex(
+            r"Is there a polynomial-time\\algorithm for SAT?",
+            color=text_color,
+        ).scale(1.5)
+        text2 = Tex(r"P $\stackrel{?}{=}$ NP", color=text_color).scale(3)
+
+        self.play(Write(text1))
+        self.wait()
+        self.play(Transform(text1, text2))
+        self.wait()
+
+
 class SATJoke(Scene):
     def construct(self):
         default()
