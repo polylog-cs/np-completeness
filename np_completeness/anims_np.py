@@ -370,6 +370,7 @@ class NP3(MovingCameraScene):
             )
             .arrange(DOWN)
             .to_edge(RIGHT)
+            .shift(DOWN * 0.3 + RIGHT)
         )
 
         self.play(FadeIn(karp_img))
@@ -450,6 +451,7 @@ class NP3(MovingCameraScene):
             ),
         )
         self.wait()
+        return
 
         self.play(
             FadeOut(karp_img),
