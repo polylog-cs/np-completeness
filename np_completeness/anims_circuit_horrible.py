@@ -1003,7 +1003,7 @@ class InversionScene(Scene):
         self.wait()
         self.next_section(skip_animations=False)
 
-        DOT_DISTANCE = 0.7
+        DOT_DISTANCE = 0.8
         left_dots = VGroup(*[Dot(color=text_color) for _ in range(5)]).arrange(
             DOWN, buff=DOT_DISTANCE
         )
@@ -1012,12 +1012,12 @@ class InversionScene(Scene):
         )
         fun_group = (
             VGroup(
-                Tex(r"In:", color=text_color),
-                Tex(r"Out:", color=text_color),
+                Tex(r"Circuit\\input", color=text_color),
+                Tex(r"Circuit\\output", color=text_color),
                 left_dots,
                 right_dots,
             )
-            .arrange_in_grid(cols=2, buff=0.5, col_widths=[3, 3])
+            .arrange_in_grid(cols=2, buff=0.5, col_widths=[4, 4])
             .to_edge(UP, buff=1)
         )
 
