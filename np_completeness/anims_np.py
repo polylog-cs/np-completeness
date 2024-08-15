@@ -986,6 +986,25 @@ class SHA(Scene):
         self.wait()
 
 
+class ProvingNoAlgorithmIsHard(Scene):
+    def construct(self):
+        text1 = Tex("Finding an algorithm", color=BASE00).scale(1.3)
+        text2 = Tex("Proving there is no algorithm", color=BASE00).scale(1.3)
+        emoji1 = ImageMobject("img/emoji-cool.png").scale(0.75)
+        emoji2 = ImageMobject("img/emoji-hot.png").scale(0.75)
+        g = Group(text1, emoji1, text2, emoji2).arrange_in_grid(
+            cols=2, cell_alignment=LEFT, buff=1
+        )
+        self.play(Write(text1))
+        self.wait()
+        self.play(FadeIn(emoji1))
+        self.wait()
+        self.play(Write(text2))
+        self.wait()
+        self.play(FadeIn(emoji2))
+        self.wait()
+
+
 class Outro(Scene):
     def construct(self):
         default()
