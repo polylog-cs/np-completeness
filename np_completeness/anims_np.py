@@ -999,10 +999,14 @@ class Outro(Scene):
         self.wait()
 
         self.play(
-            Write(intuition2),
-            FadeOut(intuition1),
-            FadeOut(manim_circuit),
+            LaggedStart(
+                FadeOut(intuition1),
+                FadeOut(manim_circuit),
+                Write(intuition2),
+                lag_ratio=0.3,
+            )
         )
+
         self.wait()
 
         sc = 0.7
@@ -1045,8 +1049,8 @@ class Outro(Scene):
         # a cut here, a head-scene follows, then what's below
 
         self.wait()
-        self.remove(intuition2)
-        self.add(intuition1)
+        self.remove(intuition2, pnp_tex)
+        self.add(Tex("HEAD GOES HERE").shift(2 * UP))
         self.wait()
 
         self.play(
