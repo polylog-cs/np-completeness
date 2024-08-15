@@ -204,10 +204,10 @@ class NP(Scene):
 
         self.play(Create(np_rect), Write(np_label))
         for rect in problem_rects[1:]:
-            self.play(Write(rect[0]), Create(rect[1]))
+            self.play(Write(rect[0]), Write(rect[1]))
         self.wait()
 
-        self.play(Write(problem_rects[0][0]), Create(problem_rects[0][1]))
+        self.play(Write(problem_rects[0][0]), Write(problem_rects[0][1]))
         self.wait()
 
         shifts = [1 * LEFT, 0 * LEFT, 1 * RIGHT]
