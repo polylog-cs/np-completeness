@@ -173,7 +173,7 @@ def make_verifier_circuit(xs: float = 1, ys: float = 1) -> Circuit:
     return circuit
 
 
-def make_example_circuit(sc: float = 1) -> Circuit:
+def make_example_circuit(sc: float = 1, thumb: bool = False) -> Circuit:
     """Make a simple example circuit."""
     circuit = Circuit()
 
@@ -241,7 +241,10 @@ def make_example_circuit(sc: float = 1) -> Circuit:
     add_snake_wire(circuit, "input_2", "and_gate")
     circuit.add_wire("input_1", "not_gate")
     add_snake_wire(circuit, "input_0", "or_gate")
-    add_snake_wire(circuit, "not_gate", "or_gate", y_start_offset=-0.5)
+    if thumb:
+        add_snake_wire(circuit, "not_gate", "or_gate", y_start_offset=-0.75)
+    else:
+        add_snake_wire(circuit, "not_gate", "or_gate", y_start_offset=-0.5)
     circuit.add_wire("or_gate", "knot")
     add_snake_wire(circuit, "knot", "and_gate", y_start_offset=0)
     circuit.add_wire("knot", "output_0")

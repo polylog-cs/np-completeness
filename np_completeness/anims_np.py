@@ -1178,10 +1178,13 @@ def show_verification(scene: Scene, sc=1, shft=0 * DOWN, forward=False) -> None:
         sol_tex[i].shift((i - 3.5) * 0.4 * sc * RIGHT)
 
     if forward:
+        arrow = Arrow(
+            txt.get_top(), txt.get_bottom(), color=text_color, buff=0.1
+        ).next_to(manim_circuit, LEFT, buff=0.5)
         scene.remove(manim_circuit)
         scene.add(manim_circuit2)
 
-        scene.play(FadeIn(sol_tex))
+        scene.play(FadeIn(sol_tex), FadeIn(arrow))
         scene.play(manim_circuit2.animate_evaluation(scene=scene, speed=1))
         scene.play(Write(tick))
         scene.wait()
@@ -1191,6 +1194,7 @@ def show_verification(scene: Scene, sc=1, shft=0 * DOWN, forward=False) -> None:
             FadeIn(manim_circuit),
             FadeOut(tick),
             FadeOut(sol_tex),
+            Rotate(arrow, angle=PI, about_point=arrow.get_center()),
         )
 
     scene.play(Write(tick))
@@ -1205,10 +1209,113 @@ def show_verification(scene: Scene, sc=1, shft=0 * DOWN, forward=False) -> None:
         ),
     )
     scene.wait()
-    scene.play(
+    anims = [
         FadeOut(manim_circuit),
         FadeOut(txt),
         FadeOut(tick),
         FadeOut(sol_tex),
-    )
+    ]
+    if forward:
+        anims.append(FadeOut(arrow))
+    scene.play(*anims)
     scene.wait()
+
+
+"""
+class Thumb(Scene):
+    def construct(self):
+        default()
+        text = (
+            Tex(r"Inverting Algorithms", color=text_color)
+            .scale_to_fit_width(config.frame_width * 0.95)
+            .to_edge(DOWN, buff=0.5)
+        )
+        self.add(text)
+"""
+
+
+class Thumb2(Scene):
+    def construct(self):
+        default()
+        text = (
+            Tex(r"\raggedright Inverting \\ Algorithms", color=text_color)
+            .scale_to_fit_width(config.frame_width * 0.5)
+            .to_edge(DOWN, buff=0.5)
+            .to_edge(LEFT, buff=0.5)
+        )
+        self.add(text)
+
+        circuit = make_example_circuit(sc=1.5, thumb=True).reverse()
+        manim_circuit = (
+            ManimCircuit(circuit, scale=3).to_corner(DR, buff=0.5).shift(0.2 * LEFT)
+        )
+
+        print(manim_circuit.wires.keys())
+        print(manim_circuit.gates.keys())
+
+        sh = 0.25
+        for input, knot, knot2, dir in [
+            ("input_0", "knot_2", "knot_3", LEFT),
+            ("input_2", "knot_0", "knot_1", RIGHT),
+        ]:
+            Group(
+                manim_circuit.wires[(knot, input)],
+                manim_circuit.wires[(knot2, knot)],
+                manim_circuit.gates[input],
+                manim_circuit.gates[knot2],
+                manim_circuit.gates[knot],
+            ).shift(sh * dir)
+
+        line_input2 = Line(
+            start=manim_circuit.gates["knot_1"],
+            end=manim_circuit.wires[
+                ("knot_1", "knot_0")
+            ].background_line.point_from_proportion(0.3),
+        ).set_stroke_width(
+            manim_circuit.wires[("knot_1", "knot_0")].background_line.get_stroke_width()
+        )
+
+        line_input0 = Line(
+            start=manim_circuit.gates["knot_3"],
+            end=manim_circuit.wires[
+                ("knot_3", "knot_2")
+            ].background_line.point_from_proportion(0.3),
+        ).set_stroke_width(
+            manim_circuit.wires[("knot_3", "knot_2")].background_line.get_stroke_width()
+        )
+
+        line_input1 = Line(
+            start=manim_circuit.gates["knot_5"].get_center() + 0.025 * LEFT,
+            end=manim_circuit.wires[
+                ("knot_5", "knot_4")
+            ].background_line.point_from_proportion(0.3),
+        ).set_stroke_width(
+            manim_circuit.wires[("knot_5", "knot_4")].background_line.get_stroke_width()
+        )
+
+        for obj in [
+            manim_circuit.gates["output_1"],
+            manim_circuit.gates["knot_5"],
+            manim_circuit.gates["and_gate"][0],
+            manim_circuit.wires[("output_1", "and_gate")],
+            manim_circuit.wires[("or_gate", "knot_6")],
+            manim_circuit.wires[("knot_6", "knot_5")],
+            line_input2,
+            line_input1,
+        ]:
+            obj.set_color(WIRE_COLOR_FALSE)
+
+        for obj in [
+            manim_circuit.gates["output_0"],
+            manim_circuit.gates["knot"],
+            manim_circuit.gates["knot_7"],
+            manim_circuit.gates["or_gate"][0],
+            manim_circuit.wires[("output_0", "knot")],
+            manim_circuit.wires[("knot_7", "knot")],
+            manim_circuit.wires[("knot_8", "knot_7")],
+            manim_circuit.wires[("knot", "or_gate")],
+            line_input0,
+        ]:
+            obj.set_color(WIRE_COLOR_TRUE)
+
+        self.add(manim_circuit, line_input2, line_input0, line_input1)
