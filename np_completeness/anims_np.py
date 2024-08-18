@@ -451,7 +451,6 @@ class NP3(MovingCameraScene):
             ),
         )
         self.wait()
-        return
 
         self.play(
             FadeOut(karp_img),
