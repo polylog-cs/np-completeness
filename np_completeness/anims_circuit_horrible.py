@@ -71,7 +71,7 @@ class ShowConstraints(Scene):
         # Create Tex objects for each clause
         clause_texts = [
             Tex(clause_to_text(clause), font_size=20, color=text_color)
-            for clause in CNF_CONSTRAINTS[: -1 if FINAL_VIDEO else 15]
+            for clause in CNF_CONSTRAINTS[: -1 if FINAL_VIDEO else 3]
         ]
         # Arrange clauses in a table
         table = Group(*clause_texts).arrange_in_grid(
@@ -175,7 +175,7 @@ class ShowConstraints(Scene):
 
         self.next_section(skip_animations=False)
 
-        self.play(Create(arrow), Write(sat_solver_text))
+        self.play(GrowArrow(arrow), Write(sat_solver_text))
         self.wait()
         self.play(Write(running_text))
         self.play(manim_circuit.animate_evaluation(scene=self, speed=2))
@@ -232,9 +232,10 @@ class ShowConstraints(Scene):
                 (WIRE_COLOR_FALSE if (a & (1 << i)) == 0 else WIRE_COLOR_TRUE)
             )
             binary_b[4 - i].set_color(
-                (WIRE_COLOR_FALSE if (a & (1 << i)) == 0 else WIRE_COLOR_TRUE)
+                (WIRE_COLOR_FALSE if (b & (1 << i)) == 0 else WIRE_COLOR_TRUE)
             )
 
+        self.next_section(skip_animations=False)
         self.play(Write(binary_a), Write(binary_b))
         self.wait()
 
@@ -245,10 +246,11 @@ class ShowConstraints(Scene):
             [a, b], [constraint_a, constraint_b], [eqs_a, eqs_b]
         ):
             for i in range(4):
-                col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
+                bit = (c & (1 << (3 - i))) != 0
+                col = WIRE_COLOR_FALSE if not bit else WIRE_COLOR_TRUE
                 st = r"$x_{" + str((i + 1 if c == a else i + 5)) + r"}$"
                 eqst = r"{{$x_{" + str((i + 1 if c == a else i + 5)) + r"}=\,$}}"
-                if (c & (1 << i)) == 0:
+                if not bit:
                     st = r"NOT " + st
                     eqst = eqst + r"{{$0$}}"
                 else:
@@ -256,16 +258,13 @@ class ShowConstraints(Scene):
                 constraint.append(Tex(st, color=col))
                 eqs.append(Tex(eqst, color=col))
 
-        constraint_a = Group(*constraint_a).arrange_in_grid(rows=2, cell_alignment=LEFT)
-        eqs_a = Group(*eqs_a).arrange_in_grid(rows=2, cell_alignment=LEFT)
-        constraint_b = Group(*constraint_b).arrange_in_grid(rows=2, cell_alignment=LEFT)
-        eqs_b = Group(*eqs_b).arrange_in_grid(rows=2, cell_alignment=LEFT)
-
-        _ = (
-            Group(*constraint_a, *constraint_b)
-            .arrange_in_grid(rows=4, cell_alignment=LEFT)
-            .next_to(logic_group, DOWN, buff=0.5)
-        )
+        constraint_a = Group(*constraint_a)
+        constraint_b = Group(*constraint_b)
+        eqs_a = Group(*eqs_a)
+        eqs_b = Group(*eqs_b)
+        Group(*constraint_a, *constraint_b).arrange_in_grid(
+            rows=4, cell_alignment=DL
+        ).next_to(logic_group, DOWN, buff=0.5)
         eqs = (
             Group(*eqs_a, *eqs_b)
             .arrange_in_grid(rows=4, cell_alignment=LEFT)
@@ -336,14 +335,14 @@ class ShowConstraints(Scene):
                 .move_to(manim_circuit.gates[f"input_a_{i}"])
                 .scale(1.5)
                 .shift(0.3 * UP + 0.05 * RIGHT)
-                for i, inp in enumerate(inp_a)
+                for i, inp in enumerate(reversed(inp_a))
             ],
             *[
                 animate(inp)
                 .move_to(manim_circuit.gates[f"input_b_{i}"])
                 .scale(1.5)
                 .shift(0.3 * UP + 0.05 * RIGHT)
-                for i, inp in enumerate(inp_b)
+                for i, inp in enumerate(reversed(inp_b))
             ],
         )
         self.wait()
@@ -374,6 +373,7 @@ class ShowConstraints(Scene):
         #
         #
         #
+        self.next_section(skip_animations=False)
 
         c = 15
         number_c = (
@@ -407,10 +407,11 @@ class ShowConstraints(Scene):
         constraint_c = []
         eqs_c = []
         for i in range(8):
-            col = WIRE_COLOR_FALSE if (c & (1 << i)) == 0 else WIRE_COLOR_TRUE
+            bit = (c & (1 << (7 - i))) != 0
+            col = WIRE_COLOR_FALSE if not bit else WIRE_COLOR_TRUE
             st = r"$x_{" + str(i + 74) + r"}$"
             eqst = r"{{$x_{" + str(i + 74) + r"} = $}}"
-            if (c & (1 << i)) == 0:
+            if not bit:
                 st = r"NOT " + st
                 eqst = eqst + r"{{$\,0$}}"
             else:
@@ -454,19 +455,6 @@ class ShowConstraints(Scene):
         )
         self.wait()
 
-        """
-        self.play(
-            *[ReplacementTransform(constraint_c[i], eqs_c[i]) for i in range(8)],
-        )
-        self.wait()
-
-        self.play(
-            *[MoveToTarget(eq) for eq in eqs_c],
-
-        )
-        self.wait()
-        """
-
         sat_group.next_to(input_group, DOWN, buff=0.5)
         self.play(FadeIn(sat_group))
         self.wait()
@@ -481,7 +469,7 @@ class ShowConstraints(Scene):
                 .scale(CIRCUIT_LABEL_SCALE / TBL_SCALE)
                 .move_to(manim_circuit.gates[f"output_{i}"])
                 .shift(0.3 * DOWN)
-                for i, inp in enumerate(inp_c)
+                for i, inp in enumerate(reversed(inp_c))
             ],
         )
         self.wait()
@@ -528,13 +516,13 @@ class ShowConstraints(Scene):
             Tex(
                 f"{bit}", color=(WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)
             ).scale(CIRCUIT_LABEL_SCALE)
-            for bit in binary_a
+            for bit in reversed(binary_a)
         ]
         bit_texts_b = [
             Tex(
                 f"{bit}", color=(WIRE_COLOR_FALSE if int(bit) == 0 else WIRE_COLOR_TRUE)
             ).scale(CIRCUIT_LABEL_SCALE)
-            for bit in binary_b
+            for bit in reversed(binary_b)
         ]
 
         # Arrange the bits next to the input gates
@@ -686,16 +674,16 @@ class ShowConstraints(Scene):
         # Create animations to move each bit from binary_c to the corresponding position in eqs_c
         bit_animations = []
         for i in range(8):
-            if i != 1:
+            if i != 6:
                 bit_animations.append(
-                    ReplacementTransform(binary_c[8 - i], eqs_c[i][1])
+                    ReplacementTransform(binary_c[i + 1], eqs_c[i][1])
                 )
             else:
                 bit_animations += [
-                    binary_c[8 - i].animate.scale(TBL_SCALE).move_to(eqs_c[i][1]),
+                    binary_c[i + 1].animate.scale(TBL_SCALE).move_to(eqs_c[i][1]),
                     Transform(
                         eqs_c[i],
-                        Tex(r"{{$x_{75}=\,$}}{{0}}", color=WIRE_COLOR_FALSE)
+                        Tex(r"{{$x_{80}=\,$}}{{0}}", color=WIRE_COLOR_FALSE)
                         .scale(TBL_SCALE)
                         .move_to(eqs_c[i]),
                     ),
