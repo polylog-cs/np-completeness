@@ -637,7 +637,7 @@ def make_adder_circuit(inputs: list[bool]) -> Circuit:
             f"input_{i}",
             Gate(
                 truth_table={(): (inputs[i],)},
-                position=(-GATE_X_SPACING * i, GATE_Y_SPACING * 3.5),
+                position=(-GATE_X_SPACING * i * 1.1, GATE_Y_SPACING * 3.5),
             ),
         )
 
